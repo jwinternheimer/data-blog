@@ -28,9 +28,9 @@ enableEmoji = true
     style = "github"
     
 [params]
-  orgName = "RStudio"
+  orgName = "Buffer"
   orgLocal = "Anywhere"
-  description = "A modern, beautiful, and easily configurable blog theme for Hugo."
+  description = "A modern, beautiful, and easily configurable data team."
   favicon = "/img/buff_favicon.png"
   logo = "/img/buffer-logo.png"
   mainSections = ["blog"]
