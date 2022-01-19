@@ -1,0 +1,342 @@
+---
+title: Analysis of NPS Survey Responses
+author: Julian Winternheimer
+date: '2022-01-19'
+slug: []
+categories: []
+tags:
+  - nps
+---
+
+In this post we'll analyze 7166 NPS survey responses gathered from Pendo. We'll find the most frequently occurring words for Promoters, Passives, and Detractors, and calculate which of them are most unique to each segment. We'll also visualize networks of terms that commonly occur together.
+
+```{r include = FALSE, message = FALSE, warning = FALSE}
+# load libraries
+library(buffer)
+library(dplyr)
+library(tidyr)
+library(widyr)
+library(forcats)
+library(tidytext)
+library(ggplot2)
+library(lubridate)
+library(scales)
+```
+
+```{r eval = FALSE, include = FALSE}
+# define sql query
+sql <- "
+  select 
+    date(timestamp) as date
+    , user_id
+    , nps_rating as rating
+    , nps_reason as text
+    , case
+        when nps_rating <= 6 then 'detractor'
+        when nps_rating <= 8 then 'passive'
+        when nps_rating <= 10 then 'promoter'
+        else 'other' 
+      end as nps_segment
+  from dbt_buffer.pendo_nps_survey_responses
+  where nps_rating is not null
+  and nps_reason is not null
+"
+
+# query bigquery
+nps <- bq_query(sql = sql)
+
+# save data
+saveRDS(nps, "pendo_nps_responses.rds")
+```
+
+```{r include = FALSE}
+# load data
+nps <- readRDS("pendo_nps_responses.rds")
+```
+
+## Tidy Text Data Format
+In order to analyze the text efficiently, we'll want to make use of some "tidy" data principles. To consider this data set tidy we need to have one _token_ (or one observation in most other analyses) per row. A token in this text analysis is one word or a group of words.
+
+```{r}
+# unnnest the tokens
+text_df <- nps %>%
+  unnest_tokens(word, text)
+
+# glimpse data
+glimpse(text_df)
+```
+
+Next we'll remove stop words like "a", "the", etc. that aren't useful to us.
+
+```{r}
+# get stop words
+data(stop_words)
+
+# remove stop words from dataset
+text_df <- text_df %>%
+  anti_join(stop_words, by = "word") %>% 
+  filter(word != "buffer")
+```
+
+
+## Data Exploration
+Now that the data has been restructured into a tidy format, we can do some exploration. Let's start by looking at the most common terms present in the NPS survey responses.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot most common words
+text_df %>%
+  filter(!is.na(word)) %>% 
+  count(word, sort = TRUE) %>%
+  head(25) %>% 
+  mutate(word = reorder(word, n)) %>%
+  buffplot(aes(word, n)) +
+  geom_col() +
+  labs(x = "", y = "", 
+       title = "Most Common Words",
+       subtitle = "Excluding Stop Words") + 
+  coord_flip() +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank())
+```
+
+It's great to see that "easy" is the most common word in our NPS survey responses. It's easy to see themes of simplicity and saving time. Now let's look at the top words for each NPS segment.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# get top terms
+top_terms <- text_df %>%
+    group_by(nps_segment) %>%
+    count(word, sort = TRUE) %>%
+    ungroup
+
+top_terms %>%
+    group_by(nps_segment) %>%
+    top_n(20) %>%
+    ungroup %>%
+    mutate(nps_segment = as.factor(nps_segment),
+           word = reorder_within(word, n, nps_segment)) %>%
+    buffplot(aes(word, n, fill = nps_segment)) +
+    geom_col(show.legend = FALSE) +
+    facet_wrap(~nps_segment, scales = "free") +
+    coord_flip() +
+    scale_x_reordered() +
+    scale_y_continuous(expand = c(0,0)) +
+    labs(y = NULL,
+         x = NULL,
+         title = "Common Terms by Segment",
+         subtitle = "Top 20 Terms") +
+    theme(panel.grid.major.y = element_blank(),
+          panel.grid.minor.y = element_blank())
+```
+
+We can see that there are words that appear frequently for all three segments (e.g. "buffer", "post"). To address this we'll use a different technique to look at words that occur with more frequency for promoters than for detractors or passives.
+
+To find these words, we can calculate the relative frequency of words that appear in promoters' responses and compare that to the relative frequency of the words that appear in detractors'.
+
+The idea of term frequency–inverse document frequency (tf-idf) is to find the important words for the content of each document by decreasing the weight for commonly used words and increasing the weight for words that are not used very much in a collection or corpus of documents, in this case, all survey responses for each segment. Calculating tf-idf attempts to find the words that are common in a text document, but not _too_ common. 
+
+```{r warning = FALSE, message = FALSE}
+# get all words in the survey
+survey_words <- nps %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words, by = "word") %>% 
+  count(nps_segment, word, sort = TRUE)
+
+# get total of all words
+total_words <- survey_words %>% 
+  group_by(nps_segment) %>% 
+  summarize(total = sum(n))
+
+# join to get proportions
+survey_words <- left_join(survey_words, total_words)
+head(survey_words) 
+```
+
+The `bind_tf_idf()` function takes a tidy text data set as input with one row per token, per document. One column (`word`) contains the tokens, one column contains the documents (`nps_segment`), and the last necessary column contains the counts, how many times each document contains each term (`n`).
+
+```{r}
+# calculate tf-idf
+segment_tf_idf <- survey_words %>%
+  bind_tf_idf(word, nps_segment, n)
+```
+
+The `idf` term is very low for words that appear frequently for each segment. The inverse document frequency (and thus tf-idf) is very low (near zero) for words that occur in many of the documents in a collection; this is how this approach decreases the weight for common words. The inverse document frequency will be a higher number for words that occur in fewer of the documents in the collection.
+
+Let's look at words with high `tf-idf` in the NPS surveys.
+
+```{r}
+# high tf-idf words
+segment_tf_idf %>%
+  select(-total) %>%
+  arrange(desc(tf_idf)) %>% 
+  head()
+```
+
+This checks out. The terms "excellent", "amazing", and "fantastic" appear relatively frequently in Promoters' responses, whereas the terms "bad", "clunky", and "layout" appear relatively frequently for detractors.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot top tf-idf
+segment_tf_idf %>%
+  filter(nps_segment != "passive") %>% 
+  group_by(nps_segment) %>%
+  arrange(desc(tf_idf)) %>% 
+  top_n(20) %>% 
+  ungroup %>% 
+  mutate(nps_segment = as.factor(nps_segment),
+           word = reorder_within(word, tf_idf, nps_segment)) %>%
+  buffplot(aes(word, tf_idf, fill = nps_segment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~nps_segment, scales = "free") +
+  coord_flip() +
+  scale_x_reordered() +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(y = NULL,
+       x = NULL,
+       title = "Most Characteristic Terms",
+       subtitle = "By Relative Frequency") +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank())
+```
+
+We can start to pick up themes that appear for detractors and promoters. Detractors mention poor performance and reliability, whereas promoters do not. Passives seem to resemble detractors more than promoters.
+
+## Bigrams
+We can also consider groups of words as tokens. Bigrams are groups of two words, trigrams are groups of three, and so on.
+
+```{r}
+# get bigrams
+bigrams <- nps %>%
+  unnest_tokens(bigram, text, token = "ngrams", n = 2)
+
+# separate the words
+bigrams_separated <- bigrams %>%
+  separate(bigram, c("word1", "word2"), sep = " ")
+
+# filter out stop words
+bigrams_filtered <- bigrams_separated %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>% 
+  filter(!is.na(word1) & !is.na(word2))
+
+# new bigram counts:
+bigram_counts <- bigrams_filtered %>% 
+  count(word1, word2, sort = TRUE)
+
+# view top bigrams
+head(bigram_counts, 10)
+```
+
+```{r warning = FALSE, message = FALSE}
+# get word pairs
+nps <- nps %>% 
+  mutate(id = row_number())
+
+# unnest tokens
+nps_text <- nps %>%
+  unnest_tokens(word, text) %>% 
+  anti_join(stop_words) %>% 
+  filter(word != "buffer")
+
+# get word pairs
+text_word_pairs <- nps_text %>% 
+  pairwise_count(word, id, sort = TRUE, upper = FALSE)
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+library(igraph)
+library(ggraph)
+
+# set seed
+set.seed(1234)
+
+# plot networks of co-occurring words
+text_word_pairs %>%
+  filter(n >= 15) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "cyan4") +
+  geom_node_point(size = 4) +
+  geom_node_text(aes(label = name), repel = TRUE, 
+                 point.padding = unit(0.2, "lines")) +
+  theme_void()
+```
+
+```{r warning = FALSE, message = FALSE}
+# get word pairs
+detractor_word_pairs <- nps_text %>% 
+  filter(nps_segment == "detractor") %>% 
+  pairwise_count(word, id, sort = TRUE, upper = FALSE)
+
+# plot network for detractors
+detractor_word_pairs %>%
+  filter(n >= 7) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "darkred") +
+  geom_node_point(size = 3) +
+  geom_node_text(aes(label = name), repel = TRUE,
+                 point.padding = unit(0.2, "lines")) +
+  theme_void()
+```
+
+It's great to see bigrams like "super easy" and "user friendly". Next we'll visualize the network of bigrams by looking at words that have strong correlations with other words. I'll spare you a long explanation of the methodology for creating this plot.
+
+```{r message = FALSE, warning = FALSE}
+# reunite bigrams
+bigrams_united <- bigrams_filtered %>%
+  unite(bigram, word1, word2, sep = " ")
+
+# filter for only relatively common combinations
+bigram_graph <- bigram_counts %>%
+  filter(n >= 6) %>%
+  graph_from_data_frame()
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+# plot network
+set.seed(2020)
+
+a <- grid::arrow(type = "closed", length = unit(.15, "inches"))
+
+ggraph(bigram_graph, layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n), show.legend = FALSE,
+                 arrow = a, end_cap = circle(.07, 'inches')) +
+  geom_node_point(color = "lightblue", size = 5) +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
+  theme_void()
+```
+
+Here we can see the relationships between terms. Things like people -> tag and technical -> issues make sense. "Posts" and "media" appear to be central nodes, as well as "loses/losing connection".
+
+Let's recreate this plot only for detractors and passives.
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+# reunite bigrams
+bigrams_united <- bigrams_filtered %>%
+  filter(nps_segment != "promoter") %>% 
+  unite(bigram, word1, word2, sep = " ")
+
+# filter
+bigram_counts <- bigrams_filtered %>% 
+  filter(nps_segment != "promoter") %>% 
+  count(word1, word2, sort = TRUE)
+
+# filter for only relatively common combinations
+bigram_graph <- bigram_counts %>%
+  filter(n >= 5) %>%
+  graph_from_data_frame()
+
+# plot network
+set.seed(2020)
+
+a <- grid::arrow(type = "closed", length = unit(.15, "inches"))
+
+ggraph(bigram_graph, layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n), show.legend = FALSE,
+                 arrow = a, end_cap = circle(.07, 'inches')) +
+  geom_node_point(color = "lightblue", size = 5) +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
+  theme_void() +
+  labs(title = "Word Network for Passives and Detractors")
+```
+
+These are the related terms for detractors and passives. Core functionality, technical issues, losing connection, people tagging, and time consuming slots are all interesting things to potentially look into. It's nice to see that "love buffer" is still present.
