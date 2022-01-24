@@ -54,6 +54,19 @@ saveRDS(nps, "pendo_nps_responses.rds")
 nps <- readRDS("pendo_nps_responses.rds")
 ```
 
+```{r}
+# analytics NPS -- DELETE
+analytics <- nps %>% 
+  filter(grepl("analytics", tolower(text)))
+
+non_analytics <- nps %>% 
+  filter(!grepl("analytics", tolower(text)))
+
+# calculate nps scores
+mean(analytics$rating)
+mean(non_analytics$rating)
+```
+
 ## Tidy Text Data Format
 In order to analyze the text efficiently, we'll want to make use of some "tidy" data principles. To consider this data set tidy we need to have one _token_ (or one observation in most other analyses) per row. A token in this text analysis is one word or a group of words.
 

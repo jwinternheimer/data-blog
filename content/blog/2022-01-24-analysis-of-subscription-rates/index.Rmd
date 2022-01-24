@@ -1,0 +1,161 @@
+---
+title: Analysis of Subscription Rates
+author: Julian Winternheimer
+date: '2022-01-24'
+slug: []
+categories: []
+tags:
+  - new buffer
+---
+
+In this analysis we'll analyze the rate at which new signups subscribe to paying plans on Buffer. We will also examine how long it takes for new users to subscribe.
+
+## 28-Day Subscription Rate
+First we'll look at subscription rates. For each weekly cohort of new users, we'll calculate the proportion that paid for a subscription _within 28 days of signing up_.
+
+```{r include = FALSE, message = FALSE, warning = FALSE}
+# load libraries
+library(buffer)
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(zoo)
+library(CausalImpact)
+```
+
+```{r eval = FALSE, include = FALSE}
+# define sql query
+sql <- "
+  select
+    date_trunc(u.signup_at_date, week(monday)) as signup_week
+    , date_trunc(u.signup_at_date, month) as signup_month
+    , u.user_id
+    , count(distinct s.id) as subs
+  from dbt_buffer.buffer_users u
+  left join dbt_buffer.stripe_paid_subscriptions s
+    on u.user_id = s.account_id
+    and timestamp_diff(s.first_paid_invoice_created_at, u.signup_at, day) between 0 and 27
+  where u.signup_at between '2020-01-01' and '2021-12-27'
+  group by 1,2,3
+"
+
+# query bigquery
+customers <- bq_query(sql = sql)
+
+# save data
+saveRDS(customers, "subscription_rates.rds")
+```
+
+```{r warning = FALSE, message = FALSE}
+# load data
+customers <- readRDS("subscription_rates.rds") %>% 
+  mutate(converted = subs >= 1)
+```
+
+The plot below shows the proportion of weekly new users that susbcribed to a paid plan within 28 days of signing up. We can clearly see that the subscription rate increased significantly when New Buffer was launched in August of 2021.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# group customers by signup week
+by_week <- customers %>%
+  group_by(signup_week, converted) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(percent = users / sum(users)) %>% 
+  filter(converted) %>% 
+  ungroup
+
+# plot conversion rates
+by_week %>% 
+  filter(signup_week != max(signup_week)) %>% 
+  buffplot(aes(x = signup_week, y = percent)) +
+  geom_line(size = 0.8) +
+  geom_vline(xintercept = as.Date("2021-08-02"), color = "darkred", linetype = 2) +
+  scale_y_continuous(labels = percent) +
+  labs(title = "28-Day Subscription Rate",
+       subtitle = "New Buffer Launch on 2 August 2021",
+       x = "Signup Week", y = NULL)
+```
+
+
+The average 28-day subscription rate of users that signed up in the weeks prior to August 2, 2021 was **2.01%**. 
+
+For users that signed up on or after August 9, 2021, the 28-day subscription rate was **2.34%**.
+
+This represents a relative increase of around 16%. 
+
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+# calculate avg rates before and after new buffer launch
+avg_before <- by_week %>% 
+  filter(signup_week < "2021-08-02") %>% 
+  summarise(avg_rate = mean(percent)) %>% 
+  pull()
+
+avg_after <- by_week %>% 
+  filter(signup_week >= "2021-08-09") %>% 
+  summarise(avg_rate = mean(percent)) %>% 
+  pull()
+
+# add lines to graph
+by_week %>% 
+  filter(converted & signup_week != max(signup_week)) %>% 
+  buffplot(aes(x = signup_week, y = percent)) +
+  geom_line(size = 0.8) +
+  geom_vline(xintercept = as.Date("2021-08-02"), color = "darkred", linetype = 2) +
+  geom_smooth(data = subset(by_week, signup_week < "2021-08-02"), 
+              method = lm,
+              se = FALSE) +
+  geom_smooth(data = subset(by_week, signup_week >= "2021-08-09"), 
+              method = lm,
+              se = FALSE) +
+  scale_y_continuous(labels = percent) +
+  labs(title = "28-Day Subscription Rate",
+       subtitle = "New Buffer Launch on 2 August 2021",
+       x = "Signup Week", y = NULL)
+```
+
+## Causal Impact Analysis
+We can use a technique called Causal Impact to estimate the effect that launching New Buffer had on subscription rates.
+
+```{r}
+# get min and max dates
+min_date <- "2019-12-30"
+max_date <- "2021-12-13"
+
+# create time series object
+rate_ts <- zoo(by_week$percent, by_week$signup_week)
+
+# specify the pre and post periods
+pre.period <- as.Date(c(min_date, "2021-08-01"))
+post.period <- as.Date(c("2021-08-16", max_date))
+
+# run analysis
+impact <- CausalImpact(rate_ts, pre.period, post.period, 
+                       model.args = list(niter = 5000))
+
+# plot impact
+plot(impact, c("original", "pointwise")) +
+  labs(x = "Week",
+       title = "Impact on 28-Day Conversion Rate", 
+       subtitle = "New Buffer Launch on August 2")  +
+  scale_y_continuous(labels = percent) +
+  theme_light(base_family = "Roboto Condensed") +
+  theme(plot.title = element_text(size = rel(1.5), face = "bold"),
+        plot.subtitle = element_text(size = rel(1.1)),
+        plot.caption = element_text(color = "#777777", vjust = 0),
+        axis.title = element_text(size = rel(.9), hjust = 0.95, face = "italic"),
+        panel.grid.major = element_line(size = rel(.1), color = "#000000"),
+        panel.grid.minor = element_line(size = rel(.05), color = "#000000"),
+        plot.background = element_rect(fill = '#F5F5F5', color = '#F5F5F5'),
+        panel.background = element_rect(fill = '#F5F5F5', color = '#F5F5F5'))
+```
+
+
+The plot above and summary below tell us that the subscription rate was approximately 2.4% after New Buffer launched. In the absence of that launch event, we would have expected the subscription rate to be around 2.0%. In relative terms, we're looking at an increase of around 16-18%. 
+
+The positive effect we've observed so far is statistically significant and unlikely to be due to random fluctuation.
+
+```{r}
+# show summary of causal impact
+summary(impact)
+```
+
