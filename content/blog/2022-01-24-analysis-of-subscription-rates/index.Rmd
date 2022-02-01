@@ -46,7 +46,7 @@ customers <- bq_query(sql = sql)
 saveRDS(customers, "subscription_rates.rds")
 ```
 
-```{r warning = FALSE, message = FALSE}
+```{r warning = FALSE, message = FALSE, include = FALSE}
 # load data
 customers <- readRDS("subscription_rates.rds") %>% 
   mutate(converted = subs >= 1)
