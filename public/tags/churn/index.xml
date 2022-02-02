@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>churn on Buffer Data Blog</title>
+    <link>/tags/churn/</link>
+    <description>Recent content in churn on Buffer Data Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 19 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="/tags/churn/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Analysis of Subscription Churn in New Buffer</title>
+      <link>/blog/2022-01-19-analysis-of-subscription-churn-in-new-buffer/</link>
+      <pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2022-01-19-analysis-of-subscription-churn-in-new-buffer/</guid>
+      <description>In this analysis we will analyze the subscription churn rates of New Buffer subscriptions. We&amp;rsquo;ll use a well known technique called survival analysis that&amp;rsquo;s useful when dealing with censored data.
+Censoring occurs when we have some information about the time it takes for the key event to occur, but we do not know the survival time exactly. In our case, it occurs when subscriptions have not yet canceled &amp;ndash; we know that the time to churn is at least X days.</description>
+    </item>
+    
+  </channel>
+</rss>

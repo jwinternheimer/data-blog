@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Buffer Data Blog</title>
+    <link>/tags/</link>
+    <description>Recent content in Tags on Buffer Data Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 24 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>new buffer</title>
+      <link>/tags/new-buffer/</link>
+      <pubDate>Mon, 24 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/new-buffer/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>churn</title>
+      <link>/tags/churn/</link>
+      <pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/churn/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>nps</title>
+      <link>/tags/nps/</link>
+      <pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/nps/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>hugo-site</title>
+      <link>/tags/hugo-site/</link>
+      <pubDate>Wed, 03 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/hugo-site/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

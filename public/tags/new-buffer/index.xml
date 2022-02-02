@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>new buffer on Buffer Data Blog</title>
+    <link>/tags/new-buffer/</link>
+    <description>Recent content in new buffer on Buffer Data Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 24 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="/tags/new-buffer/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Analysis of Subscription Rates</title>
+      <link>/blog/2022-01-24-analysis-of-subscription-rates/</link>
+      <pubDate>Mon, 24 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2022-01-24-analysis-of-subscription-rates/</guid>
+      <description>In this analysis we’ll analyze the rate at which new signups subscribe to paying plans on Buffer. We will also examine how long it takes for new users to subscribe.
+28-Day Subscription Rate First we’ll look at subscription rates. For each weekly cohort of new users, we’ll calculate the proportion that paid for a subscription within 28 days of signing up.
+# load data customers &amp;lt;- readRDS(&amp;quot;subscription_rates.rds&amp;quot;) %&amp;gt;% mutate(converted = subs &amp;gt;= 1) The plot below shows the proportion of weekly new users that susbcribed to a paid plan within 28 days of signing up.</description>
+    </item>
+    
+    <item>
+      <title>Analysis of Subscription Churn in New Buffer</title>
+      <link>/blog/2022-01-19-analysis-of-subscription-churn-in-new-buffer/</link>
+      <pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2022-01-19-analysis-of-subscription-churn-in-new-buffer/</guid>
+      <description>In this analysis we will analyze the subscription churn rates of New Buffer subscriptions. We&amp;rsquo;ll use a well known technique called survival analysis that&amp;rsquo;s useful when dealing with censored data.
+Censoring occurs when we have some information about the time it takes for the key event to occur, but we do not know the survival time exactly. In our case, it occurs when subscriptions have not yet canceled &amp;ndash; we know that the time to churn is at least X days.</description>
+    </item>
+    
+  </channel>
+</rss>

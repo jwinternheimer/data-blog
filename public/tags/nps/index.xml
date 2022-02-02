@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>nps on Buffer Data Blog</title>
+    <link>/tags/nps/</link>
+    <description>Recent content in nps on Buffer Data Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 19 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="/tags/nps/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Analysis of NPS Survey Responses</title>
+      <link>/blog/2022-01-19-analysis-of-nps-survey-responses/</link>
+      <pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2022-01-19-analysis-of-nps-survey-responses/</guid>
+      <description>In this post we&amp;rsquo;ll analyze 7166 NPS survey responses gathered from Pendo. We&amp;rsquo;ll find the most frequently occurring words for Promoters, Passives, and Detractors, and calculate which of them are most unique to each segment. We&amp;rsquo;ll also visualize networks of terms that commonly occur together.
+Tidy Text Data Format     In order to analyze the text efficiently, we&amp;rsquo;ll want to make use of some &amp;ldquo;tidy&amp;rdquo; data principles. To consider this data set tidy we need to have one token (or one observation in most other analyses) per row.</description>
+    </item>
+    
+  </channel>
+</rss>
