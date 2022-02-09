@@ -27,15 +27,17 @@ sql <- "
     select
       u.user_id
       , u.signup_at
+      , u.did_signup_on_trial as has_trial
       , min(s.first_paid_invoice_created_at) as first_conversion_at
     from dbt_buffer.stripe_paid_subscriptions s
     inner join dbt_buffer.buffer_users u
       on s.account_id = u.user_id
-    group by 1,2
+    group by 1,2,3
   
   )
   select
     user_id
+    , f.has_trial
     , date(signup_at) as signup_date
     , s.id as subscription_id
     , s.plan_id
@@ -74,9 +76,19 @@ This plot tells us that around 55% of the customers in our dataset subscribed to
 
 Around 63% of customers took 60 days or fewer to convert and around 75% took 180 days or less.Around 84% of customers converted within 365 days of signing up (16% took longer than a year).
 
-We can take a closer look at those that convert within their first 30 days.
+We can also segment this data by whether or not the user started a trial within 20 minutes of signing up.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+
+These CDFs show that, historically, people that have signed up with trials have converted much more quickly than those that didn't start a trial within 20 minutes of signing up.
+
+For example, around 77% of converts that signed up with a trial converted within 30 days of signing up, compared to around 49% of those that signed up without a trial. 
+
+Around 84% of converts that signed up with a trial converted within 60 days, compared to 57% of converts that didn't.
+
+We can take a closer look at those that convert within their first 30 days.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
 
 This shows us that there is a large group of users that subscribed to paid plans on the same day that they signed up for Buffer. There are also spikes at the 7 and 14 day marks, which would correspond with various trial lengths Buffer has had over the years.
 

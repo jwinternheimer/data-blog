@@ -32,15 +32,17 @@ sql <- "
     select
       u.user_id
       , u.signup_at
+      , u.did_signup_on_trial as has_trial
       , min(s.first_paid_invoice_created_at) as first_conversion_at
     from dbt_buffer.stripe_paid_subscriptions s
     inner join dbt_buffer.buffer_users u
       on s.account_id = u.user_id
-    group by 1,2
+    group by 1,2,3
   
   )
   select
     user_id
+    , f.has_trial
     , date(signup_at) as signup_date
     , s.id as subscription_id
     , s.plan_id
@@ -99,6 +101,28 @@ This plot tells us that around 55% of the customers in our dataset subscribed to
 
 Around 63% of customers took 60 days or fewer to convert and around 75% took 180 days or less.Around 84% of customers converted within 365 days of signing up (16% took longer than a year).
 
+We can also segment this data by whether or not the user started a trial within 20 minutes of signing up.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot cdf
+users %>% 
+  buffplot(aes(x = days_to_convert, color = has_trial)) +
+  stat_ecdf() +
+  coord_cartesian(xlim = c(0, 365)) +
+  scale_x_continuous(breaks = seq(0, 365, 60)) +
+  scale_y_continuous(breaks = seq(0, 1, 0.2), labels = percent) +
+  theme(legend.position = "bottom") +
+  labs(x = "Days to Convert", y = NULL, color = "Has Trial",
+       title = "CDF of Days to Convert",
+       subtitle = "Proportion of users that converted by day X")
+```
+
+These CDFs show that, historically, people that have signed up with trials have converted much more quickly than those that didn't start a trial within 20 minutes of signing up.
+
+For example, around 77% of converts that signed up with a trial converted within 30 days of signing up, compared to around 49% of those that signed up without a trial. 
+
+Around 84% of converts that signed up with a trial converted within 60 days, compared to 57% of converts that didn't.
+
 We can take a closer look at those that convert within their first 30 days.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
@@ -111,6 +135,22 @@ users %>%
   geom_col(show.legend = F) +
   scale_y_continuous(labels = comma) +
   scale_x_continuous(breaks = seq(0, 35, 7)) +
+  labs(x = "Days to Convert", y = "Users", 
+       title = "Distribution of Days to Convert",
+       subtitle = "Only users that converted within 30 days")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot conversions within 90 days
+users %>% 
+  filter(days_to_convert <= 30) %>% 
+  group_by(days_to_convert, has_trial) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  buffplot(aes(x = days_to_convert, y = users, fill = has_trial)) +
+  geom_col(show.legend = F) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(breaks = seq(0, 35, 7)) +
+  facet_wrap(~has_trial, scales = "free_y") +
   labs(x = "Days to Convert", y = "Users", 
        title = "Distribution of Days to Convert",
        subtitle = "Only users that converted within 30 days")
