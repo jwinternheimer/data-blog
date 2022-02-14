@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr"><head>
+  
+                           
+     
+
+
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="generator" content="Hugo 0.89.4" />
+<title>Channels Connected at Point of Conversion | Buffer Data Blog</title>
+
+
+<meta property="twitter:site" content="@buffer">
+<meta property="twitter:creator" content="@buffer">
+
+
+
+
+
+
+
+  
+    
+  
+<meta name="description" content="A modern, beautiful, and easily configurable data team.">
+
+
+<meta property="og:site_name" content="Buffer Data Blog">
+<meta property="og:title" content="Channels Connected at Point of Conversion | Buffer Data Blog">
+<meta property="og:description" content="A modern, beautiful, and easily configurable data team." />
+<meta property="og:type" content="page" />
+<meta property="og:url" content="/blog/2022-02-14-channels-connected-at-point-of-conversion/" />
+<meta property="og:locale" content="en">
+
+
+
+
+    
+        <meta property="og:image" content="/blog/2022-02-14-channels-connected-at-point-of-conversion/featured.jpg" >
+        <meta property="twitter:card" content="summary_large_image">
+        <meta name="twitter:image" content="/blog/2022-02-14-channels-connected-at-point-of-conversion/featured.jpg" >
+    
+    
+  <meta itemprop="name" content="Channels Connected at Point of Conversion">
+<meta itemprop="description" content="The data team recently received several questions that we&rsquo;ll try to answer in this analysis:
+  What is the average number of channels connected at the point of conversion vs. 3 months of subscription? How does it differ for people that signed up with and without a trial?
+  What effect does an additional channel have on revenue? For example, if the current average is 1.2 channels and we increased that to 1."><meta itemprop="datePublished" content="2022-02-14T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2022-02-14T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1279"><meta itemprop="image" content="/blog/2022-02-14-channels-connected-at-point-of-conversion/featured.jpg">
+<meta itemprop="keywords" content="" />
+  
+  
+  <!--[if IE]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <link rel="shortcut icon" href="/img/buff_favicon.png" type="image/x-icon">
+  <link rel="icon" href="/img/buff_favicon.png" type="image/x-icon">
+  
+  
+  <link rel="stylesheet" href="/style.main.min.f72f5cc794fcc7b86cab520db152dc3ef55aea333df2e3496a4e1bac97849df2.css" integrity="sha256-9y9cx5T8x7hsq1INsVLcPvVa6jM98uNJak4brJeEnfI=" media="screen">
+  
+  
+  <script src="/panelset.min.078a92db9bd3228df502db3d9e0453c3cf3d910abe3f8deca0ad196c7071ad41.js" type="text/javascript"></script>
+  
+  
+  <script src="/main.min.484b72540b4e891877d2d642ab4763b3a5b9edcfe63dde87f294ca289e7207d8.js" type="text/javascript"></script>
+</head>
+<body>
+      <div class="grid-container">
+<header class="site-header pt4 pb2 mb4 bb b--transparent ph5 headroom z-max" role="banner">
+  <nav class="site-nav db dt-l w-100" role="navigation">
+    <a class="site-brand db dtc-l v-mid link no-underline w-100 w-33-l tc tl-l" href="/" title="Home">
+      <img src="/img/buffer-logo.png" class="dib db-l h2 w-auto" alt="Buffer Data Blog">
+    </a>
+    <div class="site-links db dtc-l v-mid w-100 w-47-l tc tr-l mt3 mt0-l ttu tracked">
+      
+        
+        
+        
+      <a class="link f6 f5-l dib pv1 ph2 active" href="/blog/" title="Blog">Blog</a>
+      
+      
+    </div>
+  </nav>
+</header>
+
+<main class="page-main pa4" role="main">
+  <section class="page-content mw7 center">
+    <article class="post-content pa0 ph4-l">
+      <header class="post-header">
+        <h1 class="f1 lh-solid measure-narrow mb3 fw4">Channels Connected at Point of Conversion</h1>
+        
+        
+        <p class="f7 db mv0 ttu">February 14, 2022</p>
+
+      
+
+      </header>
+      <section class="post-body pt5 pb4">
+        <p>The data team recently received several questions that we&rsquo;ll try to answer in this analysis:</p>
+<ul>
+<li>
+<p>What is the average number of channels connected at the point of conversion vs. 3 months of subscription? How does it differ for people that signed up with and without a trial?</p>
+</li>
+<li>
+<p>What effect does an additional channel have on revenue? For example, if the current average is 1.2 channels and we increased that to 1.3, what impact does that have on revenue?</p>
+</li>
+</ul>
+<p>To answer the first question, we&rsquo;ll first collect data from all users that have signed up since January 2020 and subscribed to a paid plan. We&rsquo;ll count the unique <code>service_id</code> values that they connected before paying their first non-zero invoice and subtract the <code>service_id</code> values that had been disconnected by then.</p>
+<p>Because there have been multiple anomalous events due to spam activity, we&rsquo;ll look at medians in addition to averages.</p>
+
+
+
+
+<h2 id="data-collection">Data Collection
+  <a href="#data-collection"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>We&rsquo;ll use the SQL query below to collect the data.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  with first_sub as (
+</span><span style="color:#d14">    select
+</span><span style="color:#d14">      u.user_id
+</span><span style="color:#d14">      , u.signup_at_date as signup_date
+</span><span style="color:#d14">      , u.stripe_customer_id as customer_id
+</span><span style="color:#d14">      , u.did_signup_on_trial as has_trial
+</span><span style="color:#d14">      , min(s.first_paid_invoice_created_at) as converted_at
+</span><span style="color:#d14">    from dbt_buffer.buffer_users u
+</span><span style="color:#d14">    inner join dbt_buffer.stripe_paid_subscriptions s
+</span><span style="color:#d14">      on u.stripe_customer_id = s.customer_id
+</span><span style="color:#d14">    where u.signup_at &gt;= &#39;2020-01-01&#39;
+</span><span style="color:#d14">    group by 1,2,3,4
+</span><span style="color:#d14">  )
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    f.user_id
+</span><span style="color:#d14">    , f.signup_date
+</span><span style="color:#d14">    , f.customer_id
+</span><span style="color:#d14">    , f.has_trial
+</span><span style="color:#d14">    , f.converted_at
+</span><span style="color:#d14">    , s.id as subscription_id
+</span><span style="color:#d14">    , s.plan_id
+</span><span style="color:#d14">    , date(s.created_at) as sub_created_at
+</span><span style="color:#d14">    , date(s.canceled_at) as sub_canceled_at
+</span><span style="color:#d14">    , count(distinct case 
+</span><span style="color:#d14">                      when c.timestamp &lt; f.converted_at
+</span><span style="color:#d14">                      then c.channel_service_id end) as channels_at_conversion
+</span><span style="color:#d14">    , count(distinct case 
+</span><span style="color:#d14">                      when d.timestamp &lt; f.converted_at
+</span><span style="color:#d14">                      then d.channel_service_id end) as channels_disconnected_at_conversion
+</span><span style="color:#d14">    , count(distinct case
+</span><span style="color:#d14">                      when c.timestamp &lt; timestamp_add(f.converted_at, interval 90 day)
+</span><span style="color:#d14">                      then c.channel_service_id end) as channels_at_3_months
+</span><span style="color:#d14">    , count(distinct case
+</span><span style="color:#d14">                      when d.timestamp &lt; timestamp_add(f.converted_at, interval 90 day)
+</span><span style="color:#d14">                      then d.channel_service_id end) as channels_disconnected_at_3_months
+</span><span style="color:#d14">  from first_sub f
+</span><span style="color:#d14">  inner join dbt_buffer.stripe_paid_subscriptions s
+</span><span style="color:#d14">    on f.customer_id = s.customer_id 
+</span><span style="color:#d14">    and s.first_paid_invoice_created_at = f.converted_at
+</span><span style="color:#d14">  left join dbt_buffer.segment_channels_connected as c
+</span><span style="color:#d14">      on f.user_id = c.user_id
+</span><span style="color:#d14">  left join dbt_buffer.segment_channels_disconnected as d
+</span><span style="color:#d14">      on f.user_id = d.user_id
+</span><span style="color:#d14">  group by 1,2,3,4,5,6,7,8,9
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+users <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(users, <span style="color:#d14">&#34;sub_channels.rds&#34;</span>)
+</code></pre></div>
+
+
+
+<h2 id="channels-connected-at-conversion">Channels Connected at Conversion
+  <a href="#channels-connected-at-conversion"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>First we&rsquo;ll visualize the distribution of number of channels connected at conversion for all users. Then we&rsquo;ll break it down by whether or not the users signed up with a trial.</p>
+<img src="/blog/2022-02-14-channels-connected-at-point-of-conversion/index_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+<p>This shows us that most customers had 4 or fewer channels connected when they first converted to a paid plan. A shocking number of customers hadn&rsquo;t connected any channels by then.</p>
+<p>Visualizing the cumulative distrubtion function (CDF) is another useful way to visualize the distribution.</p>
+<img src="/blog/2022-02-14-channels-connected-at-point-of-conversion/index_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+<p>This CDF tells us that around 72% of customers had 3 or fewer channels connected at the time of conversion. Around 91% of customers had 5 or fewer channels connected and 98% had 10 or fewer channels connected.</p>
+
+
+
+
+<h2 id="segmenting-by-trial">Segmenting by Trial
+  <a href="#segmenting-by-trial"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Next we&rsquo;ll plot the same distributions, but segment the data by whether or not the users signed up with a trial. It&rsquo;s worth noting that there was a significant period of time in which <em>all</em> new signups had to start a trial when creating a Buffer account.</p>
+<p>Signups that came through one of the mobile apps generally don&rsquo;t have trials.</p>
+<img src="/blog/2022-02-14-channels-connected-at-point-of-conversion/index_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+<p>These plots suggest that people that signed up with trials generally had more channels connected when they converted to a paid plan.</p>
+<img src="/blog/2022-02-14-channels-connected-at-point-of-conversion/index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+<p>The CDFs support the previous statement. Around 70% of people that signed up with a trial had 3 channels or fewer (30% had more) at the point of conversion. Around 90% of people that signed up without a trial had 3 channels or fewer (only 10% had more).</p>
+<p><strong>The average number of channels connected at conversion is 2.3 for people that signed up without a trial and 2.9 for those that signed up with a trial</strong>.</p>
+<p><strong>The median number of channels connected at conversion is 2 for people that signed up without a trial and 3 for those that signed up with a trial</strong>.</p>
+<p><strong>The overall average is 2.8 and the median number of channels connected is 3</strong>.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate avg and median</span>
+users <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(channels <span style="color:#000;font-weight:bold">=</span> channels_at_conversion <span style="color:#000;font-weight:bold">-</span> channels_disconnected_at_conversion) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(has_trial) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(avg_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">mean</span>(channels),
+            med_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">median</span>(channels))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   has_trial avg_channels med_channels
+##   &lt;lgl&gt;            &lt;dbl&gt;        &lt;dbl&gt;
+## 1 FALSE             2.30            2
+## 2 TRUE              2.95            3
+</code></pre>
+
+
+
+<h2 id="channels-connect-at-day-90-on-subscription">Channels Connect at Day 90 on Subscription
+  <a href="#channels-connect-at-day-90-on-subscription"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>We&rsquo;ll take the same approach to answer this question, but first we&rsquo;ll want to filter out customers that weren&rsquo;t subscribed for 90 days.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># filter out subs that weren&#39;t active for 90 days</span>
+subs90 <span style="color:#000;font-weight:bold">&lt;-</span> users <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">filter</span>((sub_created_at <span style="color:#000;font-weight:bold">&lt;</span> <span style="color:#d14">&#34;2021-11-16&#34;</span> <span style="color:#000;font-weight:bold">&amp;</span> <span style="color:#900;font-weight:bold">is.na</span>(sub_canceled_at)) <span style="color:#000;font-weight:bold">|</span>
+           <span style="color:#900;font-weight:bold">as.numeric</span>(sub_canceled_at <span style="color:#000;font-weight:bold">-</span> sub_created_at) <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#099">90</span>)
+</code></pre></div><p>Now let&rsquo;s look at the distributions for those customers that started a trial when they signed up and those that didn&rsquo;t.</p>
+<img src="/blog/2022-02-14-channels-connected-at-point-of-conversion/index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+<p>These plots show us that most customers still had 4 or fewer channels connected after 90 days on a subscription.</p>
+<img src="/blog/2022-02-14-channels-connected-at-point-of-conversion/index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+<p>The CDFs show us again that users that signed up with trials tended to have more channels connected after 90 days on a subscription.</p>
+<ul>
+<li>
+<p>Approximately 59% of users that signed up with trials had 3 or fewer channels connected after 90 days (41% had more).</p>
+</li>
+<li>
+<p>Approximately 71% of users that signed up without trials had 3 or fewer channels connected after 90 days (29% had more).</p>
+</li>
+</ul>
+<p><strong>The average number of channels connected after 90 days on a paid subscription is 2.9 for people that signed up without a trial and 3.5 for those that signed up with a trial</strong>.</p>
+<p><strong>The median number of channels connected at day 90 is 3 for people that signed up with or without a trial</strong>.</p>
+<p><strong>The overall average number of channels connected after 90 days is 3.4 and the median is 3</strong>.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate avg and median</span>
+users <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(channels <span style="color:#000;font-weight:bold">=</span> channels_at_3_months <span style="color:#000;font-weight:bold">-</span> 
+           channels_disconnected_at_3_months) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(has_trial) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(avg_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">mean</span>(channels),
+            med_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">median</span>(channels))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   has_trial avg_channels med_channels
+##   &lt;lgl&gt;            &lt;dbl&gt;        &lt;dbl&gt;
+## 1 FALSE             2.91            3
+## 2 TRUE              3.52            3
+</code></pre>
+
+
+
+<h2 id="revenue-impact">Revenue Impact
+  <a href="#revenue-impact"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>This is a trickier question to answer, since only a portion of Buffer&rsquo;s subscribers have plans that increase in value directly and proportionally with the number of channels connected.</p>
+<p>Let&rsquo;s start with the simplest case, assuming that an increase in channels causes an increase in revenue. We&rsquo;ll gather all active <em>Stripe</em> subscriptions and calculate the average and median number of channels connected per customer.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , u.stripe_customer_id
+</span><span style="color:#d14">    , count(distinct p.id) as channels_connected
+</span><span style="color:#d14">  from dbt_buffer.buffer_users u
+</span><span style="color:#d14">  left join dbt_buffer.publish_profiles p
+</span><span style="color:#d14">    on u.user_id = p.account_id
+</span><span style="color:#d14">    and p.is_deleted is not true
+</span><span style="color:#d14">    and p.is_disabled is not true
+</span><span style="color:#d14">  where u.is_currently_paying_buffer_user
+</span><span style="color:#d14">  group by 1,2
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+customers <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(customers, <span style="color:#d14">&#34;customer_channels.rds&#34;</span>)
+</code></pre></div><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate average and median</span>
+customers <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(avg_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">mean</span>(channels_connected),
+            med_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">median</span>(channels_connected))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 1 × 2
+##   avg_channels med_channels
+##          &lt;dbl&gt;        &lt;dbl&gt;
+## 1         5.29            4
+</code></pre><p>The average number of channels connected for all Buffer customers is 5.3. As of February 14, 2022, MRR is $1,631,121. The total number of channels connected by all customers is 306,009. The average MRR value per channel connected is therefore $5.33.</p>
+<p>In this over-simplified world, increasing the average number of channels connected by 1 for all Buffer customers would result in $5.33 x 57,836 customers = $308k.</p>
+<p>That isn&rsquo;t the real world though. Increasing the number of channels connected does not necessarily equate to more revenue for customers on legacy plans. Increasing the average by 1 would require a huge number of customers to add (and pay for) more channels than they otherwise would have.</p>
+<p>Another way to look at this would be to consider only New MRR from New Buffer subscriptions, which increase in value with each new channel connected.</p>
+
+        
+        <details closed class="f6 fw7 input-reset">
+  <dl class="f6 lh-copy">
+    <dt class="fw7">Posted on:</dt>
+    <dd class="fw5 ml0">February 14, 2022</dd>
+  </dl>
+  <dl class="f6 lh-copy">
+    <dt class="fw7">Length:</dt>
+    <dd class="fw5 ml0">7 minute read, 1279 words</dd>
+  </dl>
+  
+  
+  
+  <dl class="f6 lh-copy">
+    <dt class="fw7">See Also:</dt>
+    
+  </dl>
+</details>
+
+      </section>
+      <footer class="post-footer">
+        <div class="post-pagination dt w-100 mt4 mb2">
+  
+  
+  
+  
+    <a class="next dtc pl2 tr v-top fw6"
+    href="/blog/2022-02-02-distribution-of-conversion-time/">Distribution of Conversion Time &rarr;</a>
+  
+</div>
+
+      </footer>
+    </article>
+    
+      
+<div class="post-comments pa0 pa4-l mt4">
+  
+  <script src="https://utteranc.es/client.js"
+          repo="apreshill/apero"
+          issue-term="pathname"
+          theme="boxy-light"
+          label="comments :crystal_ball:"
+          crossorigin="anonymous"
+          async
+          type="text/javascript">
+  </script>
+  
+</div>
+
+    
+  </section>
+</main>
+<footer class="site-footer pv4 bt b--transparent ph5" role="contentinfo">
+  <nav class="db dt-l w-100">
+    <p class="site-copyright f7 db dtc-l v-mid w-100 w-33-l tc tl-l pv2 pv0-l mv0 lh-copy">
+      &copy; 2022 Buffer, Anywhere
+      <span class="middot-divider"></span>
+      Made with <span xmlns:dct="http://purl.org/dc/terms/" property="dct:title"><a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/hugo-apero/" rel="dct:source">Hugo Apéro</a></span>.
+      <br />
+      
+Based on <span xmlns:dct="http://purl.org/dc/terms/" property="dct:title"><a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/formspree/blogophonic-hugo" rel="dct:source">Blogophonic</a></span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://formspree.io" property="cc:attributionName" rel="cc:attributionURL">Formspree</a>.
+    </p>
+    
+    <div class="site-social-links db dtc-l v-mid w-100 w-33-l tc pv2 pv0-l mv0">
+      <div class="social-icon-links" aria-hidden="true">
+  
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <a class="link dib h1 w1 ml0 mr2 f6 o-90 glow" href="https://github.com/julianwinternheimer/data-blog" title="github" target="_blank" rel="noopener">
+      <i class="fab fa-github fa-lg fa-fw"></i>
+    </a>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <a class="link dib h1 w1 ml0 mr2 f6 o-90 glow" href="https://twitter.com/buffer" title="twitter" target="_blank" rel="noopener">
+      <i class="fab fa-twitter fa-lg fa-fw"></i>
+    </a>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <a class="link dib h1 w1 ml0 mr2 f6 o-90 glow" href="/blog/index.xml" title="rss" >
+      <i class="fas fa-rss fa-lg fa-fw"></i>
+    </a>
+  
+</div>
+
+    </div>
+    
+    <div class="site-links f6 db dtc-l v-mid w-100 w-67-l tc tr-l pv2 pv0-l mv0">
+      
+      <a class="dib pv1 ph2 link" href="/license/" title="License">License</a>
+      
+    </div>
+  </nav>
+  
+    <script>
+
+    var i, text, code, codes = document.getElementsByTagName('code');
+    for (let i = 0; i < codes.length;) {
+      code = codes[i];
+      if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+        text = code.textContent;
+        if (/^\$[^$]/.test(text) && /[^$]\$$/.test(text)) {
+          text = text.replace(/^\$/, '\\(').replace(/\$$/, '\\)');
+          code.textContent = text;
+        }
+        if (/^\\\((.|\s)+\\\)$/.test(text) ||
+            /^\\\[(.|\s)+\\\]$/.test(text) ||
+            /^\$(.|\s)+\$$/.test(text) ||
+            /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+          code.outerHTML = code.innerHTML;  
+          continue;
+        }
+      }
+      i++;
+    }
+</script>
+
+  
+    
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+
+
+    
+  
+  
+</footer>
+
+      </div>
+    </body>
+</html>

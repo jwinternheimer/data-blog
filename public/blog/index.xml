@@ -6,7 +6,29 @@
     <description>Recent content in Le Blog on Buffer Data Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 24 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 14 Feb 2022 00:00:00 +0000</lastBuildDate><atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Channels Connected at Point of Conversion</title>
+      <link>/blog/2022-02-14-channels-connected-at-point-of-conversion/</link>
+      <pubDate>Mon, 14 Feb 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2022-02-14-channels-connected-at-point-of-conversion/</guid>
+      <description>The data team recently received several questions that we&amp;rsquo;ll try to answer in this analysis:
+  What is the average number of channels connected at the point of conversion vs. 3 months of subscription? How does it differ for people that signed up with and without a trial?
+  What effect does an additional channel have on revenue? For example, if the current average is 1.2 channels and we increased that to 1.</description>
+    </item>
+    
+    <item>
+      <title>Distribution of Conversion Time</title>
+      <link>/blog/2022-02-02-distribution-of-conversion-time/</link>
+      <pubDate>Wed, 02 Feb 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2022-02-02-distribution-of-conversion-time/</guid>
+      <description>In this analysis we&amp;rsquo;ll analyze the distribution of the amount of time it takes new Buffer users to subscribe to a paid plan.
+This data is censored in nature &amp;ndash; there are people that will convert to paid plans that have yet to do so &amp;ndash; however, for the purpose of this analysis, we&amp;rsquo;ll look only at paying customers that have had at least six months to convert.
+Data Collection     The dataset we&amp;rsquo;ll use in this analysis contains around 259 thousand users that subscribed to a paid plan at some point before August 2021 (six months ago).</description>
+    </item>
+    
     <item>
       <title>Analysis of Subscription Rates</title>
       <link>/blog/2022-01-24-analysis-of-subscription-rates/</link>
