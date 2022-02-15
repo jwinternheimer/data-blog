@@ -252,14 +252,24 @@ sql <- "
   select
     u.user_id
     , u.stripe_customer_id
+    , s.id as subscription_id
+    , s.plan_id
+    , s.quantity
+    , sp.amount as plan_amount
+    , sp.interval as plan_interval
     , count(distinct p.id) as channels_connected
   from dbt_buffer.buffer_users u
+  left join dbt_buffer.stripe_paid_subscriptions s
+    on u.stripe_customer_id = s.customer_id
+    and s.status in ('active', 'past_due')
+  left join dbt_buffer.stripe_plans sp
+    on sp.id = s.plan_id
   left join dbt_buffer.publish_profiles p
     on u.user_id = p.account_id
     and p.is_deleted is not true
     and p.is_disabled is not true
   where u.is_currently_paying_buffer_user
-  group by 1,2
+  group by 1,2,3,4,5,6,7
 "
 
 # collect data from bigquery
@@ -287,4 +297,46 @@ In this over-simplified world, increasing the average number of channels connect
 
 That isn't the real world though. Increasing the number of channels connected does not necessarily equate to more revenue for customers on legacy plans. Increasing the average by 1 would require a huge number of customers to add (and pay for) more channels than they otherwise would have.
 
-Another way to look at this would be to consider only New MRR from New Buffer subscriptions, which increase in value with each new channel connected.
+Another way to look at this would be to consider only MRR from New Buffer subscriptions, which increase in value with each new channel connected.
+
+```{r}
+# new buffer plans
+nb_plans <- c("buffer_essentials_m_5_202104", "buffer_essentials-team_m_10_202104",
+             "buffer_essentials_y_48_202104", "buffer_essentials-team_y_96_202104",
+             "buffer_essentials_y_60_202106", "buffer_essentials_m_6_202106",
+             "buffer_essentials-team_y_120_202106", "ob_team_monthly_2020_12",
+             "buffer_essentials-team_m_12_202106", "ob_individual_monthly_2021_03",
+             "ob_individual_yearly_2021_03", "ob_team_yearly_2020_12")
+
+
+# indicator of new buffer
+customers <- customers %>% 
+  mutate(is_nb = plan_id %in% nb_plans,
+         plan_amount = plan_amount / 100,
+         mrr_amount = case_when(
+           plan_interval == "year" ~ plan_amount * quantity / 12,
+           plan_interval == "month" ~ plan_amount * quantity,
+           TRUE ~ plan_amount * quantity
+         ))
+```
+
+Below we calculate the average number of channels New Buffer customers have connected.
+
+```{r}
+# calculate average and median
+customers %>% 
+  filter(is_nb) %>%
+  summarise(avg_channels = mean(quantity),
+            med_channels = median(quantity),
+            mrr = sum(mrr_amount),
+            total_channels = sum(quantity),
+            customers = n_distinct(stripe_customer_id))
+```
+
+The average number of channels connected for New Buffer customers is 3.2 and the rough MRR value per channel is 41,019. The MRR value per channel is around \$7.53. 
+
+Increasing the average number of channels connected by 0.1 for New Buffer customers would result in approximately \$7.53 * 0.1 * 12,983 customers = \$978 in MRR _with the current number of New Buffer customers_. 
+
+
+
+
