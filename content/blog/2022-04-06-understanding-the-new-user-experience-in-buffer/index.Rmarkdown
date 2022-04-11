@@ -24,6 +24,9 @@ library(ggplot2)
 library(scales)
 library(tidyr)
 library(glmnet)
+library(survival)
+library(survminer)
+library(ggfortify)
 ```
  
 
@@ -157,6 +160,34 @@ users %>%
 
 A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for trial signups.
 
+
+## Survival Analysis
+Because a greater proportion of trialists end up converting, it could be worth using survival analysis techniques to visualize the amount of time it takes to convert.
+
+```{r}
+# set status column
+users <- users %>% 
+  mutate(status = ifelse(converted, 1, 0),
+         time = ifelse(
+           converted, as.numeric(converted_date - signup_at_date),
+           as.numeric(Sys.Date() - signup_at_date)))
+
+# fit survival curve
+fit.surv <- survfit(Surv(time, status) ~ trial_signup, data = users)
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+# plot survival curve
+autoplot(fit.surv, censor = TRUE, censor.size = 1) +
+  scale_x_continuous(limits = c(0, 56), breaks = seq(0, 56, 7)) +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Days Since Signup", y = "Estimated % That Hasn't Converted",
+       title = "Survival Curve of Time to Convert",
+       color = "Trial Signup",
+       fill = "Trial Signup")
+```
+
+Each point on the graph represents the proportion of the population that _hasn't_ converted after X days. The inverse is the proportion that had converted by day X.
 
 ## Distribution of Number of Sessions
 We can use a similar approach to calculate quantiles of the number of sessions in the first 14 days for free and trial users.
@@ -519,4 +550,31 @@ activations %>%
        subtitle = "Activated on First Day")
 ```
 
-We can see that there is a strong correlation between first session duration and the likelihood of activating on the first day.
+We can see that there is a strong correlation between first session duration and the likelihood of activating on the first day. Let's look at the relationship between first session length and the likelihood of conversion.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# join session length
+sesh_length <- activations %>% select(user_id, avg_sesh_duration)
+
+# join to users
+users <- users %>% 
+  left_join(sesh_length, by = "user_id")
+
+# plot distribution of session length
+users %>%
+  filter(!is.na(avg_sesh_duration)) %>% 
+  mutate(duration_bucket = cut(avg_sesh_duration, breaks = cuts)) %>% 
+  filter(!is.na(duration_bucket)) %>% 
+  group_by(duration_bucket, converted) %>% 
+  summarise(users = n_distinct(user_id)) %>%
+  mutate(prop = users / sum(users)) %>% 
+  filter(converted) %>% 
+  buffplot(aes(x = duration_bucket, y = prop)) +
+  geom_col(show.legend = F) +
+  scale_y_continuous(labels = percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5)) +
+  labs(x = "First Session Duration", y = "Proportion of Users", 
+       subtitle = "Converted to Paid Subscription")
+```
+
+We can see that there is a clear correlation with conversion as well.
