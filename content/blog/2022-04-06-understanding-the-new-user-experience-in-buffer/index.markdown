@@ -327,18 +327,18 @@ coef(mod)
 
 ```
 ## 11 x 1 sparse Matrix of class "dgCMatrix"
-##                             s1
-## (Intercept)      -0.0007356298
-## mobile_signup     .           
-## is_team_member    .           
-## trial_signup      0.0229722691
-## sessions_14_days  0.0013637562
-## actions           .           
-## days_active       0.0058518858
-## used_publish      0.0044596099
-## used_engage       0.0986644870
-## used_analyze      0.0494202409
-## used_sp           .
+##                            s1
+## (Intercept)      8.444624e-05
+## mobile_signup    .           
+## is_team_member   .           
+## trial_signup     2.193072e-02
+## sessions_14_days 1.320495e-03
+## actions          .           
+## days_active      5.906057e-03
+## used_publish     3.485577e-03
+## used_engage      9.298665e-02
+## used_analyze     4.766946e-02
+## used_sp          .
 ```
 
 The lasso regression model suggests that using engage and analyze are predictive of conversions. After that, signing up with a trial, the number of days active, and the number of sessions in the first 14 days are the most predictive features.
@@ -454,3 +454,181 @@ We can see that there is a strong correlation between first session duration and
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-28-1.png" width="672" />
 
 We can see that there is a clear correlation with conversion as well.
+
+## Upgrade Paths
+Next we'll look at upgrade paths.The data used in the analysis below comes from [this Mixpanel report](https://mixpanel.com/s/4DPzTa) and only includes upgrade paths that have been defined in the `Upgrade Path Viewed` tracking event.
+
+
+
+
+
+We'll start by looking at the number of conversions each path drives each week. All of the conversions must occur within 7 days of viewing the upgrade path.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-31-1.png" width="672" />
+
+The upgrade path that stands out most clearly is `publish-profile-nav-tabNavigation-upgrade-1`. At one point it was driving over 200 upgrades per week, but it has since been changed to a prompt to start a trial. Now it drives only 5-15 upgrades per week.  
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-32-1.png" width="672" />
+
+
+Another one that stands out is `publish-profileSidebar-addChannelButton-upgrade-1`. Upgrades from this path have also decreased by over 50%. 
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-33-1.png" width="672" />
+
+Next let's look at the conversion _rates_ of each upgrade path. The conversion rate is just the proportion of users that viewed an upgrade path and converted within 7 days of that event.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-34-1.png" width="672" />
+
+Here are the top upgrade paths by conversion rate:
+
+ - Queue limit
+ - Campaigns empty state
+ - Awaiting approval paywall
+ - Top nav upgrade button
+ - Add channel button
+ - Hashtag manager path
+ - Drafts paywall
+ 
+Let's isolate a couple of these.
+ 
+ 
+## Queue Limit and Channel Limit Upgrade Paths
+This upgrade path has the highest conversion rate. Around 140-160 users run into it each week.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-35-1.png" width="672" />
+
+Many more users view the channel limit upgrade path, which is why it drives more conversions.
+ 
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-36-1.png" width="672" />
+
+
+## User Limit Upgrade Path
+As of April 2022 we're not tracking a distinct upgrade path for the 1-user limit. I'd recommend tracking this upgrade path if it exists, and if it doesn't I'd recommend creating one. 
+
+Right now the closest upgrade path we have would probably be `publish-awaitingApproval-paywall-upgrade-1`. 
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-37-1.png" width="672" />
+
+
+## Role of Analyze and Engage During Trial
+Next we'll look at the role analyze and engage play during trials. The data used in this section of the analysis is gathered with the following SQL query. The data includes 180K trials started since September 2021 (after the New Buffer launch).
+
+
+```r
+# define sql query
+sql <- "
+  select
+    t.id as trial_id
+    , t.trial_started_at
+    , t.subscription_id
+    , t.customer_id
+    , t.plan_id
+    , t.metadata_user_id as trial_user_id
+    , t.has_converted as converted
+    , count(distinct a.id) as actions
+    , count(distinct case when a.product = 'publish' then a.id end) as pub_actions
+    , count(distinct case when a.product = 'engage' then a.id end) as engage_actions
+    , count(distinct case when a.product = 'analyze' then a.id end) as analyze_actions
+  from dbt_buffer.stripe_trials as t
+  left join dbt_buffer.buffer_key_actions as a
+    on t.metadata_user_id = a.user_id
+    and a.timestamp > t.trial_started_at
+    and a.timestamp < timestamp_add(t.trial_started_at, interval 14 day)
+  where t.trial_started_at >= '2021-09-01'
+  group by 1,2,3,4,5,6,7
+"
+
+# collect data from bigquery
+trials <- bq_query(sql = sql)
+
+# save data
+saveRDS(trials, "trial_analysis_trials.rds")
+```
+
+
+
+One quick approach we could take is to fit a logistic regression model to see if using each of the features is correlated with trial conversion _given that the user was active during trial_. It's important to note that there's likely collinearity, which is why some regularization or feature selection is important.
+
+
+```r
+# fit logistic regression model
+mod <- glm(converted ~ active + publish_active + engage_active + analyze_active,
+           data = trials, family = "binomial")
+
+# summarise model
+summary(mod)
+```
+
+```
+## 
+## Call:
+## glm(formula = converted ~ active + publish_active + engage_active + 
+##     analyze_active, family = "binomial", data = trials)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.0557  -0.5001  -0.2233  -0.2233   2.7216  
+## 
+## Coefficients:
+##                    Estimate Std. Error  z value Pr(>|z|)    
+## (Intercept)        -3.67866    0.02018 -182.308  < 2e-16 ***
+## activeTRUE          0.16817    0.04420    3.805 0.000142 ***
+## publish_activeTRUE  1.49454    0.03748   39.873  < 2e-16 ***
+## engage_activeTRUE   0.82993    0.04156   19.969  < 2e-16 ***
+## analyze_activeTRUE  0.89281    0.02375   37.590  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 93982  on 180332  degrees of freedom
+## Residual deviance: 82598  on 180328  degrees of freedom
+## AIC: 82608
+## 
+## Number of Fisher Scoring iterations: 6
+```
+
+The use of each feature is correlated with success. We can try using lasso regression again.
+
+
+```r
+# set new column
+trials <- trials %>% mutate(response = ifelse(converted, 1, 0))
+
+# define response variable
+y <- trials$response
+
+# define matrix of predictor variables
+features <- trials %>% 
+  dplyr::select(active:engage_active)
+
+# turn strings into factors
+features <- as.data.frame(unclass(features), stringsAsFactors = TRUE)
+
+# create matrix
+x <- as.matrix(features)
+```
+
+
+```r
+# fit lasso regression model
+mod <- cv.glmnet(x, y, alpha = 1)
+
+# summarise model
+coef(mod)
+```
+
+```
+## 5 x 1 sparse Matrix of class "dgCMatrix"
+##                        s1
+## (Intercept)    0.02702031
+## active         .         
+## publish_active 0.09523208
+## analyze_active 0.07185878
+## engage_active  0.09849883
+```
+
+All features are correlated with conversion, which isn't surprising. However, using Engage seems to be indicative of a much greater likelihood of converting.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-43-1.png" width="672" />
+
