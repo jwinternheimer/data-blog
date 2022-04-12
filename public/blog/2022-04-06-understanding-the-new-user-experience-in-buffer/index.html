@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr"><head>
+  
+                           
+     
+
+
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="generator" content="Hugo 0.89.4" />
+<title>Understanding the New User Experience in Buffer | Buffer Data Blog</title>
+
+
+<meta property="twitter:site" content="@buffer">
+<meta property="twitter:creator" content="@buffer">
+
+
+
+
+
+
+
+  
+    
+  
+<meta name="description" content="A modern, beautiful, and easily configurable data team.">
+
+
+<meta property="og:site_name" content="Buffer Data Blog">
+<meta property="og:title" content="Understanding the New User Experience in Buffer | Buffer Data Blog">
+<meta property="og:description" content="A modern, beautiful, and easily configurable data team." />
+<meta property="og:type" content="page" />
+<meta property="og:url" content="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/" />
+<meta property="og:locale" content="en">
+
+
+
+
+    
+        <meta property="og:image" content="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/featured.jpg" >
+        <meta property="twitter:card" content="summary_large_image">
+        <meta name="twitter:image" content="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/featured.jpg" >
+    
+    
+  <meta itemprop="name" content="Understanding the New User Experience in Buffer">
+<meta itemprop="description" content="We&rsquo;d like to gain a better understand our new user journey within Buffer and document its current performance.In doing so, we&rsquo;d like to be able to answer the following questions:
+  What is the elasticity of our signup-to-customer conversion rate for cohorts starting in Trial when we increase volume?
+  Does defaulting new signups to Trial increase their exposure and usage of our pay-walled features like Analyze?
+  What improvements can be made to the 14-Day Trial period for less qualified users?"><meta itemprop="datePublished" content="2022-04-06T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2022-04-06T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1907"><meta itemprop="image" content="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/featured.jpg">
+<meta itemprop="keywords" content="" />
+  
+  
+  <!--[if IE]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <link rel="shortcut icon" href="/img/buff_favicon.png" type="image/x-icon">
+  <link rel="icon" href="/img/buff_favicon.png" type="image/x-icon">
+  
+  
+  <link rel="stylesheet" href="/style.main.min.f72f5cc794fcc7b86cab520db152dc3ef55aea333df2e3496a4e1bac97849df2.css" integrity="sha256-9y9cx5T8x7hsq1INsVLcPvVa6jM98uNJak4brJeEnfI=" media="screen">
+  
+  
+  <script src="/panelset.min.078a92db9bd3228df502db3d9e0453c3cf3d910abe3f8deca0ad196c7071ad41.js" type="text/javascript"></script>
+  
+  
+  <script src="/main.min.484b72540b4e891877d2d642ab4763b3a5b9edcfe63dde87f294ca289e7207d8.js" type="text/javascript"></script>
+</head>
+<body>
+      <div class="grid-container">
+<header class="site-header pt4 pb2 mb4 bb b--transparent ph5 headroom z-max" role="banner">
+  <nav class="site-nav db dt-l w-100" role="navigation">
+    <a class="site-brand db dtc-l v-mid link no-underline w-100 w-33-l tc tl-l" href="/" title="Home">
+      <img src="/img/buffer-logo.png" class="dib db-l h2 w-auto" alt="Buffer Data Blog">
+    </a>
+    <div class="site-links db dtc-l v-mid w-100 w-47-l tc tr-l mt3 mt0-l ttu tracked">
+      
+        
+        
+        
+      <a class="link f6 f5-l dib pv1 ph2 active" href="/blog/" title="Blog">Blog</a>
+      
+      
+    </div>
+  </nav>
+</header>
+
+<main class="page-main pa4" role="main">
+  <section class="page-content mw7 center">
+    <article class="post-content pa0 ph4-l">
+      <header class="post-header">
+        <h1 class="f1 lh-solid measure-narrow mb3 fw4">Understanding the New User Experience in Buffer</h1>
+        
+        
+        <p class="f7 db mv0 ttu">April 6, 2022</p>
+
+      
+
+      </header>
+      <section class="post-body pt5 pb4">
+        <p>We&rsquo;d like to gain a better understand our new user journey within Buffer and document its current performance.In doing so, we&rsquo;d like to be able to answer the following questions:</p>
+<ol>
+<li>
+<p>What is the elasticity of our signup-to-customer conversion rate for cohorts starting in Trial when we increase volume?</p>
+</li>
+<li>
+<p>Does defaulting new signups to Trial increase their exposure and usage of our pay-walled features like Analyze?</p>
+</li>
+<li>
+<p>What improvements can be made to the 14-Day Trial period for less qualified users?</p>
+</li>
+</ol>
+
+
+
+
+<h2 id="data-collection">Data Collection
+  <a href="#data-collection"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>We&rsquo;ll collect the approximately 1M signups that occurred since January 1, 2021.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  with users as (
+</span><span style="color:#d14">    select
+</span><span style="color:#d14">      u.user_id
+</span><span style="color:#d14">      , u.stripe_customer_id
+</span><span style="color:#d14">      , u.signup_at_date
+</span><span style="color:#d14">      , date_trunc(u.signup_at_date, week) as signup_week
+</span><span style="color:#d14">      , u.did_signup_from_mobile as mobile_signup
+</span><span style="color:#d14">      , u.is_team_member
+</span><span style="color:#d14">      , u.is_currently_trialing
+</span><span style="color:#d14">      , u.did_signup_on_trial as trial_signup
+</span><span style="color:#d14">      , date(min(a.timestamp)) as activated_at
+</span><span style="color:#d14">      , date(min(s.first_paid_invoice_created_at)) as converted_date
+</span><span style="color:#d14">      , count(distinct ss.session_id) as sessions_14_days
+</span><span style="color:#d14">      , count(distinct a.id) as actions
+</span><span style="color:#d14">      , count(distinct a.date) as days_active
+</span><span style="color:#d14">      , count(distinct case when a.product = &#39;publish&#39; then a.id end) as publish_actions
+</span><span style="color:#d14">      , count(distinct case when a.product = &#39;analyze&#39; then a.id end) as analyze_actions
+</span><span style="color:#d14">      , count(distinct case when a.product = &#39;engage&#39; then a.id end) as engage_actions
+</span><span style="color:#d14">      , count(distinct case when a.product = &#39;start_pages&#39; then a.id end) as sp_actions
+</span><span style="color:#d14">    from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">    left join dbt_buffer.buffer_key_actions as a
+</span><span style="color:#d14">      on u.user_id = a.user_id
+</span><span style="color:#d14">      and a.timestamp &gt;= u.signup_at
+</span><span style="color:#d14">      and a.timestamp &lt;= timestamp_add(u.signup_at, interval 14 day)
+</span><span style="color:#d14">    left join dbt_buffer.stripe_paid_subscriptions as s
+</span><span style="color:#d14">      on u.stripe_customer_id = s.customer_id
+</span><span style="color:#d14">      and s.first_paid_invoice_created_at &gt;= u.signup_at
+</span><span style="color:#d14">    left join dbt_buffer.segment_sessions as ss
+</span><span style="color:#d14">      on ss.dbt_visitor_id = u.user_id
+</span><span style="color:#d14">      and ss.started_at &gt;= u.signup_at
+</span><span style="color:#d14">      and date(ss.started_at) &lt;= date_add(u.signup_at_date, interval 14 day)
+</span><span style="color:#d14">    where u.signup_at &gt;= &#39;2021-01-01&#39;
+</span><span style="color:#d14">    group by 1,2,3,4,5,6,7,8
+</span><span style="color:#d14">  )
+</span><span style="color:#d14">  
+</span><span style="color:#d14">  select * from users
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+users <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(users, <span style="color:#d14">&#34;trial_analysis_users.rds&#34;</span>)
+</code></pre></div>
+
+
+
+<h2 id="baseline-conversion-rates">Baseline Conversion Rates
+  <a href="#baseline-conversion-rates"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Let&rsquo;s start by calculating the proportion of free and trial signups that subscribed to a paid plan within 30 days of signing up.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate conversion rates</span>
+users <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">filter</span>(signup_week <span style="color:#000;font-weight:bold">&lt;</span> <span style="color:#d14">&#34;2022-03-01&#34;</span> <span style="color:#000;font-weight:bold">&amp;</span> (<span style="color:#900;font-weight:bold">is.na</span>(mobile_signup) <span style="color:#000;font-weight:bold">|</span> <span style="color:#000;font-weight:bold">!</span>mobile_signup)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(trial_signup, converted) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(percent <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">percent</span>(users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users), accuracy <span style="color:#000;font-weight:bold">=</span> <span style="color:#099">0.01</span>)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">filter</span>(converted)
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 4
+## # Groups:   trial_signup [2]
+##   trial_signup converted users percent
+##   &lt;lgl&gt;        &lt;lgl&gt;     &lt;int&gt; &lt;chr&gt;  
+## 1 FALSE        TRUE       3828 0.81%  
+## 2 TRUE         TRUE      14588 5.22%
+</code></pre><p>Approximately 0.8% of free web signups convert within 30 days, compared to 5.2% of trial signups. This includes users that signed up that were automatically put onto trials. This trend is relatively stable over time.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+
+
+
+
+<h2 id="distribution-of-time-to-conversion">Distribution of Time to Conversion
+  <a href="#distribution-of-time-to-conversion"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Next we&rsquo;ll analyze the distributions of the number of days it takes new signups to convert to a paid plan. We can start by calculating quantiles for trial and free users.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic">#define quantiles of interest</span>
+q <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#099">.25</span>, <span style="color:#099">.5</span>, <span style="color:#099">.75</span>)
+
+<span style="color:#998;font-style:italic">#calculate quantiles by grouping variable</span>
+users <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">filter</span>(converted <span style="color:#000;font-weight:bold">&amp;</span> (<span style="color:#900;font-weight:bold">is.na</span>(mobile_signup) <span style="color:#000;font-weight:bold">|</span> <span style="color:#000;font-weight:bold">!</span>mobile_signup)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(days_to_convert <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">as.numeric</span>(converted_date <span style="color:#000;font-weight:bold">-</span> signup_at_date)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(trial_signup) <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">summarize</span>(quant25 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(days_to_convert, probs <span style="color:#000;font-weight:bold">=</span> q[1]), 
+            quant50 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(days_to_convert, probs <span style="color:#000;font-weight:bold">=</span> q[2]),
+            quant75 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(days_to_convert, probs <span style="color:#000;font-weight:bold">=</span> q[3]))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 4
+##   trial_signup quant25 quant50 quant75
+##   &lt;lgl&gt;          &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1 FALSE              0       6      16
+## 2 TRUE               0      13      15
+</code></pre><p>These quantiles show us that the median number of days to convert is 13 days for trial signups and 6 days for free signups. It&rsquo;s interesting to note that more than a quarter of the people that convert do so on the day they sign up. We should remember that this only takes into account users that converted.</p>
+<p>We can plot the distribution of the number of days to convert below.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+<p>A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for trial signups.</p>
+
+
+
+
+<h2 id="distribution-of-number-of-sessions">Distribution of Number of Sessions
+  <a href="#distribution-of-number-of-sessions"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>We can use a similar approach to calculate quantiles of the number of sessions in the first 14 days for free and trial users.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic">#calculate quantiles by grouping variable</span>
+users <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#900;font-weight:bold">is.na</span>(mobile_signup) <span style="color:#000;font-weight:bold">|</span> <span style="color:#000;font-weight:bold">!</span>mobile_signup) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(days_to_convert <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">as.numeric</span>(converted_date <span style="color:#000;font-weight:bold">-</span> signup_at_date)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(converted, trial_signup) <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">summarize</span>(quant25 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(sessions_14_days, probs <span style="color:#000;font-weight:bold">=</span> q[1]), 
+            quant50 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(sessions_14_days, probs <span style="color:#000;font-weight:bold">=</span> q[2]),
+            quant75 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(sessions_14_days, probs <span style="color:#000;font-weight:bold">=</span> q[3]))
+</code></pre></div><pre tabindex="0"><code>## `summarise()` has grouped output by 'converted'. You can override using the
+## `.groups` argument.
+</code></pre><pre tabindex="0"><code>## # A tibble: 4 × 5
+## # Groups:   converted [2]
+##   converted trial_signup quant25 quant50 quant75
+##   &lt;lgl&gt;     &lt;lgl&gt;          &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1 FALSE     FALSE              0       1       3
+## 2 FALSE     TRUE               1       1       3
+## 3 TRUE      FALSE              5      11      22
+## 4 TRUE      TRUE               5      11      21
+</code></pre><p>The distributions of the number of sessions in the first 14 days looks similar for free and trial signups.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define breakpoints </span>
+breakpoints <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#000;font-weight:bold">-</span><span style="color:#000;font-weight:bold">Inf</span>, <span style="color:#099">0</span>, <span style="color:#099">1</span>, <span style="color:#099">10</span>, <span style="color:#099">25</span>, <span style="color:#099">50</span>, <span style="color:#000;font-weight:bold">Inf</span>)
+
+<span style="color:#998;font-style:italic"># plot distributions</span>
+users <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#900;font-weight:bold">is.na</span>(mobile_signup) <span style="color:#000;font-weight:bold">|</span> <span style="color:#000;font-weight:bold">!</span>mobile_signup) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(session_bucket <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">cut</span>(sessions_14_days, breaks <span style="color:#000;font-weight:bold">=</span> breakpoints),
+         type <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">case_when</span>(
+          converted <span style="color:#000;font-weight:bold">&amp;</span> trial_signup <span style="color:#000;font-weight:bold">~</span> <span style="color:#d14">&#34;converted_trial&#34;</span>,
+          converted <span style="color:#000;font-weight:bold">&amp;</span> <span style="color:#000;font-weight:bold">!</span>trial_signup <span style="color:#000;font-weight:bold">~</span> <span style="color:#d14">&#34;converted_free&#34;</span>,
+          <span style="color:#000;font-weight:bold">!</span>converted <span style="color:#000;font-weight:bold">&amp;</span> trial_signup <span style="color:#000;font-weight:bold">~</span> <span style="color:#d14">&#34;no_conversion_trial&#34;</span>,
+          <span style="color:#000;font-weight:bold">!</span>converted <span style="color:#000;font-weight:bold">&amp;</span> <span style="color:#000;font-weight:bold">!</span>trial_signup <span style="color:#000;font-weight:bold">~</span> <span style="color:#d14">&#34;no_conversion_free&#34;</span>,
+          <span style="color:#000;font-weight:bold">TRUE</span> <span style="color:#000;font-weight:bold">~</span> <span style="color:#d14">&#34;unknown&#34;</span>
+  )) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(type, session_bucket) <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(percent <span style="color:#000;font-weight:bold">=</span> users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">buffplot</span>(<span style="color:#900;font-weight:bold">aes</span>(x <span style="color:#000;font-weight:bold">=</span> session_bucket, y <span style="color:#000;font-weight:bold">=</span> percent, fill <span style="color:#000;font-weight:bold">=</span> type)) <span style="color:#000;font-weight:bold">+</span>
+  <span style="color:#900;font-weight:bold">geom_col</span>(show.legend <span style="color:#000;font-weight:bold">=</span> <span style="color:#999">F</span>) <span style="color:#000;font-weight:bold">+</span>
+  <span style="color:#900;font-weight:bold">facet_wrap</span>(<span style="color:#000;font-weight:bold">~</span>type) <span style="color:#000;font-weight:bold">+</span>
+  <span style="color:#900;font-weight:bold">scale_y_continuous</span>(labels <span style="color:#000;font-weight:bold">=</span> percent) <span style="color:#000;font-weight:bold">+</span>
+  <span style="color:#900;font-weight:bold">theme</span>(axis.text.x <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">element_text</span>(angle <span style="color:#000;font-weight:bold">=</span> <span style="color:#099">45</span>, vjust <span style="color:#000;font-weight:bold">=</span> <span style="color:#099">0.5</span>, hjust<span style="color:#000;font-weight:bold">=</span><span style="color:#099">0.5</span>)) <span style="color:#000;font-weight:bold">+</span>
+  <span style="color:#900;font-weight:bold">labs</span>(x <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;Sessions First 14 Days&#34;</span>, y <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;Percent of Users&#34;</span>)
+</code></pre></div><img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+<p>We can see that users that convert to paid plans generally have more sessions in their first 14 days. The largest bucket of converted users had 10-25 sessions in their first 14 days.</p>
+
+
+
+
+<h2 id="web-vs-mobile">Web vs Mobile
+  <a href="#web-vs-mobile"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>It&rsquo;s important to note that mobile signups do not start on trials &ndash; they all start on a free plan.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+<p>30-day conversion rates are generally much lower for people that sign up on mobile. Let&rsquo;s now compare conversion rates for web users that signed up without a trial.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+<p>We can see that the conversion rates are much closer, but they&rsquo;re still higher for web signups.</p>
+
+
+
+
+<h2 id="key-actions-and-upgrades">Key Actions and Upgrades
+  <a href="#key-actions-and-upgrades"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Let&rsquo;s see which key actions are most correlated with conversion.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># filter data</span>
+filtered <span style="color:#000;font-weight:bold">&lt;-</span> users <span style="color:#000;font-weight:bold">%&gt;%</span> <span style="color:#900;font-weight:bold">select</span>(converted, publish_actions<span style="color:#000;font-weight:bold">:</span>sp_actions)
+
+<span style="color:#998;font-style:italic"># create correlation matrix</span>
+m <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">cor</span>(filtered)
+
+<span style="color:#998;font-style:italic"># view matrix</span>
+<span style="color:#900;font-weight:bold">head</span>(<span style="color:#900;font-weight:bold">round</span>(m, <span style="color:#099">2</span>))
+</code></pre></div><pre tabindex="0"><code>##                 converted publish_actions analyze_actions engage_actions
+## converted            1.00            0.05            0.13           0.02
+## publish_actions      0.05            1.00            0.01           0.00
+## analyze_actions      0.13            0.01            1.00           0.03
+## engage_actions       0.02            0.00            0.03           1.00
+## sp_actions           0.01            0.00            0.01           0.00
+##                 sp_actions
+## converted             0.01
+## publish_actions       0.00
+## analyze_actions       0.01
+## engage_actions        0.00
+## sp_actions            1.00
+</code></pre><p>We can see that the correlations are quite low, but this could be because the variance of the number of actions is quite high. For example, let&rsquo;s plot the distribution of the number of publish actions taken in the first 14 days.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># plot dist of publish actions</span>
+users <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">buffplot</span>(<span style="color:#900;font-weight:bold">aes</span>(x <span style="color:#000;font-weight:bold">=</span> publish_actions, color <span style="color:#000;font-weight:bold">=</span> converted)) <span style="color:#000;font-weight:bold">+</span>
+  <span style="color:#900;font-weight:bold">stat_ecdf</span>() <span style="color:#000;font-weight:bold">+</span>
+  <span style="color:#900;font-weight:bold">coord_cartesian</span>(xlim <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#099">0</span>, <span style="color:#099">500</span>))
+</code></pre></div><img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+<p>We can see that users that converted tended to take more publish actions than those that didn&rsquo;t convert.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
+<p>The plot above shows us the conversion rates for those that did and did not use certain features in their first 14 days. We can see that users that use Analyze or Engage tend to convert at high rates, but not using those features doesn&rsquo;t necessarily mean that there&rsquo;s a low chance of conversion.</p>
+<p>We can also bucket the number of actions taken in each product to visualize the correlations.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
+<p>The plots above show that there are indeed correlations between the number of key actions taken and conversion rates, which is unsurprising.</p>
+
+
+
+
+<h2 id="lasso-regression">Lasso Regression
+  <a href="#lasso-regression"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Lasso regression is a method we can use to fit a regression model when multicollinearity is present in the data.</p>
+<p>In a nutshell, lasso regression shrinks the coefficients of predictors to 0 if they don&rsquo;t contribute enough to the model.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># set new column</span>
+users <span style="color:#000;font-weight:bold">&lt;-</span> users <span style="color:#000;font-weight:bold">%&gt;%</span> <span style="color:#900;font-weight:bold">mutate</span>(response <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">ifelse</span>(converted, <span style="color:#099">1</span>, <span style="color:#099">0</span>))
+
+<span style="color:#998;font-style:italic"># define response variable</span>
+y <span style="color:#000;font-weight:bold">&lt;-</span> users<span style="color:#000;font-weight:bold">$</span>response
+
+<span style="color:#998;font-style:italic"># define matrix of predictor variables</span>
+features <span style="color:#000;font-weight:bold">&lt;-</span> users <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  dplyr<span style="color:#000;font-weight:bold">::</span><span style="color:#900;font-weight:bold">select</span>(mobile_signup, is_team_member, trial_signup,
+                sessions_14_days, actions, days_active,used_publish, 
+                used_engage, used_analyze, used_sp)
+
+<span style="color:#998;font-style:italic"># turn strings into factors</span>
+features <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">as.data.frame</span>(<span style="color:#900;font-weight:bold">unclass</span>(features), stringsAsFactors <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">TRUE</span>)
+
+<span style="color:#998;font-style:italic"># create matrix</span>
+x <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">as.matrix</span>(features)
+</code></pre></div><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># fit lasso regression model</span>
+mod <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">cv.glmnet</span>(x, y, alpha <span style="color:#000;font-weight:bold">=</span> <span style="color:#099">1</span>)
+
+<span style="color:#998;font-style:italic"># summarise model</span>
+<span style="color:#900;font-weight:bold">coef</span>(mod)
+</code></pre></div><pre tabindex="0"><code>## 11 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                            s1
+## (Intercept)      -0.002163823
+## mobile_signup     .          
+## is_team_member    .          
+## trial_signup      0.024786009
+## sessions_14_days  0.001439186
+## actions           .          
+## days_active       0.005757164
+## used_publish      0.006156045
+## used_engage       0.108551558
+## used_analyze      0.052469141
+## used_sp           .
+</code></pre><p>The lasso regression model suggests that using engage and analyze are predictive of conversions. After that, signing up with a trial, the number of days active, and the number of sessions in the first 14 days are the most predictive features.</p>
+<p>We can also plot the relationship between the number of days active in the first 14 days and conversion rate.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-19-1.png" width="672" />
+<p>Users that are active at least 5 days have a much higher likelihood of converting to a paid plan, especially if they signed up with a trial.</p>
+
+
+
+
+<h2 id="frequency-of-login-and-activation">Frequency of Login and Activation
+  <a href="#frequency-of-login-and-activation"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>To answer this question we&rsquo;ll need to collect more data. The data could be muddled because some users activate quickly, and activated users are more likely to log in. Additionally 
+<a href="https://mixpanel.com/s/2HgEX" target="_blank" rel="noopener">80% of users that activate in their first 7 days do so within 12 hours of signing up</a>.</p>
+<p>Let&rsquo;s look at the number of events in the first session and average session duration.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  with users as (
+</span><span style="color:#d14">    select
+</span><span style="color:#d14">      u.user_id
+</span><span style="color:#d14">      , u.stripe_customer_id
+</span><span style="color:#d14">      , u.signup_at_date
+</span><span style="color:#d14">      , date_trunc(u.signup_at_date, week) as signup_week
+</span><span style="color:#d14">      , u.did_signup_from_mobile as mobile_signup
+</span><span style="color:#d14">      , u.is_team_member
+</span><span style="color:#d14">      , u.is_currently_trialing
+</span><span style="color:#d14">      , u.did_signup_on_trial as trial_signup
+</span><span style="color:#d14">      , date(min(a.timestamp)) as activated_at
+</span><span style="color:#d14">      , date(min(s.first_paid_invoice_created_at)) as converted_date
+</span><span style="color:#d14">      , count(distinct ss.session_id) as signup_sessions
+</span><span style="color:#d14">      , avg(ss.n_events) as avg_sesh_events
+</span><span style="color:#d14">      , avg(ss.session_duration_minutes) as avg_sesh_duration
+</span><span style="color:#d14">    from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">    left join dbt_buffer.buffer_key_actions as a
+</span><span style="color:#d14">      on u.user_id = a.user_id
+</span><span style="color:#d14">      and a.timestamp &gt;= u.signup_at
+</span><span style="color:#d14">      and a.timestamp &lt;= timestamp_add(u.signup_at, interval 14 day)
+</span><span style="color:#d14">    left join dbt_buffer.stripe_paid_subscriptions as s
+</span><span style="color:#d14">      on u.stripe_customer_id = s.customer_id
+</span><span style="color:#d14">      and s.first_paid_invoice_created_at &gt;= u.signup_at
+</span><span style="color:#d14">    left join dbt_buffer.segment_sessions as ss
+</span><span style="color:#d14">      on ss.dbt_visitor_id = u.user_id
+</span><span style="color:#d14">      and ss.signup_session
+</span><span style="color:#d14">      and date(ss.started_at) = date(u.signup_at)
+</span><span style="color:#d14">    where u.signup_at &gt;= &#39;2021-01-01&#39;
+</span><span style="color:#d14">    group by 1,2,3,4,5,6,7,8
+</span><span style="color:#d14">  )
+</span><span style="color:#d14">  
+</span><span style="color:#d14">  select * from users
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+activations <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(activations, <span style="color:#d14">&#34;trial_analysis_activations.rds&#34;</span>)
+</code></pre></div><p>Let&rsquo;s show some summary stats for session length.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate quantiles by grouping variable</span>
+activations <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#000;font-weight:bold">!</span><span style="color:#900;font-weight:bold">is.na</span>(avg_sesh_duration)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(activated_day1) <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">summarize</span>(quant25 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(avg_sesh_duration, probs <span style="color:#000;font-weight:bold">=</span> q[1]), 
+            quant50 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(avg_sesh_duration, probs <span style="color:#000;font-weight:bold">=</span> q[2]),
+            quant75 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(avg_sesh_duration, probs <span style="color:#000;font-weight:bold">=</span> q[3]))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 4
+##   activated_day1 quant25 quant50 quant75
+##   &lt;lgl&gt;            &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1 FALSE                1       5      17
+## 2 TRUE                10      26      52
+</code></pre><p>Those that activated on their first day tended to have much longer first sessions. The median session duration was 26 minutes, compared to 5 mintes for those that didn&rsquo;t activate. Let&rsquo;s now look at the number of events.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate quantiles by grouping variable</span>
+activations <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#000;font-weight:bold">!</span><span style="color:#900;font-weight:bold">is.na</span>(avg_sesh_events)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(activated_day1) <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">summarize</span>(quant25 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(avg_sesh_events, probs <span style="color:#000;font-weight:bold">=</span> q[1]), 
+            quant50 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(avg_sesh_events, probs <span style="color:#000;font-weight:bold">=</span> q[2]),
+            quant75 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(avg_sesh_events, probs <span style="color:#000;font-weight:bold">=</span> q[3]))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 4
+##   activated_day1 quant25 quant50 quant75
+##   &lt;lgl&gt;            &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1 FALSE                8      17      31
+## 2 TRUE                25      50      87
+</code></pre><p>Again, users that activated in their first day tended to have more events in their first session, which makes sense if the session was longer.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-24-1.png" width="672" />
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-25-1.png" width="672" />
+<p>We can see that there is a strong correlation between first session duration and the likelihood of activating on the first day.</p>
+
+        
+        <details closed class="f6 fw7 input-reset">
+  <dl class="f6 lh-copy">
+    <dt class="fw7">Posted on:</dt>
+    <dd class="fw5 ml0">April 6, 2022</dd>
+  </dl>
+  <dl class="f6 lh-copy">
+    <dt class="fw7">Length:</dt>
+    <dd class="fw5 ml0">9 minute read, 1907 words</dd>
+  </dl>
+  
+  
+  
+  <dl class="f6 lh-copy">
+    <dt class="fw7">See Also:</dt>
+    
+  </dl>
+</details>
+
+      </section>
+      <footer class="post-footer">
+        <div class="post-pagination dt w-100 mt4 mb2">
+  
+  
+  
+  
+    <a class="next dtc pl2 tr v-top fw6"
+    href="/blog/2022-02-14-channels-connected-at-point-of-conversion/">Channels Connected at Point of Conversion &rarr;</a>
+  
+</div>
+
+      </footer>
+    </article>
+    
+      
+<div class="post-comments pa0 pa4-l mt4">
+  
+  <script src="https://utteranc.es/client.js"
+          repo="apreshill/apero"
+          issue-term="pathname"
+          theme="boxy-light"
+          label="comments :crystal_ball:"
+          crossorigin="anonymous"
+          async
+          type="text/javascript">
+  </script>
+  
+</div>
+
+    
+  </section>
+</main>
+<footer class="site-footer pv4 bt b--transparent ph5" role="contentinfo">
+  <nav class="db dt-l w-100">
+    <p class="site-copyright f7 db dtc-l v-mid w-100 w-33-l tc tl-l pv2 pv0-l mv0 lh-copy">
+      &copy; 2022 Buffer, Anywhere
+      <span class="middot-divider"></span>
+      Made with <span xmlns:dct="http://purl.org/dc/terms/" property="dct:title"><a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/hugo-apero/" rel="dct:source">Hugo Apéro</a></span>.
+      <br />
+      
+Based on <span xmlns:dct="http://purl.org/dc/terms/" property="dct:title"><a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/formspree/blogophonic-hugo" rel="dct:source">Blogophonic</a></span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://formspree.io" property="cc:attributionName" rel="cc:attributionURL">Formspree</a>.
+    </p>
+    
+    <div class="site-social-links db dtc-l v-mid w-100 w-33-l tc pv2 pv0-l mv0">
+      <div class="social-icon-links" aria-hidden="true">
+  
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <a class="link dib h1 w1 ml0 mr2 f6 o-90 glow" href="https://github.com/julianwinternheimer/data-blog" title="github" target="_blank" rel="noopener">
+      <i class="fab fa-github fa-lg fa-fw"></i>
+    </a>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <a class="link dib h1 w1 ml0 mr2 f6 o-90 glow" href="https://twitter.com/buffer" title="twitter" target="_blank" rel="noopener">
+      <i class="fab fa-twitter fa-lg fa-fw"></i>
+    </a>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <a class="link dib h1 w1 ml0 mr2 f6 o-90 glow" href="/blog/index.xml" title="rss" >
+      <i class="fas fa-rss fa-lg fa-fw"></i>
+    </a>
+  
+</div>
+
+    </div>
+    
+    <div class="site-links f6 db dtc-l v-mid w-100 w-67-l tc tr-l pv2 pv0-l mv0">
+      
+      <a class="dib pv1 ph2 link" href="/license/" title="License">License</a>
+      
+    </div>
+  </nav>
+  
+    <script>
+
+    var i, text, code, codes = document.getElementsByTagName('code');
+    for (let i = 0; i < codes.length;) {
+      code = codes[i];
+      if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+        text = code.textContent;
+        if (/^\$[^$]/.test(text) && /[^$]\$$/.test(text)) {
+          text = text.replace(/^\$/, '\\(').replace(/\$$/, '\\)');
+          code.textContent = text;
+        }
+        if (/^\\\((.|\s)+\\\)$/.test(text) ||
+            /^\\\[(.|\s)+\\\]$/.test(text) ||
+            /^\$(.|\s)+\$$/.test(text) ||
+            /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+          code.outerHTML = code.innerHTML;  
+          continue;
+        }
+      }
+      i++;
+    }
+</script>
+
+  
+    
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+
+
+    
+  
+  
+</footer>
+
+      </div>
+    </body>
+</html>

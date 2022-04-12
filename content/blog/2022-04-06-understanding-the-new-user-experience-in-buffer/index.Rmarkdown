@@ -162,7 +162,6 @@ users %>%
 
 A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for trial signups.
 
-
 ## Survival Analysis
 Because a greater proportion of trialists end up converting, it could be worth using survival analysis techniques to visualize the amount of time it takes to convert.
 

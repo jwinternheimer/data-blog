@@ -48,7 +48,7 @@
   What is the average number of channels connected at the point of conversion vs. 3 months of subscription? How does it differ for people that signed up with and without a trial?
   What effect does an additional channel have on revenue? For example, if the current average is 1.2 channels and we increased that to 1."><meta itemprop="datePublished" content="2022-02-14T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-02-14T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1279"><meta itemprop="image" content="/blog/2022-02-14-channels-connected-at-point-of-conversion/featured.jpg">
+<meta itemprop="wordCount" content="1504"><meta itemprop="image" content="/blog/2022-02-14-channels-connected-at-point-of-conversion/featured.jpg">
 <meta itemprop="keywords" content="" />
   
   
@@ -278,14 +278,24 @@ sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d
 </span><span style="color:#d14">  select
 </span><span style="color:#d14">    u.user_id
 </span><span style="color:#d14">    , u.stripe_customer_id
+</span><span style="color:#d14">    , s.id as subscription_id
+</span><span style="color:#d14">    , s.plan_id
+</span><span style="color:#d14">    , s.quantity
+</span><span style="color:#d14">    , sp.amount as plan_amount
+</span><span style="color:#d14">    , sp.interval as plan_interval
 </span><span style="color:#d14">    , count(distinct p.id) as channels_connected
 </span><span style="color:#d14">  from dbt_buffer.buffer_users u
+</span><span style="color:#d14">  left join dbt_buffer.stripe_paid_subscriptions s
+</span><span style="color:#d14">    on u.stripe_customer_id = s.customer_id
+</span><span style="color:#d14">    and s.status in (&#39;active&#39;, &#39;past_due&#39;)
+</span><span style="color:#d14">  left join dbt_buffer.stripe_plans sp
+</span><span style="color:#d14">    on sp.id = s.plan_id
 </span><span style="color:#d14">  left join dbt_buffer.publish_profiles p
 </span><span style="color:#d14">    on u.user_id = p.account_id
 </span><span style="color:#d14">    and p.is_deleted is not true
 </span><span style="color:#d14">    and p.is_disabled is not true
 </span><span style="color:#d14">  where u.is_currently_paying_buffer_user
-</span><span style="color:#d14">  group by 1,2
+</span><span style="color:#d14">  group by 1,2,3,4,5,6,7
 </span><span style="color:#d14">&#34;</span>
 
 <span style="color:#998;font-style:italic"># collect data from bigquery</span>
@@ -299,12 +309,45 @@ customers <span style="color:#000;font-weight:bold">%&gt;%</span>
             med_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">median</span>(channels_connected))
 </code></pre></div><pre tabindex="0"><code>## # A tibble: 1 × 2
 ##   avg_channels med_channels
-##          &lt;dbl&gt;        &lt;dbl&gt;
+##          &lt;dbl&gt;        &lt;int&gt;
 ## 1         5.29            4
 </code></pre><p>The average number of channels connected for all Buffer customers is 5.3. As of February 14, 2022, MRR is $1,631,121. The total number of channels connected by all customers is 306,009. The average MRR value per channel connected is therefore $5.33.</p>
 <p>In this over-simplified world, increasing the average number of channels connected by 1 for all Buffer customers would result in $5.33 x 57,836 customers = $308k.</p>
 <p>That isn&rsquo;t the real world though. Increasing the number of channels connected does not necessarily equate to more revenue for customers on legacy plans. Increasing the average by 1 would require a huge number of customers to add (and pay for) more channels than they otherwise would have.</p>
-<p>Another way to look at this would be to consider only New MRR from New Buffer subscriptions, which increase in value with each new channel connected.</p>
+<p>Another way to look at this would be to consider only MRR from New Buffer subscriptions, which increase in value with each new channel connected.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># new buffer plans</span>
+nb_plans <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#d14">&#34;buffer_essentials_m_5_202104&#34;</span>, <span style="color:#d14">&#34;buffer_essentials-team_m_10_202104&#34;</span>,
+             <span style="color:#d14">&#34;buffer_essentials_y_48_202104&#34;</span>, <span style="color:#d14">&#34;buffer_essentials-team_y_96_202104&#34;</span>,
+             <span style="color:#d14">&#34;buffer_essentials_y_60_202106&#34;</span>, <span style="color:#d14">&#34;buffer_essentials_m_6_202106&#34;</span>,
+             <span style="color:#d14">&#34;buffer_essentials-team_y_120_202106&#34;</span>, <span style="color:#d14">&#34;ob_team_monthly_2020_12&#34;</span>,
+             <span style="color:#d14">&#34;buffer_essentials-team_m_12_202106&#34;</span>, <span style="color:#d14">&#34;ob_individual_monthly_2021_03&#34;</span>,
+             <span style="color:#d14">&#34;ob_individual_yearly_2021_03&#34;</span>, <span style="color:#d14">&#34;ob_team_yearly_2020_12&#34;</span>)
+
+
+<span style="color:#998;font-style:italic"># indicator of new buffer</span>
+customers <span style="color:#000;font-weight:bold">&lt;-</span> customers <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(is_nb <span style="color:#000;font-weight:bold">=</span> plan_id <span style="color:#000;font-weight:bold">%in%</span> nb_plans,
+         plan_amount <span style="color:#000;font-weight:bold">=</span> plan_amount <span style="color:#000;font-weight:bold">/</span> <span style="color:#099">100</span>,
+         mrr_amount <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">case_when</span>(
+           plan_interval <span style="color:#000;font-weight:bold">==</span> <span style="color:#d14">&#34;year&#34;</span> <span style="color:#000;font-weight:bold">~</span> plan_amount <span style="color:#000;font-weight:bold">*</span> quantity <span style="color:#000;font-weight:bold">/</span> <span style="color:#099">12</span>,
+           plan_interval <span style="color:#000;font-weight:bold">==</span> <span style="color:#d14">&#34;month&#34;</span> <span style="color:#000;font-weight:bold">~</span> plan_amount <span style="color:#000;font-weight:bold">*</span> quantity,
+           <span style="color:#000;font-weight:bold">TRUE</span> <span style="color:#000;font-weight:bold">~</span> plan_amount <span style="color:#000;font-weight:bold">*</span> quantity
+         ))
+</code></pre></div><p>Below we calculate the average number of channels New Buffer customers have connected.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate average and median</span>
+customers <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">filter</span>(is_nb) <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">summarise</span>(avg_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">mean</span>(quantity),
+            med_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">median</span>(quantity),
+            mrr <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">sum</span>(mrr_amount),
+            total_channels <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">sum</span>(quantity),
+            customers <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(stripe_customer_id))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 1 × 5
+##   avg_channels med_channels    mrr total_channels customers
+##          &lt;dbl&gt;        &lt;int&gt;  &lt;dbl&gt;          &lt;int&gt;     &lt;int&gt;
+## 1         3.16            3 308706          41019     12983
+</code></pre><p>The average number of channels connected for New Buffer customers is 3.2 and the rough MRR value per channel is 41,019. The MRR value per channel is around $7.53.</p>
+<p>Increasing the average number of channels connected by 0.1 for New Buffer customers would result in approximately $7.53 * 0.1 * 12,983 customers = $978 in MRR <em>with the current number of New Buffer customers</em>.</p>
 
         
         <details closed class="f6 fw7 input-reset">
@@ -314,7 +357,7 @@ customers <span style="color:#000;font-weight:bold">%&gt;%</span>
   </dl>
   <dl class="f6 lh-copy">
     <dt class="fw7">Length:</dt>
-    <dd class="fw5 ml0">7 minute read, 1279 words</dd>
+    <dd class="fw5 ml0">8 minute read, 1504 words</dd>
   </dl>
   
   
@@ -329,6 +372,9 @@ customers <span style="color:#000;font-weight:bold">%&gt;%</span>
       <footer class="post-footer">
         <div class="post-pagination dt w-100 mt4 mb2">
   
+  
+    <a class="prev dtc pr2 tl v-top fw6"
+    href="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/">&larr; Understanding the New User Experience in Buffer</a>
   
   
   

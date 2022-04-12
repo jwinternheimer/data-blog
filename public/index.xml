@@ -6,7 +6,7 @@
     <description>Recent content on Buffer Data Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 14 Feb 2022 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 06 Apr 2022 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Netlify</title>
       <link>/collection/day02/01-netlify/</link>
@@ -81,6 +81,18 @@ install.packages(&amp;quot;distill&amp;quot;)  Restart your R session. If you us
       <description>Hi, I&#39;m the here-bot cat! Use me to find your way in your website.
 Here I am: content/collection/day02/03-blogdown/index.md  To remove me, delete this line inside that file: {{&amp;lt; here &amp;gt;}}
 My content section is: collection  My layout is: single-series   part 2!     does this work?      now for some very cool things     more     get ready!</description>
+    </item>
+    
+    <item>
+      <title>Understanding the New User Experience in Buffer</title>
+      <link>/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/</link>
+      <pubDate>Wed, 06 Apr 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/</guid>
+      <description>We&amp;rsquo;d like to gain a better understand our new user journey within Buffer and document its current performance.In doing so, we&amp;rsquo;d like to be able to answer the following questions:
+  What is the elasticity of our signup-to-customer conversion rate for cohorts starting in Trial when we increase volume?
+  Does defaulting new signups to Trial increase their exposure and usage of our pay-walled features like Analyze?
+  What improvements can be made to the 14-Day Trial period for less qualified users?</description>
     </item>
     
     <item>

@@ -82,19 +82,19 @@ Let's start by calculating the proportion of free and trial signups that subscri
 # calculate conversion rates
 users %>% 
   filter(signup_week < "2022-03-01" & (is.na(mobile_signup) | !mobile_signup)) %>% 
-  group_by(trial_signup, converted) %>% 
+  group_by(trial_signup, converted_30day) %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(percent = percent(users / sum(users), accuracy = 0.01)) %>% 
-  filter(converted)
+  filter(converted_30day)
 ```
 
 ```
 ## # A tibble: 2 × 4
 ## # Groups:   trial_signup [2]
-##   trial_signup converted users percent
-##   <lgl>        <lgl>     <int> <chr>  
-## 1 FALSE        TRUE       3828 0.81%  
-## 2 TRUE         TRUE      14588 5.22%
+##   trial_signup converted_30day users percent
+##   <lgl>        <lgl>           <int> <chr>  
+## 1 FALSE        TRUE             3828 0.81%  
+## 2 TRUE         TRUE            14588 5.22%
 ```
 
 Approximately 0.8% of free web signups convert within 30 days, compared to 5.2% of trial signups. This includes users that signed up that were automatically put onto trials. This trend is relatively stable over time.
@@ -124,11 +124,11 @@ users %>%
 ## # A tibble: 2 × 4
 ##   trial_signup quant25 quant50 quant75
 ##   <lgl>          <dbl>   <dbl>   <dbl>
-## 1 FALSE              0       6      16
-## 2 TRUE               0      13      15
+## 1 FALSE              2      18      57
+## 2 TRUE               2      14      21
 ```
 
-These quantiles show us that the median number of days to convert is 13 days for trial signups and 6 days for free signups. It's interesting to note that more than a quarter of the people that convert do so on the day they sign up. We should remember that this only takes into account users that converted. 
+These quantiles show us that the median number of days to convert is 14 days for trial signups and 18 days for free signups. It's interesting to note that more than a quarter of the people that convert do so by thier second day. We should remember that this only takes into account users that converted. 
 
 We can plot the distribution of the number of days to convert below.
 
@@ -136,6 +136,25 @@ We can plot the distribution of the number of days to convert below.
 
 A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for trial signups.
 
+## Survival Analysis
+Because a greater proportion of trialists end up converting, it could be worth using survival analysis techniques to visualize the amount of time it takes to convert.
+
+
+```r
+# set status column
+users <- users %>% 
+  mutate(status = ifelse(converted, 1, 0),
+         time = ifelse(
+           converted, as.numeric(converted_date - signup_at_date),
+           as.numeric(Sys.Date() - signup_at_date)))
+
+# fit survival curve
+fit.surv <- survfit(Surv(time, status) ~ trial_signup, data = users)
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+
+Each point on the graph represents the proportion of the population that _hasn't_ converted after X days. The inverse is the proportion that had converted by day X.
 
 ## Distribution of Number of Sessions
 We can use a similar approach to calculate quantiles of the number of sessions in the first 14 days for free and trial users.
@@ -164,8 +183,8 @@ users %>%
 ##   <lgl>     <lgl>          <dbl>   <dbl>   <dbl>
 ## 1 FALSE     FALSE              0       1       3
 ## 2 FALSE     TRUE               1       1       3
-## 3 TRUE      FALSE              5      11      22
-## 4 TRUE      TRUE               5      11      21
+## 3 TRUE      FALSE              4       9      18
+## 4 TRUE      TRUE               5      10      20
 ```
 
 The distributions of the number of sessions in the first 14 days looks similar for free and trial signups.
@@ -197,18 +216,19 @@ users %>%
   labs(x = "Sessions First 14 Days", y = "Percent of Users")
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
 
 We can see that users that convert to paid plans generally have more sessions in their first 14 days. The largest bucket of converted users had 10-25 sessions in their first 14 days.
+
 
 ## Web vs Mobile
 It's important to note that mobile signups do not start on trials -- they all start on a free plan.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" />
 
 30-day conversion rates are generally much lower for people that sign up on mobile. Let's now compare conversion rates for web users that signed up without a trial.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-1.png" width="672" />
 
 We can see that the conversion rates are much closer, but they're still higher for web signups.
 
@@ -255,18 +275,18 @@ users %>%
   coord_cartesian(xlim = c(0, 500))
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
 
 We can see that users that converted tended to take more publish actions than those that didn't convert. 
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
 
 
 The plot above shows us the conversion rates for those that did and did not use certain features in their first 14 days. We can see that users that use Analyze or Engage tend to convert at high rates, but not using those features doesn't necessarily mean that there's a low chance of conversion.
 
 We can also bucket the number of actions taken in each product to visualize the correlations.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-18-1.png" width="672" />
 
 The plots above show that there are indeed correlations between the number of key actions taken and conversion rates, which is unsurprising. 
 
@@ -278,7 +298,7 @@ In a nutshell, lasso regression shrinks the coefficients of predictors to 0 if t
 
 ```r
 # set new column
-users <- users %>% mutate(response = ifelse(converted, 1, 0))
+users <- users %>% mutate(response = ifelse(converted_30day, 1, 0))
 
 # define response variable
 y <- users$response
@@ -307,17 +327,17 @@ coef(mod)
 
 ```
 ## 11 x 1 sparse Matrix of class "dgCMatrix"
-##                            s1
-## (Intercept)      -0.002163823
-## mobile_signup     .          
-## is_team_member    .          
-## trial_signup      0.024786009
-## sessions_14_days  0.001439186
-## actions           .          
-## days_active       0.005757164
-## used_publish      0.006156045
-## used_engage       0.108551558
-## used_analyze      0.052469141
+##                             s1
+## (Intercept)      -0.0007356298
+## mobile_signup     .           
+## is_team_member    .           
+## trial_signup      0.0229722691
+## sessions_14_days  0.0013637562
+## actions           .           
+## days_active       0.0058518858
+## used_publish      0.0044596099
+## used_engage       0.0986644870
+## used_analyze      0.0494202409
 ## used_sp           .
 ```
 
@@ -325,7 +345,7 @@ The lasso regression model suggests that using engage and analyze are predictive
 
 We can also plot the relationship between the number of days active in the first 14 days and conversion rate.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-21-1.png" width="672" />
 
 Users that are active at least 5 days have a much higher likelihood of converting to a paid plan, especially if they signed up with a trial.
 
@@ -402,7 +422,7 @@ activations %>%
 ## 2 TRUE                10      26      52
 ```
 
-Those that activated on their first day tended to have much longer first sessions. The median session duration was 26 minutes, compared to 5 mintes for those that didn't activate. Let's now look at the number of events.
+Those that activated on their first day tended to have much longer first sessions. The median session duration was 26 minutes, compared to 5 minutes for those that didn't activate. Let's now look at the number of events.
 
 
 ```r
@@ -425,8 +445,12 @@ activations %>%
 
 Again, users that activated in their first day tended to have more events in their first session, which makes sense if the session was longer.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-24-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-26-1.png" width="672" />
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-25-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-27-1.png" width="672" />
 
-We can see that there is a strong correlation between first session duration and the likelihood of activating on the first day.
+We can see that there is a strong correlation between first session duration and the likelihood of activating on the first day. Let's look at the relationship between first session length and the likelihood of conversion.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-28-1.png" width="672" />
+
+We can see that there is a clear correlation with conversion as well.
