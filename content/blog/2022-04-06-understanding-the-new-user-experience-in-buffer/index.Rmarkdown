@@ -85,8 +85,9 @@ saveRDS(users, "trial_analysis_users.rds")
 ```{r include = FALSE}
 # read data
 users <- readRDS("trial_analysis_users.rds") %>% 
-  mutate(converted = !is.na(converted_date) & 
-           as.numeric(converted_date - signup_at_date) <= 30)
+  mutate(converted_30day = (!is.na(converted_date) & 
+           as.numeric(converted_date - signup_at_date) <= 30),
+         converted = !is.na(converted_date))
 ```
 
 
@@ -97,10 +98,10 @@ Let's start by calculating the proportion of free and trial signups that subscri
 # calculate conversion rates
 users %>% 
   filter(signup_week < "2022-03-01" & (is.na(mobile_signup) | !mobile_signup)) %>% 
-  group_by(trial_signup, converted) %>% 
+  group_by(trial_signup, converted_30day) %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(percent = percent(users / sum(users), accuracy = 0.01)) %>% 
-  filter(converted)
+  filter(converted_30day)
 ```
 
 Approximately 0.8% of free web signups convert within 30 days, compared to 5.2% of trial signups. This includes users that signed up that were automatically put onto trials. This trend is relatively stable over time.
@@ -109,10 +110,10 @@ Approximately 0.8% of free web signups convert within 30 days, compared to 5.2% 
 # plot conversion rates over time
 users %>% 
   filter((is.na(mobile_signup) | !mobile_signup)) %>% 
-  group_by(signup_week, trial_signup, converted) %>% 
+  group_by(signup_week, trial_signup, converted_30day) %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(percent = users / sum(users)) %>% 
-  filter(converted & signup_week < "2022-03-01") %>% 
+  filter(converted_30day & signup_week < "2022-03-01") %>% 
   buffplot(aes(x = signup_week, y = percent, color = trial_signup)) +
   geom_line() +
   scale_y_continuous(labels = percent) +
@@ -138,7 +139,7 @@ users %>%
             quant75 = quantile(days_to_convert, probs = q[3]))
 ```
 
-These quantiles show us that the median number of days to convert is 13 days for trial signups and 6 days for free signups. It's interesting to note that more than a quarter of the people that convert do so on the day they sign up. We should remember that this only takes into account users that converted. 
+These quantiles show us that the median number of days to convert is 14 days for trial signups and 18 days for free signups. It's interesting to note that more than a quarter of the people that convert do so by thier second day. We should remember that this only takes into account users that converted. 
 
 We can plot the distribution of the number of days to convert below.
 
@@ -153,6 +154,7 @@ users %>%
   mutate(percent = customers / sum(customers)) %>% 
   buffplot(aes(x = days_to_convert, y = percent, fill = trial_signup)) +
   geom_col(show.legend = FALSE) +
+  scale_x_continuous(limits = c(0, 60)) +
   facet_wrap(~trial_signup, nrow = 1) +
   scale_y_continuous(labels = percent) +
   labs(x = "Days to Convert", y = "Percent of Conversions", fill = "Trial Signup")
@@ -179,7 +181,7 @@ fit.surv <- survfit(Surv(time, status) ~ trial_signup, data = users)
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 # plot survival curve
 autoplot(fit.surv, censor = TRUE, censor.size = 1) +
-  scale_x_continuous(limits = c(0, 56), breaks = seq(0, 56, 7)) +
+  scale_x_continuous(limits = c(0, 180), breaks = seq(0, 180, 30)) +
   scale_y_continuous(labels = percent) +
   labs(x = "Days Since Signup", y = "Estimated % That Hasn't Converted",
        title = "Survival Curve of Time to Convert",
@@ -233,6 +235,7 @@ users %>%
 
 We can see that users that convert to paid plans generally have more sessions in their first 14 days. The largest bucket of converted users had 10-25 sessions in their first 14 days.
 
+
 ## Web vs Mobile
 It's important to note that mobile signups do not start on trials -- they all start on a free plan.
 
@@ -240,10 +243,10 @@ It's important to note that mobile signups do not start on trials -- they all st
 # plot conversion rates over time
 users %>% 
   filter(!is.na(mobile_signup)) %>% 
-  group_by(signup_week, mobile_signup, converted) %>% 
+  group_by(signup_week, mobile_signup, converted_30day) %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(percent = users / sum(users)) %>% 
-  filter(converted & signup_week < "2022-03-01") %>% 
+  filter(converted_30day & signup_week < "2022-03-01") %>% 
   buffplot(aes(x = signup_week, y = percent, color = mobile_signup)) +
   geom_line() +
   scale_y_continuous(labels = percent) +
@@ -257,10 +260,10 @@ users %>%
 # plot conversion rates over time
 users %>% 
   filter(!is.na(mobile_signup) & !trial_signup) %>% 
-  group_by(signup_week, mobile_signup, converted) %>% 
+  group_by(signup_week, mobile_signup, converted_30day) %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(percent = users / sum(users)) %>% 
-  filter(converted & signup_week < "2022-03-01") %>% 
+  filter(converted_30day & signup_week < "2022-03-01") %>% 
   buffplot(aes(x = signup_week, y = percent, color = mobile_signup)) +
   geom_line() +
   scale_y_continuous(labels = percent) +
@@ -308,7 +311,7 @@ We can see that users that converted tended to take more publish actions than th
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # filter data
-filtered <- users %>% select(user_id, converted:used_sp)
+filtered <- users %>% select(user_id, converted_30day:used_sp)
 
 # pivot to long format
 rates <- filtered %>% 
@@ -319,13 +322,13 @@ rates <- filtered %>%
   pivot_longer(publish:start_page,
                names_to = "product",
                values_to = "did_use") %>% 
-  group_by(product, did_use, converted) %>% 
+  group_by(product, did_use, converted_30day) %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(percent = users / sum(users))
 
 # plot conversion rates by whether used
 rates %>% 
-  filter(converted) %>% 
+  filter(converted_30day) %>% 
   buffplot(aes(x = did_use, y = percent, fill = product)) +
   geom_col(show.legend = F) +
   facet_wrap(~product) +
@@ -340,7 +343,7 @@ We can also bucket the number of actions taken in each product to visualize the 
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # filter data
-filtered <- users %>% select(user_id, converted, publish_actions:sp_actions)
+filtered <- users %>% select(user_id, converted_30day, publish_actions:sp_actions)
 
 # define breakpoints
 breakpoints <- c(-Inf, 0, 5, 10, 25, 50, 100, Inf)
@@ -355,13 +358,13 @@ rates <- filtered %>%
                names_to = "product",
                values_to = "actions") %>% 
   mutate(action_bucket = cut(actions, breaks = breakpoints)) %>% 
-  group_by(product, action_bucket, converted) %>% 
+  group_by(product, action_bucket, converted_30day) %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(percent = users / sum(users))
 
 # plot conversion rates by whether used
 rates %>% 
-  filter(converted) %>% 
+  filter(converted_30day) %>% 
   buffplot(aes(x = action_bucket, y = percent, fill = product)) +
   geom_col(show.legend = F) +
   facet_wrap(~product, scales = "free_y") +
@@ -379,7 +382,7 @@ In a nutshell, lasso regression shrinks the coefficients of predictors to 0 if t
 
 ```{r}
 # set new column
-users <- users %>% mutate(response = ifelse(converted, 1, 0))
+users <- users %>% mutate(response = ifelse(converted_30day, 1, 0))
 
 # define response variable
 y <- users$response
@@ -412,10 +415,10 @@ We can also plot the relationship between the number of days active in the first
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot conversion rate by days active
 users %>% 
-  group_by(trial_signup, days_active, converted) %>% 
+  group_by(trial_signup, days_active, converted_30day) %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(prop = users / sum(users)) %>% 
-  filter(converted) %>% 
+  filter(converted_30day) %>% 
   buffplot(aes(x = days_active, y = prop, fill = trial_signup)) +
   geom_col(show.legend = F) +
   facet_wrap(~trial_signup, scales = "free_y") +
@@ -494,7 +497,7 @@ activations %>%
             quant75 = quantile(avg_sesh_duration, probs = q[3]))
 ```
 
-Those that activated on their first day tended to have much longer first sessions. The median session duration was 26 minutes, compared to 5 mintes for those that didn't activate. Let's now look at the number of events.
+Those that activated on their first day tended to have much longer first sessions. The median session duration was 26 minutes, compared to 5 minutes for those that didn't activate. Let's now look at the number of events.
 
 ```{r}
 # calculate quantiles by grouping variable
