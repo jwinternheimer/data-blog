@@ -32,7 +32,7 @@ library(ggfortify)
 
 
 ## Data Collection
-We'll collect the approximately 1M signups that occurred since January 1, 2021.
+We'll collect over one million signups that occurred since January 1, 2021 with the query below.
 
 ```{r eval = FALSE, warning = FALSE, message = FALSE}
 # define sql query
@@ -91,7 +91,7 @@ users <- readRDS("trial_analysis_users.rds") %>%
 ```
 
 
-## Baseline Conversion Rates
+## 30-Day Conversion Rates
 Let's start by calculating the proportion of free and trial signups that subscribed to a paid plan within 30 days of signing up.
 
 ```{r warning = FALSE, message = FALSE}
@@ -139,12 +139,12 @@ users %>%
             quant75 = quantile(days_to_convert, probs = q[3]))
 ```
 
-These quantiles show us that the median number of days to convert is 14 days for trial signups and 18 days for free signups. It's interesting to note that more than a quarter of the people that convert do so by thier second day. We should remember that this only takes into account users that converted. 
+These quantiles show us that the median number of days to convert is 14 days for trial signups and 18 days for free signups. It's interesting to note that more than a quarter of the people that convert do so by their second day. We should remember that this only takes into account users that converted. 
 
 We can plot the distribution of the number of days to convert below.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
-#calculate quantiles by grouping variable
+# calculate quantiles by grouping variable
 users %>%
   filter(converted & (is.na(mobile_signup) | !mobile_signup)) %>% 
   mutate(days_to_convert = as.numeric(converted_date - signup_at_date)) %>% 
@@ -156,11 +156,12 @@ users %>%
   geom_col(show.legend = FALSE) +
   scale_x_continuous(limits = c(0, 60)) +
   facet_wrap(~trial_signup, nrow = 1) +
-  scale_y_continuous(labels = percent) +
+  scale_y_continuous(labels = percent, limits = c(0, 0.15)) +
   labs(x = "Days to Convert", y = "Percent of Conversions", fill = "Trial Signup")
 ```
 
 A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for trial signups.
+
 
 ## Survival Analysis
 Because a greater proportion of trialists end up converting, it could be worth using survival analysis techniques to visualize the amount of time it takes to convert.
@@ -194,7 +195,7 @@ Each point on the graph represents the proportion of the population that _hasn't
 We can use a similar approach to calculate quantiles of the number of sessions in the first 14 days for free and trial users.
 
 ```{r}
-#calculate quantiles by grouping variable
+# calculate quantiles by grouping variable
 users %>%
   filter(is.na(mobile_signup) | !mobile_signup) %>% 
   mutate(days_to_convert = as.numeric(converted_date - signup_at_date)) %>% 
@@ -203,8 +204,6 @@ users %>%
             quant50 = quantile(sessions_14_days, probs = q[2]),
             quant75 = quantile(sessions_14_days, probs = q[3]))
 ```
-
-The distributions of the number of sessions in the first 14 days looks similar for free and trial signups.
 
 ```{r warning = FALSE, message = FALSE}
 # define breakpoints 
@@ -849,3 +848,105 @@ rates %>%
   labs(x = "Used During Trial", y = "Conversion Rate")
 ```
 
+
+## Role of Analyze and Engage For Free Signups
+Finally we'll look at the correlations between using Analyze and Engage and paid conversions for users that sign up on a free plan. We'll use the query below to gather the number of times free users used Analyze and Engage in their first 14 days after signing up (or before converting if they did convert). There are about 61 thousand users in total.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  with first_sub as (
+    select
+      c.user_id
+      , c.timestamp as signup_at
+      , date(c.timestamp) as signup_date
+      , count(distinct s.id) > 0 as converted
+      , min(s.first_paid_invoice_created_at) as converted_at
+    from dbt_buffer.segment_accounts_created as c
+    left join dbt_buffer.stripe_paid_subscriptions as s
+      on s.account_id = c.user_id
+      and s.first_paid_invoice_created_at >= c.timestamp
+    where not c.created_with_trial
+    group by 1,2,3
+  )
+  select
+    f.user_id
+    , f.signup_at
+    , f.signup_date
+    , f.converted
+    , f.converted_at
+    , count(distinct a.id) as actions
+    , count(distinct case when a.product = 'publish' then a.id end) as pub_actions
+    , count(distinct case when a.product = 'engage' then a.id end) as engage_actions
+    , count(distinct case when a.product = 'analyze' then a.id end) as analyze_actions
+  from first_sub as f
+  left join dbt_buffer.buffer_key_actions as a
+    on f.user_id = a.user_id
+    and a.timestamp > f.signup_at
+    and a.timestamp < timestamp_add(f.signup_at, interval 14 day)
+    and (a.timestamp < f.converted_at or f.converted_at is null)
+  group by 1,2,3,4,5
+"
+
+# collect data from bigquery
+free <- bq_query(sql = sql)
+
+# save data
+saveRDS(free, "trial_analysis_free.rds")
+```
+
+```{r include = FALSE}
+# read data
+free <- readRDS("trial_analysis_free.rds")
+
+# determine if active
+free <- free %>% 
+  mutate(active = actions >= 1,
+         publish_active = pub_actions > 0,
+         analyze_active = analyze_actions > 0,
+         engage_active = engage_actions > 0) 
+```
+
+We'll fit another logistic regression model to see if using each of the features is correlated with paid conversion _given that the user was active_. It's important to note that there's likely collinearity, which is why some regularization or feature selection is important.
+
+```{r}
+# fit logistic regression model
+mod <- glm(converted ~ active + publish_active + engage_active + analyze_active,
+           data = free, family = "binomial")
+
+# summarize model
+summary(mod)
+```
+
+The model coefficients and p-values suggest that the use of each feature is correlated with success.
+
+Below we'll plot conversion rates by whether or not users used each feature in their first 14 days.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# filter data
+filtered <- free %>% select(user_id, converted, active:engage_active)
+
+# pivot to long format
+rates <- filtered %>% 
+  rename(publish = publish_active,
+         engage = engage_active,
+         analyze = analyze_active,
+         all_buffer = active) %>% 
+  pivot_longer(all_buffer:engage,
+               names_to = "product",
+               values_to = "did_use") %>% 
+  group_by(product, did_use, converted) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(percent = users / sum(users))
+
+# plot conversion rates by whether used
+rates %>% 
+  filter(converted) %>% 
+  buffplot(aes(x = did_use, y = percent, fill = product)) +
+  geom_col(show.legend = F) +
+  facet_wrap(~product) +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Used in First 14 Days", y = "Free Conversion Rate")
+```
+
+Again we can see that usage of Engage and Analyze are correlated with conversion.

@@ -20,7 +20,7 @@ We'd like to gain a better understand our new user journey within Buffer and doc
 
 
 ## Data Collection
-We'll collect the approximately 1M signups that occurred since January 1, 2021.
+We'll collect over one million signups that occurred since January 1, 2021 with the query below.
 
 
 ```r
@@ -74,7 +74,7 @@ saveRDS(users, "trial_analysis_users.rds")
 
 
 
-## Baseline Conversion Rates
+## 30-Day Conversion Rates
 Let's start by calculating the proportion of free and trial signups that subscribed to a paid plan within 30 days of signing up.
 
 
@@ -128,13 +128,14 @@ users %>%
 ## 2 TRUE               2      14      21
 ```
 
-These quantiles show us that the median number of days to convert is 14 days for trial signups and 18 days for free signups. It's interesting to note that more than a quarter of the people that convert do so by thier second day. We should remember that this only takes into account users that converted. 
+These quantiles show us that the median number of days to convert is 14 days for trial signups and 18 days for free signups. It's interesting to note that more than a quarter of the people that convert do so by their second day. We should remember that this only takes into account users that converted. 
 
 We can plot the distribution of the number of days to convert below.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
 
 A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for trial signups.
+
 
 ## Survival Analysis
 Because a greater proportion of trialists end up converting, it could be worth using survival analysis techniques to visualize the amount of time it takes to convert.
@@ -161,7 +162,7 @@ We can use a similar approach to calculate quantiles of the number of sessions i
 
 
 ```r
-#calculate quantiles by grouping variable
+# calculate quantiles by grouping variable
 users %>%
   filter(is.na(mobile_signup) | !mobile_signup) %>% 
   mutate(days_to_convert = as.numeric(converted_date - signup_at_date)) %>% 
@@ -186,8 +187,6 @@ users %>%
 ## 3 TRUE      FALSE              4       9      18
 ## 4 TRUE      TRUE               5      10      20
 ```
-
-The distributions of the number of sessions in the first 14 days looks similar for free and trial signups.
 
 
 ```r
@@ -328,17 +327,17 @@ coef(mod)
 ```
 ## 11 x 1 sparse Matrix of class "dgCMatrix"
 ##                            s1
-## (Intercept)      8.444624e-05
-## mobile_signup    .           
-## is_team_member   .           
-## trial_signup     2.193072e-02
-## sessions_14_days 1.320495e-03
-## actions          .           
-## days_active      5.906057e-03
-## used_publish     3.485577e-03
-## used_engage      9.298665e-02
-## used_analyze     4.766946e-02
-## used_sp          .
+## (Intercept)      -0.002163823
+## mobile_signup     .          
+## is_team_member    .          
+## trial_signup      0.024786009
+## sessions_14_days  0.001439186
+## actions           .          
+## days_active       0.005757164
+## used_publish      0.006156045
+## used_engage       0.108551558
+## used_analyze      0.052469141
+## used_sp           .
 ```
 
 The lasso regression model suggests that using engage and analyze are predictive of conversions. After that, signing up with a trial, the number of days active, and the number of sessions in the first 14 days are the most predictive features.
@@ -621,14 +620,112 @@ coef(mod)
 ```
 ## 5 x 1 sparse Matrix of class "dgCMatrix"
 ##                        s1
-## (Intercept)    0.02702031
+## (Intercept)    0.03144349
 ## active         .         
-## publish_active 0.09523208
-## analyze_active 0.07185878
-## engage_active  0.09849883
+## publish_active 0.08766096
+## analyze_active 0.06294737
+## engage_active  0.07372473
 ```
 
 All features are correlated with conversion, which isn't surprising. However, using Engage seems to be indicative of a much greater likelihood of converting.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-43-1.png" width="672" />
 
+
+## Role of Analyze and Engage For Free Signups
+Finally we'll look at the correlations between using Analyze and Engage and paid conversions for users that sign up on a free plan. We'll use the query below to gather the number of times free users used Analyze and Engage in their first 14 days after signing up (or before converting if they did convert). There are about 61 thousand users in total.
+
+
+```r
+# define sql query
+sql <- "
+  with first_sub as (
+    select
+      c.user_id
+      , c.timestamp as signup_at
+      , date(c.timestamp) as signup_date
+      , count(distinct s.id) > 0 as converted
+      , min(s.first_paid_invoice_created_at) as converted_at
+    from dbt_buffer.segment_accounts_created as c
+    left join dbt_buffer.stripe_paid_subscriptions as s
+      on s.account_id = c.user_id
+      and s.first_paid_invoice_created_at >= c.timestamp
+    where not c.created_with_trial
+    group by 1,2,3
+  )
+  select
+    f.user_id
+    , f.signup_at
+    , f.signup_date
+    , f.converted
+    , f.converted_at
+    , count(distinct a.id) as actions
+    , count(distinct case when a.product = 'publish' then a.id end) as pub_actions
+    , count(distinct case when a.product = 'engage' then a.id end) as engage_actions
+    , count(distinct case when a.product = 'analyze' then a.id end) as analyze_actions
+  from first_sub as f
+  left join dbt_buffer.buffer_key_actions as a
+    on f.user_id = a.user_id
+    and a.timestamp > f.signup_at
+    and a.timestamp < timestamp_add(f.signup_at, interval 14 day)
+    and (a.timestamp < f.converted_at or f.converted_at is null)
+  group by 1,2,3,4,5
+"
+
+# collect data from bigquery
+free <- bq_query(sql = sql)
+
+# save data
+saveRDS(free, "trial_analysis_free.rds")
+```
+
+
+
+We'll fit another logistic regression model to see if using each of the features is correlated with paid conversion _given that the user was active_. It's important to note that there's likely collinearity, which is why some regularization or feature selection is important.
+
+
+```r
+# fit logistic regression model
+mod <- glm(converted ~ active + publish_active + engage_active + analyze_active,
+           data = free, family = "binomial")
+
+# summarize model
+summary(mod)
+```
+
+```
+## 
+## Call:
+## glm(formula = converted ~ active + publish_active + engage_active + 
+##     analyze_active, family = "binomial", data = free)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.6318  -0.1675  -0.0923  -0.0923   3.3151  
+## 
+## Coefficients:
+##                    Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)        -5.45592    0.07368 -74.051  < 2e-16 ***
+## activeTRUE         -0.03495    0.24049  -0.145    0.884    
+## publish_activeTRUE  1.23111    0.22236   5.537 3.08e-08 ***
+## engage_activeTRUE   1.32803    0.24875   5.339 9.36e-08 ***
+## analyze_activeTRUE  1.42168    0.14312   9.933  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 5685.8  on 61081  degrees of freedom
+## Residual deviance: 5311.6  on 61077  degrees of freedom
+## AIC: 5321.6
+## 
+## Number of Fisher Scoring iterations: 8
+```
+
+The model coefficients and p-values suggest that the use of each feature is correlated with success.
+
+Below we'll plot conversion rates by whether or not users used each feature in their first 14 days.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-47-1.png" width="672" />
+
+Again we can see that usage of Engage and Analyze are correlated with conversion.
