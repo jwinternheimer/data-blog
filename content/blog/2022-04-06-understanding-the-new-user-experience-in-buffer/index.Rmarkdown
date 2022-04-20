@@ -7,13 +7,33 @@ categories: []
 tags: []
 ---
 
-We'd like to gain a better understand our new user journey within Buffer and document its current performance.In doing so, we'd like to be able to answer the following questions:
+In this analysis we'll attempt to gain a better understanding of how new users interact with Buffer, identify behavior patterns that are indicative of success and share a few recommendations for how to improve the experience.
 
- 1. What is the elasticity of our signup-to-customer conversion rate for cohorts starting in Trial when we increase volume?
+Over the course of this analysis we'll look at paid conversion rates, activation rates, the relationships between feature usage and conversion rates, session duration, upgrade paths, the distribution of the time it takes to convert, and much more. 
 
- 2. Does defaulting new signups to Trial increase their exposure and usage of our pay-walled features like Analyze?
+I'll share a brief summary of the findings in the section below if you don't want to read the entire analysis document (it's long!), but I'd recommend looking through it all when you have the time.
 
- 3. What improvements can be made to the 14-Day Trial period for less qualified users? 
+___
+
+## Summary
+Overall, this exploratory analysis confirms what we would suspect -- usage of Buffer's features is correlated with a higher likelihood of activating and purchasing a paid subscription. 
+
+Usage of each feature is indicative of success, even when we try to control for users being active in general. 
+
+There are a couple upgrade paths that have historically driven a large quantity of upgrades that are no longer performing well. Specifically, I would recommend looking more closely at these two paths and designing experiments to learn more about why they aren't performing as well:
+
+ - `publish-composer-profileQueueLimit-showPaidPlans-1`
+ - `publish-profileSidebar-addChannelButton-upgrade-1`
+ 
+In addition to these two upgrade paths, I would recommend that we create a new upgrade path that is targeted specifically to users that want to add a team member. This is a key action that one can take and something that is highly correlated with success. 
+
+The duration of new users' first sessions is highly correlated with success. In general, the longer they spend in the product during their first session, the more likely they are to activate and pay for a subscription. 
+
+First session duration could be a useful early indicator of success that we can optimize for in growth experiments. 
+
+In general, if users do not purchase a paid plan in their first 60 days, they are significantly less likely to do so in the future. The experience that new users have when signing up is highly influential and has a significant effect on their (and our) success with the product. 
+
+___
  
 ```{r include = FALSE, message = FALSE, warning = FALSE}
 # load libraries
@@ -23,6 +43,7 @@ library(dplyr)
 library(ggplot2)
 library(scales)
 library(tidyr)
+library(skimr)
 library(glmnet)
 library(survival)
 library(survminer)
@@ -30,9 +51,8 @@ library(ggfortify)
 ```
  
 
-
 ## Data Collection
-We'll collect over one million signups that occurred since January 1, 2021 with the query below.
+To answer these questions, we'll collect data from over one million signups that occurred since January 1, 2021 with the SQL query below.
 
 ```{r eval = FALSE, warning = FALSE, message = FALSE}
 # define sql query
@@ -78,7 +98,7 @@ sql <- "
 # collect data from bigquery
 users <- bq_query(sql = sql)
 
-# save data
+# save data as rds object
 saveRDS(users, "trial_analysis_users.rds")
 ```
 
@@ -90,12 +110,22 @@ users <- readRDS("trial_analysis_users.rds") %>%
          converted = !is.na(converted_date))
 ```
 
+The resulting dataset includes approximately 1 million users, their signup dates, whether or not they signed up on a mobile device, whether or not they signed up from a team member invite, their activation date (the date on which they took their first key action), and several other fields related to their activity in the first 14 days after signing up for Buffer.
+
+We can get a glimpse of the dataset using the `glimpse()` command below.
+
+```{r}
+# preview dataset
+glimpse(users)
+```
 
 ## 30-Day Conversion Rates
-Let's start by calculating the proportion of free and trial signups that subscribed to a paid plan within 30 days of signing up.
+We'll begin with a bit of exploratory analysis. We'd like to have a better understanding of the effect that starting new users on a trial has, so we'll calculate the proportion of free and trial signups that subscribed to a paid plan within 30 days of signup. 
+
+The proportions below only include people that signed up on the web app, since people that sign up on the mobile apps do not have the option of starting a trial when they sign up.
 
 ```{r warning = FALSE, message = FALSE}
-# calculate conversion rates
+# calculate 30-day conversion rates
 users %>% 
   filter(signup_week < "2022-03-01" & (is.na(mobile_signup) | !mobile_signup)) %>% 
   group_by(trial_signup, converted_30day) %>% 
@@ -104,7 +134,12 @@ users %>%
   filter(converted_30day)
 ```
 
-Approximately 0.8% of free web signups convert within 30 days, compared to 5.2% of trial signups. This includes users that signed up that were automatically put onto trials. This trend is relatively stable over time.
+Unsurprisingly people that have decided to sign up on a trial have converted to paid plans at a much higher rate than those that have signed up on a free plan. There is likely some selection bias at play here. If we put all signups on to a trial, it's likely that the 30-day conversion rate will fall somewhere in between these two rates.
+
+
+Next we'll plot these conversion rates over time, grouping by the week in which people signed up. The plot below shows us that the conversion rates have remained relatively stable over time, with a slight positive trend. 
+
+The 30-day conversion rate for people that sign up on a trial has been consistently higher than that of people that sign up on a Free plan.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot conversion rates over time
@@ -123,10 +158,10 @@ users %>%
 
 
 ## Distribution of Time to Conversion
-Next we'll analyze the distributions of the number of days it takes new signups to convert to a paid plan. We can start by calculating quantiles for trial and free users.
+The next thing we'll cover is the distribution of the number of days it takes new signups to convert to a paid plan. We'll start by calculating the quantiles of the number of days to convert for both free and trial signups.
 
 ```{r}
-#define quantiles of interest
+# define quantiles of interest
 q = c(.25, .5, .75)
 
 #calculate quantiles by grouping variable
@@ -139,9 +174,11 @@ users %>%
             quant75 = quantile(days_to_convert, probs = q[3]))
 ```
 
-These quantiles show us that the median number of days to convert is 14 days for trial signups and 18 days for free signups. It's interesting to note that more than a quarter of the people that convert do so by their second day. We should remember that this only takes into account users that converted. 
+These quantiles show us that the median number of days to convert is 14 days for trial signups and 18 days for free signups, which is logical. As of April 2022, Buffer trials are 14 days in length, and many people that subscribe to paid plan do so on the day that their trials expire. 
 
-We can plot the distribution of the number of days to convert below.
+It's interesting to note that over a quarter of users that convert do so by their second day.
+
+The plot below visualizes distribution of the number of days to convert below.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # calculate quantiles by grouping variable
@@ -153,20 +190,48 @@ users %>%
   summarise(customers = n_distinct(stripe_customer_id)) %>% 
   mutate(percent = customers / sum(customers)) %>% 
   buffplot(aes(x = days_to_convert, y = percent, fill = trial_signup)) +
-  geom_col(show.legend = FALSE) +
+  geom_col(show.legend = TRUE) +
   scale_x_continuous(limits = c(0, 60)) +
   facet_wrap(~trial_signup, nrow = 1) +
   scale_y_continuous(labels = percent, limits = c(0, 0.15)) +
   labs(x = "Days to Convert", y = "Percent of Conversions", fill = "Trial Signup")
 ```
 
-A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for trial signups.
+A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for those that sign up on a trial. 
+
+Another way to visualize the distributions of the number of days it takes people to convert is to plot the cumulative distribution functions (CDFs) for these two populations.
+
+```{r echo = FALSE , warning = FALSE, message = FALSE}
+# plot CDFs
+users %>%
+  filter(converted & (is.na(mobile_signup) | !mobile_signup)) %>% 
+  mutate(days_to_convert = as.numeric(converted_date - signup_at_date)) %>% 
+  filter(days_to_convert >= 0) %>% 
+  buffplot(aes(x = days_to_convert, color = trial_signup)) +
+  stat_ecdf() +
+  coord_cartesian(xlim = c(0, 60)) +
+  scale_x_continuous(limits = c(0, 60), breaks = seq(0, 60, 14)) +
+  scale_y_continuous(labels = percent, breaks = seq(0, 1, 0.2)) +
+  labs(x = "Days to Convert", y = "Percent of Conversions", color = "Trial Signup")
+```
+
+Each point on the line represents the proportion of conversions that occurred in X days _or fewer_. For example, at X = 14 we can see that approximately 64% of trial signups have converted (implying that approximately 36% of conversions take longer than 14 days) and 58% of free signups have converted. This principle can be applied to any point on the curve. We can see that by day 60 most people that will convert have converted.
+
+This doesn't quite give us a complete picture though. The plots above only include users that have subscribed to a paid plan and the data is [right censored](https://reliability.readthedocs.io/en/latest/What%20is%20censored%20data.html#:~:text=Censored%20data%20is%20any%20data,referred%20to%20as%20complete%20data.), meaning there are some users that will convert that haven't yet done so.
+
+One useful technique for dealing with censored data is [survival analysis](https://en.wikipedia.org/wiki/Survival_analysis).
 
 
 ## Survival Analysis
 Because a greater proportion of trialists end up converting, it could be worth using survival analysis techniques to visualize the amount of time it takes to convert.
 
-```{r}
+The survival probability at a certain time, S(t), is a conditional probability of surviving (i.e. not converting) beyond that time, given that an individual hasn't converted just prior to that time.
+
+The Kaplan-Meier method is the most common way to estimate survival times and probabilities. It is a non-parametric approach that results in a step function, where there is a step down each time an event occurs. 
+
+A Kaplan-Meier plot is included below for both free and trial signups.
+
+```{r echo = FALSE}
 # set status column
 users <- users %>% 
   mutate(status = ifelse(converted, 1, 0),
@@ -181,33 +246,55 @@ fit.surv <- survfit(Surv(time, status) ~ trial_signup, data = users)
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 # plot survival curve
 autoplot(fit.surv, censor = TRUE, censor.size = 1) +
-  scale_x_continuous(limits = c(0, 180), breaks = seq(0, 180, 30)) +
+  scale_x_continuous(limits = c(0, 365), breaks = seq(0, 365, 60)) +
   scale_y_continuous(labels = percent) +
-  labs(x = "Days Since Signup", y = "Estimated % That Hasn't Converted",
+  labs(x = "Days Since Signing Up", y = "Estimated % That Hasn't Converted",
        title = "Survival Curve of Time to Convert",
        color = "Trial Signup",
        fill = "Trial Signup")
 ```
 
-Each point on the graph represents the proportion of the population that _hasn't_ converted after X days. The inverse is the proportion that had converted by day X.
+Each point on the graph represents the proportion of the population that _hasn't_ converted after X days. The inverse would be the proportion that had converted by day X.
 
-## Distribution of Number of Sessions
-We can use a similar approach to calculate quantiles of the number of sessions in the first 14 days for free and trial users.
+The plot tells us a couple things. The first, which we already knew, is that people that sign up with trials convert at much higher rates that don't. The second, and perhaps more important, thing is that the first 60 days after signing up are crucial for those that convert.
+
+There is a long tail of people that convert after the 60 day mark, but it is significantly less likely for any given user to convert if they haven't done so by their 60th day.
+
+
+## Session Counts and Conversion
+The next thing we'll look at is the relationship between session counts and paid conversion. We'll use a similar approach to calculate quantiles of the number of sessions in the first 14 days for free and trial users.
 
 ```{r}
+# quantiles of interest
+q = c(.25, .5, .75)
+
 # calculate quantiles by grouping variable
 users %>%
   filter(is.na(mobile_signup) | !mobile_signup) %>% 
   mutate(days_to_convert = as.numeric(converted_date - signup_at_date)) %>% 
-  group_by(converted, trial_signup) %>%
+  group_by(converted) %>%
   summarize(quant25 = quantile(sessions_14_days, probs = q[1]), 
             quant50 = quantile(sessions_14_days, probs = q[2]),
             quant75 = quantile(sessions_14_days, probs = q[3]))
 ```
 
-```{r warning = FALSE, message = FALSE}
+These quantiles tell that there is a significant difference in the number of sessions that users who convert and don't convert have in their first 14 days. This is to be expected, as more engaged users are more likely to have more sessions and convert.
+
+The plot below shows the distribution of the number of sessions users had in their first 14 days for four distinct populations:
+
+ - Users that signed up on a free plan and converted
+ - Users that signed up with a trial and converted
+ - Users that signed up on a free plan and didn't convert
+ - Users that signed up with a trial and didn't convert
+ 
+We can see that for all signups, the distribution of the number of sessions is shifted to the right for those that ended up converting. 
+
+Users that convert to paid plans generally have more sessions in their first 14 days. The largest bucket of converted users had 10-25 sessions in their first 2 weeks.
+
+
+```{r warning = FALSE, message = FALSE, ecgo = FALSE}
 # define breakpoints 
-breakpoints <- c(-Inf, 0, 1, 10, 25, 50, Inf)
+breakpoints <- c(-Inf, 0, 1, 5, 10, 25, 50, Inf)
 
 # plot distributions
 users %>%
@@ -231,11 +318,33 @@ users %>%
   labs(x = "Sessions First 14 Days", y = "Percent of Users")
 ```
 
-We can see that users that convert to paid plans generally have more sessions in their first 14 days. The largest bucket of converted users had 10-25 sessions in their first 14 days.
+The plot below shows the conversion rates for users that had certain numbers of sessions in their first 14 days.
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+# plot conversion rate by session count
+users %>%
+  filter(is.na(mobile_signup) | !mobile_signup) %>% 
+  mutate(session_bucket = cut(sessions_14_days, breaks = breakpoints)) %>% 
+  group_by(session_bucket, converted) %>%
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users)) %>% 
+  filter(converted) %>% 
+  buffplot(aes(x = session_bucket, y = prop)) +
+  geom_col(show.legend = F) +
+  scale_y_continuous(labels = percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5)) +
+  labs(x = "Sessions First 14 Days", y = "Conversion Rate")
+```
+
+We can see that there is a clear correlation between the number of sessions in users' first 14 days and the likelihood of converting to a paid subscription.
+
+Next we'll look at some of the differences between people that sign up on web and those that sign up on one of the mobile apps.
 
 
-## Web vs Mobile
-It's important to note that mobile signups do not start on trials -- they all start on a free plan.
+## Web and Mobile Signups
+It's important to note that by "mobile" we only refer to those that signed up on one of the mobile apps. People that sign up on a mobile web browser are still considered "web" signups.
+
+The first thing we'll look at is the 30-day conversion rate for web and mobile signups.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot conversion rates over time
@@ -270,10 +379,12 @@ users %>%
        color = "Mobile Signup")
 ```
 
-We can see that the conversion rates are much closer, but they're still higher for web signups.
+We can see that the conversion rates are much closer, but, overall, people that sign up on the mobile apps convert at lower rates than those that sign up on web.
+
+Next we'll explore Buffer's key actions and their relationships to paid conversions.
 
 ## Key Actions and Upgrades
-Let's see which key actions are most correlated with conversion.
+First we'll calculate the correlation coefficients for each of the key actions and whether or not a user converted.
 
 ```{r include = FALSE, warning = FALSE, message = FALSE}
 # add boolean values for using products
@@ -295,9 +406,11 @@ m <- cor(filtered)
 head(round(m, 2))
 ```
 
-We can see that the correlations are quite low, but this could be because the variance of the number of actions is quite high. For example, let's plot the distribution of the number of publish actions taken in the first 14 days.
+We can see that the correlations are quite low, but this could be because the variance of the number of actions is quite high. 
 
-```{r}
+For example, the plot below shows the cumulative distribution function (CDF) for the number of publishing actions taken in the first 14 days for people that converted and people that didn't. There's a large range for the `publish_actions` variable -- scaling the action counts might lead to more instructive correlation coefficients.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot dist of publish actions
 users %>% 
   buffplot(aes(x = publish_actions, color = converted)) +
@@ -305,7 +418,7 @@ users %>%
   coord_cartesian(xlim = c(0, 500))
 ```
 
-We can see that users that converted tended to take more publish actions than those that didn't convert. 
+The plot below shows the relative conversion rates for those that did and didn't use certain products in their first two weeks. We can see that users that use Analyze or Engage tend to convert at higher rates, but not using those features doesn't necessarily mean that there's a low chance of conversion.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # filter data
@@ -334,10 +447,7 @@ rates %>%
   labs(x = "Used in First 14 Days", y = "Conversion Rate")
 ```
 
-
-The plot above shows us the conversion rates for those that did and did not use certain features in their first 14 days. We can see that users that use Analyze or Engage tend to convert at high rates, but not using those features doesn't necessarily mean that there's a low chance of conversion.
-
-We can also bucket the number of actions taken in each product to visualize the correlations.
+We can also group the number of actions taken in each product to visualize the correlations.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # filter data
@@ -371,14 +481,23 @@ rates %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5))
 ```
 
-The plots above show that there are indeed correlations between the number of key actions taken and conversion rates, which is unsurprising. 
+The plots above show that there are indeed correlations between the number of key actions taken and conversion rates. This is all intuitive -- users that are engaged and more active in the product are more likely to convert. Additionally, users that convert within the first 14 days are more likely to take more actions.
+
+In the next section we'll try to get a better understanding of the individual importance of each feature. One way to do that is to fit a model containing all p predictors and use a technique that constrains or regularizes the coefficient estimates, or equivalently, that shrinks the coefficient estimates towards zero. 
+
+The two best-known techniques for shrinking the regression coefficients towards zero are ridge regression and the lasso. Each method utilizes a shrinkage penalty which has the effect of shrinking the estimates of βj towards zero when the coefficients themselves are close to 0. 
+
+The tuning parameter λ serves to control the relative impact of these two terms on the regression coefficient estimates. When λ = 0, the penalty term has no effect, and ridge regression will produce the least squares estimates. However, as λ → ∞, the impact of the shrinkage penalty grows, and the ridge regression coefficient estimates will approach zero.
+
+While ridge regression shrinks the coefficient estimates towards 0, Lasso regressions actually shrinks the coefficients to exactly 0, which is a form of variable selection. It's generally useful when multicollinearity is present and one wants to get a better understanding of which predictors are most important.
+
 
 ## Lasso Regression
-Lasso regression is a method we can use to fit a regression model when multicollinearity is present in the data.
+Simply put, lasso regression shrinks the coefficients of predictors to 0 if they don't explain a sufficient amount of the variance in the response.
 
-In a nutshell, lasso regression shrinks the coefficients of predictors to 0 if they don't contribute enough to the model.
+A lasso regression model is fit with the simple command below. 
 
-```{r}
+```{r include = FALSE, warning = FALSE, message = FALSE}
 # set new column
 users <- users %>% mutate(response = ifelse(converted_30day, 1, 0))
 
@@ -402,13 +521,25 @@ x <- as.matrix(features)
 # fit lasso regression model
 mod <- cv.glmnet(x, y, alpha = 1)
 
-# summarise model
-coef(mod)
+# plot model
+plot(mod)
+
+# get best lambda value
+bestlam <- mod$lambda.min
+
+# show coefficients
+predict(mod, type = "coefficients", s = bestlam)
 ```
 
-The lasso regression model suggests that using engage and analyze are predictive of conversions. After that, signing up with a trial, the number of days active, and the number of sessions in the first 14 days are the most predictive features.
+We can see that the coefficients for `mobile_signup` and `is_team_member` have been shrunk to 0. The rest of the features may have some predictive value, however more time should be spent on feature engineering and model tuning than we have to complete this analysis. 
 
-We can also plot the relationship between the number of days active in the first 14 days and conversion rate.
+
+## Number of Days Active and Conversion
+One of the coefficients remaining in the lasso regression model was `days_active`, which refers to the number of days in which a key action was taken during the 14 days after signup. 
+
+The plot below shows the number of days active on the x-axis and the conversion rate on the y-axis. We can see that there is a relationship, though it isn't completely linear. Users that are active around 7 days are more likely to convert, and users that are active every day are very likely to convert.
+
+We have to remember that the actions could have been taken _after_ users convert, so there might be some reverse causality here.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot conversion rate by days active
@@ -425,12 +556,12 @@ users %>%
   scale_y_continuous(labels = percent)
 ```
 
-Users that are active at least 5 days have a much higher likelihood of converting to a paid plan, especially if they signed up with a trial.
+Next we'll shift gears and look at activation, which is defined as having taken one's first key action.
 
 ## Frequency of Login and Activation
-To answer this question we'll need to collect more data. The data could be muddled because some users activate quickly, and activated users are more likely to log in. Additionally [80% of users that activate in their first 7 days do so within 12 hours of signing up](https://mixpanel.com/s/2HgEX). 
+The first thing we'll look at is how frequency of login relates to the likelihood of activated. The data could be muddled because some users activate quickly, and activated users are more likely to log in. Additionally [80% of users that activate in their first 7 days do so within 12 hours of signing up](https://mixpanel.com/s/2HgEX). 
 
-Let's look at the number of events in the first session and average session duration.
+We'll use the query below to collect activation-related data for over one million Buffer users.
 
 ```{r eval = FALSE, warning = FALSE, message = FALSE}
 # define sql query
@@ -483,7 +614,7 @@ activations <- readRDS("trial_analysis_activations.rds") %>%
            !is.na(converted_date))
 ```
 
-Let's show some summary stats for session length.
+The output below shows the quantiles for average session duration for users that did and didn't activate _in their first day_. The average session duration refers only to the session in which the users signed up.
 
 ```{r}
 # calculate quantiles by grouping variable
@@ -495,7 +626,9 @@ activations %>%
             quant75 = quantile(avg_sesh_duration, probs = q[3]))
 ```
 
-Those that activated on their first day tended to have much longer first sessions. The median session duration was 26 minutes, compared to 5 minutes for those that didn't activate. Let's now look at the number of events.
+Those that activated on their first day tended to have much longer first sessions. The median session duration was 26 minutes, compared to 5 minutes for those that didn't activate. 
+
+Let's now look at the number of events that occur in the first session.
 
 ```{r}
 # calculate quantiles by grouping variable
@@ -507,7 +640,9 @@ activations %>%
             quant75 = quantile(avg_sesh_events, probs = q[3]))
 ```
 
-Again, users that activated in their first day tended to have more events in their first session, which makes sense if the session was longer.
+Again, users that activated in their first day tended to have more events in their first session, which is logical.
+
+The plot below shows the activation rates for certain session duration buckets. We can see that there's a large increase in the activation rate for those whose first session was at least 10 minutes.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # define breakpoints
@@ -530,6 +665,8 @@ activations %>%
        subtitle = "Activated on First Day")
 ```
 
+The plot below shows the total activation rate by first session length for each user. It's clear that first session length is highly correlated with activation.
+
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # define breakpoints
 cuts <- c(0, 1, 5, 10, 30, 60, 90, Inf)
@@ -551,7 +688,7 @@ activations %>%
        subtitle = "Activated on First Day")
 ```
 
-We can see that there is a strong correlation between first session duration and the likelihood of activating on the first day. Let's look at the relationship between first session length and the likelihood of conversion.
+Next we'll extend this to look at the relationship between first session length and the likelihood of converting to a paid subscription. Again we see that there's a strong correlation present.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # join session length
@@ -578,10 +715,10 @@ users %>%
        subtitle = "Converted to Paid Subscription")
 ```
 
-We can see that there is a clear correlation with conversion as well.
+In the next session we'll shift gears again and look at specific upgrade paths within Buffer's products.
 
 ## Upgrade Paths
-Next we'll look at upgrade paths.The data used in the analysis below comes from [this Mixpanel report](https://mixpanel.com/s/4DPzTa) and only includes upgrade paths that have been defined in the `Upgrade Path Viewed` tracking event.
+The data used in the analysis below comes from [this Mixpanel report](https://mixpanel.com/s/4DPzTa) and only includes upgrade paths that have been defined in the `Upgrade Path Viewed` tracking event.
 
 ```{r include = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 library(readr)
@@ -634,7 +771,6 @@ paths %>%
        subtitle = "Publish Nav Upgrade Button")
 ```
 
-
 Another one that stands out is `publish-profileSidebar-addChannelButton-upgrade-1`. Upgrades from this path have also decreased by over 50%. 
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
@@ -649,7 +785,9 @@ paths %>%
        subtitle = "Publish Sidebar Add Channel Button")
 ```
 
-Next let's look at the conversion _rates_ of each upgrade path. The conversion rate is just the proportion of users that viewed an upgrade path and converted within 7 days of that event.
+**_I would strongly recommend testing those upgrade paths. Specifically, I would run an A/B test to measure the effect of changing it from a trial prompt to a direct upgrade path_**.
+
+Next let's look at the conversion rates of each upgrade path. The conversion rate is just the proportion of users that viewed an upgrade path and converted within 7 days of that event.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot conversions by upgrade path
@@ -677,11 +815,11 @@ Here are the top upgrade paths by conversion rate:
  - Hashtag manager path
  - Drafts paywall
  
-Let's isolate a couple of these.
+We'll isolate a couple of these in the section below.
  
  
 ## Queue Limit and Channel Limit Upgrade Paths
-This upgrade path has the highest conversion rate. Around 140-160 users run into it each week.
+These upgrade paths have the highest conversion rates. Both are based on activity -- the queue limit upgrade path is displayed when free users schedule too many posts, and the channel limit upgrade path is diplayed when people connect more channels than what's allowed.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot conversions by upgrade path
@@ -697,7 +835,7 @@ paths %>%
        color = NULL)
 ```
 
-Many more users view the channel limit upgrade path, which is why it drives more conversions.
+Many more users view the channel limit upgrade path, which is why it drives more conversions. The plot below shows the number of weekly conversions that each upgrade path drives.
  
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot conversions by upgrade path
@@ -713,6 +851,7 @@ paths %>%
        color = NULL)
 ```
 
+In the section below we'll attempt to answer a specific question about the role that the user limit plays in converting people to paid subscribers.
 
 ## User Limit Upgrade Path
 As of April 2022 we're not tracking a distinct upgrade path for the 1-user limit. I'd recommend tracking this upgrade path if it exists, and if it doesn't I'd recommend creating one. 
@@ -780,20 +919,22 @@ trials <- trials %>%
          engage_active = engage_actions > 0) 
 ```
 
-One quick approach we could take is to fit a logistic regression model to see if using each of the features is correlated with trial conversion _given that the user was active during trial_. It's important to note that there's likely collinearity, which is why some regularization or feature selection is important.
+One quick approach we could take is to fit a logistic regression model to see if using each of the features is correlated with trial conversion _given that the user was active during trial_. It's important to note that there's likely collinearity, which is why some regularization or feature selection cpuld be important. 
+
+For this exploratory analysis we'll only look at the model coefficients without regularization or further feature engineering.
 
 ```{r}
 # fit logistic regression model
 mod <- glm(converted ~ active + publish_active + engage_active + analyze_active,
            data = trials, family = "binomial")
 
-# summarise model
+# summarize model
 summary(mod)
 ```
 
-The use of each feature is correlated with success. We can try using lasso regression again.
+The model output suggests that use of each feature is correlated with trial conversion. We can try using lasso regression again to see if any of the features can be dropped from the model.
 
-```{r}
+```{r echo = FALSE, message = FALSE, include = FALSE}
 # set new column
 trials <- trials %>% mutate(response = ifelse(converted, 1, 0))
 
@@ -815,11 +956,13 @@ x <- as.matrix(features)
 # fit lasso regression model
 mod <- cv.glmnet(x, y, alpha = 1)
 
-# summarise model
+# summarize model
 coef(mod)
 ```
 
-All features are correlated with conversion, which isn't surprising. However, using Engage seems to be indicative of a much greater likelihood of converting.
+All features are correlated with conversion, which isn't surprising. However, using the publishing feature seems to be indicative of a much greater likelihood of converting.
+
+The plot below shows the relative conversion rates for trialists that did and didn't use each feature.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # filter data
@@ -850,7 +993,9 @@ rates %>%
 
 
 ## Role of Analyze and Engage For Free Signups
-Finally we'll look at the correlations between using Analyze and Engage and paid conversions for users that sign up on a free plan. We'll use the query below to gather the number of times free users used Analyze and Engage in their first 14 days after signing up (or before converting if they did convert). There are about 61 thousand users in total.
+Finally we'll look at the correlations between using Analyze and Engage and paid conversions for users that sign up on a free plan. 
+
+We'll use the query below to gather the number of times free users used Analyze and Engage in their first 14 days after signing up (or before converting if they did convert). There are about 61 thousand users in total.
 
 ```{r eval = FALSE, warning = FALSE, message = FALSE}
 # define sql query
@@ -950,3 +1095,23 @@ rates %>%
 ```
 
 Again we can see that usage of Engage and Analyze are correlated with conversion.
+
+___ 
+
+## Summary
+Overall, this exploratory analysis confirms what we would suspect -- usage of Buffer's features is correlated with a higher likelihood of activating and purchasing a paid subscription. 
+
+Usage of each feature is indicative of success, even when we try to control for users being active in general. 
+
+There are a couple upgrade paths that have historically driven a large quantity of upgrades that are no longer performing well. Specifically, I would recommend looking more closely at these two paths and designing experiments to learn more about why they aren't performing as well:
+
+ - `publish-composer-profileQueueLimit-showPaidPlans-1`
+ - `publish-profileSidebar-addChannelButton-upgrade-1`
+ 
+In addition to these two upgrade paths, I would recommend that we create a new upgrade path that is targeted specifically to users that want to add a team member. This is a key action that one can take and something that is highly correlated with success. 
+
+The duration of new users' first sessions is highly correlated with success. In general, the longer they spend in the product during their first session, the more likely they are to activate and pay for a subscription. 
+
+First session duration could be a useful early indicator of success that we can optimize for in growth experiments. 
+
+In general, if users do not purchase a paid plan in their first 60 days, they are significantly less likely to do so in the future. The experience that new users have when signing up is highly influential and has a significant effect on their (and our) success with the product. 
