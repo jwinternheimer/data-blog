@@ -15,12 +15,13 @@ This analysis should help guide budget allocation decisions related to paid mark
 
 **A key assumption made in this analysis is that the data is missing _at random_, and that the sample of data we do have is representative of the population.
 
+
 ## Summary
 When we consider signups, usage, and paid conversions, Buffer's core markets are the US, UK, Canada, and Australia. 
 
 Buffer gets a lot of signups and usage from India, but relatively few paid conversions. Other countries in which we see existing usage but relatively low conversion include France, Brazil, Bangladesh, and the Philippines.
 
-Countries that have high conversion rates but relatively low signup numbers include Norway, New Zealand, Switzerland, Denmark, Finland, Ireland, and Germany.
+Countries that have high conversion rates but relatively low signup numbers include South Africa, Belgium, Norway, New Zealand, Switzerland, Denmark, Finland, Ireland, and Germany.
 
 Given that many citizens of European countries speak English, I'd recommend exploring translating site content into Spanish, Portuguese, and French. This could help us expand into markets with existing demand but relatively low conversion rates, like Brazil, the Philippines, and France. 
 
