@@ -145,3 +145,16 @@ Here we can see a very different list of countries.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-1.png" width="672" />
 
+## Market Opportunities
+The plot 
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+
+Another (possibly dubious) approach we could take is to create a custom metric that combines the proportion of signups (`prop_signups`) and the proportion of conversions (`prop_conversions`). 
+
+The metric can be simple -- if we want to identify countries with relatively high conversion rates that don't make up a large proportion of signups, we can divide `prop_conversions` by `prop_signup`, which effectively penalizes countries that already make up a large proportion of signups.
+
+These are the countries that have the highest values of the resulting metric. Australia leads the pack, followed by Great Britain, the US, Canada, Belgium, Germany, and South Africa.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
+

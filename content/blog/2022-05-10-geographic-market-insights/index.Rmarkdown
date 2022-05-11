@@ -289,3 +289,64 @@ signups %>%
   labs(x = NULL, y = "Activation Rate")
 ```
 
+## Market Opportunities
+The plot 
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# get proportion of signups
+signup_prop <- signups %>% 
+  filter(!is.na(country)) %>% 
+  group_by(country) %>% 
+  summarise(signups = n_distinct(user_id)) %>% 
+  mutate(prop_signups = signups / sum(signups))
+
+# get proportion of conversions
+conversion_prop <- conversions %>% 
+  filter(!is.na(country)) %>% 
+  group_by(country) %>% 
+  summarise(conversions = n_distinct(user_id)) %>% 
+  mutate(prop_conversions = conversions / sum(conversions))
+
+# join data
+props <- signup_prop %>% 
+  left_join(conversion_prop, by = "country")
+
+# plot top
+props %>% 
+  filter(signups > 500) %>% 
+  ggplot(aes(x = prop_signups, 
+             y = prop_conversions, 
+             label = country, 
+             color = country)) +
+  geom_point(position = "jitter") +
+  geom_text(check_overlap = T,
+            nudge_x = 0.1, 
+            nudge_y = 0.1) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  scale_x_continuous(trans = 'log2', labels = percent) +
+  scale_y_continuous(trans='log2', labels = percent) +
+  labs(x = "Proportion of Signups (log2)", y = "Proportion of Conversions (log2)",
+       title = "Proportion of Signups and Conversions by Country")
+```
+
+Another (possibly dubious) approach we could take is to create a custom metric that combines the proportion of signups (`prop_signups`) and the proportion of conversions (`prop_conversions`). 
+
+The metric can be simple -- if we want to identify countries with relatively high conversion rates that don't make up a large proportion of signups, we can divide `prop_conversions` by `prop_signup`, which effectively penalizes countries that already make up a large proportion of signups.
+
+These are the countries that have the highest values of the resulting metric. Australia leads the pack, followed by Great Britain, the US, Canada, Belgium, Germany, and South Africa.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot top
+props %>% 
+  filter(signups > 500) %>% 
+  mutate(custom = prop_conversions / prop_signups,
+         country = reorder(country, custom)) %>% 
+  arrange(desc(custom)) %>% 
+  head(20) %>% 
+  buffplot(aes(x = country, y = custom)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  labs(x = NULL, y = "Prop Conversions / Prop Signups")
+```
+
