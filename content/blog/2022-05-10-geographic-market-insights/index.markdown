@@ -11,7 +11,7 @@ Hello. The purpose of this analysis is to gain a better understanding of Bufferâ
 
 This analysis should help guide budget allocation decisions related to paid marketing by country and capture insights to guide our "market prioritization" framework for market development/expansion and penetration efforts.
 
-**As of May 11, we're missing some data in the `fivetran_mixpanel.people` dataset. Because of this, I've mostly used proportions rather than counts in this analysis. 
+**As of May 12, we're missing county data for around 8% of users. Because of this, I've mostly used proportions rather than counts in this analysis. 
 
 **A key assumption made in this analysis is that the data is missing _at random_, and that the sample of data we do have is representative of the population.
 
@@ -25,7 +25,9 @@ Countries that have high conversion rates but relatively low signup numbers incl
 
 Given that many citizens of European countries speak English, I'd recommend exploring translating site content into Spanish and French. This could help us expand into markets with existing demand but relatively low conversion rates like the Philippines.
 
-It might also be worth targeting countries with high conversion rates and lower signup numbers like Australia, New Zealand, and Ireland.
+It might also be worth exploring paid advertising in countries with high conversion rates relative to their number of signups like Australia, New Zealand, Switzerland, and Ireland.
+
+Finally, at the end of this analysis you'll find a section on how this location data has been collected.
 
 ___
  
@@ -85,10 +87,20 @@ The UK, Netherlands, Australia, Canada, and Japan have the highest activation ra
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
 
-## Market Opportunities
-The plot 
+
+## MRR by Country
+The MRR amounts used to generate the plot below are estimates based on plan values and exclude any and all discounts.
+
+The US contributes the most to MRR by far, followed by the UK, Canada, Australia, and Germany. 
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
+
+## Market Opportunities
+The plot below shows the proportion of signups for each country on the x-axis and the proportion of conversions for each country on the y-axis. 
+
+Countries above the dotted line contribute a higher percentage of conversions relative to the number of signups than countries located below the dotted line. Countries like Switzerland, Canada, Australia, New Zealand, and Ireland are in this group.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
 
 Another (possibly dubious) approach we could take is to create a custom metric that combines the proportion of signups (`prop_signups`) and the proportion of conversions (`prop_conversions`). 
 
@@ -96,17 +108,121 @@ The metric can be simple -- if we want to identify countries with relatively hig
 
 These are the countries that have the highest values of the resulting metric. The US, Australia, New Zealand, Ireland, Switzerland, and Canada lead the pack if we go by this metric.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
-
-
-## MRR by Country
-The MRR amounts used to generate the plot below are estimates based on plan values and exclude any and all discounts.
-
-The US contributes the most to MRR by far, followed by the UK, Canada, Australia, and Germany. 
-
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
 
 
+## Clustering Countries
+Clustering refers to a very broad set of techniques for finding subgroups, or clusters, in a dataset. When we cluster the countries, the goal is to partition them into distinct groups so that the countries within each group are quite similar to each other, while countries in different groups are quite different from each other.
+
+In this analysis we'll take a simple approach to clustering and use a technique called [_K-means clustering_](https://en.wikipedia.org/wiki/K-means_clustering).
+
+To perform K-means clustering, we must first specify the desired number of clusters K; then the K-means algorithm will assign each country to exactly one of those K clusters by minimizing the _within cluster variance_. 
+
+In this simple exercise we'll only utilize two features, `prop_signups` and `prop_conversions`, for each country. This makes visualizing the clusters very simple.
+
+
+```r
+# collect countries data
+countries <- props %>% 
+  filter(signups >= 500 &
+           country != "undefined" &
+           country != "Bangladesh") %>% 
+  select(country, signups, conversions) %>% 
+  na.omit() %>% 
+  mutate(signups_scaled = scale(signups),
+         conversions_scaled = scale(conversions))
+
+# perform k-means clustering with k = 2,3,4
+km2 <- kmeans(select(countries, signups_scaled:conversions_scaled), 
+              centers = 2, nstart = 25)
+
+km3 <- kmeans(select(countries, signups_scaled:conversions_scaled), 
+              centers = 3, nstart = 25)
+
+km4 <- kmeans(select(countries, signups_scaled:conversions_scaled), 
+              centers = 4, nstart = 25)
+
+# add to countries
+countries$cluster2 <- km2$cluster
+countries$cluster3 <- km3$cluster
+countries$cluster4 <- km4$cluster
+```
+
+Now we can plot each of the clusters. If we only include two clusters, the United States is in a cluster of it's own.
+
+
+```r
+# plot top
+countries %>% 
+  ggplot(aes(x = signups, 
+             y = conversions, 
+             label = country, 
+             color = as.factor(cluster2))) +
+  geom_point(position = "jitter") +
+  geom_text(check_overlap = T,
+            nudge_x = 0.1, 
+            nudge_y = 0.1) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  scale_x_continuous(trans = 'log2', labels = comma, expand=c(0,1)) +
+  scale_y_continuous(trans='log2', labels = comma) +
+  labs(x = "Signups", y = "Conversions",
+       title = "Signups and Conversions by Country",
+       subtitle = "Two Clusters") +
+  scale_color_brewer(palette = "Set1")
+```
+
+If we cluster the countries into three groups, the US makes up one cluster, France, the UK, and India make up the second, and the rest of the world makes up the third.
+
+
+```r
+countries %>% 
+  ggplot(aes(x = signups, 
+             y = conversions, 
+             label = country, 
+             color = as.factor(cluster3))) +
+  geom_point(position = "jitter") +
+  geom_text(check_overlap = T,
+            nudge_x = 0.1, 
+            nudge_y = 0.1) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  scale_x_continuous(trans = 'log2', labels = comma, expand=c(0,1)) +
+  scale_y_continuous(trans='log2', labels = comma) +
+  labs(x = "Signups", y = "Conversions",
+       title = "Signups and Conversions by Country",
+       subtitle = "Three Clusters") +
+  scale_color_brewer(palette = "Set1")
+```
+
+If we cluster the countries into four groups, this is how they turn out:
+
+ - Cluster 1: United States
+ - Cluster 2: United Kingdom and India
+ - Cluster 3: Canada, France, Australia, Germany, Netherlands, Philippines, Spain, Mexico, Indonesia, Mexico, Brazil, Italy, Turkey, Nigeria, Pakistan.
+ - Cluster 4: Rest of the world.
+
+
+
+```r
+countries %>% 
+  ggplot(aes(x = signups, 
+             y = conversions, 
+             label = country, 
+             color = as.factor(cluster4))) +
+  geom_point(position = "jitter") +
+  geom_text(check_overlap = T,
+            nudge_x = 0.1, 
+            nudge_y = 0.1) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  scale_x_continuous(trans = 'log2', labels = comma, expand=c(0,1)) +
+  scale_y_continuous(trans='log2', labels = comma) +
+  labs(x = "Signups", y = "Conversions",
+       title = "Signups and Conversions by Country",
+       subtitle = "Four Clusters") +
+  scale_color_brewer(palette = "Set1")
+```
 ## How Country Data is Collected
 Each section of this analysis _besides the MRR breakdown_ uses country codes that are set in Mixpanel. Mixpanel's client-side libraries collect user location data (city, region, country) as roperties by default. 
 
