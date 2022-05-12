@@ -11,7 +11,7 @@ Hello. The purpose of this analysis is to gain a better understanding of Bufferâ
 
 This analysis should help guide budget allocation decisions related to paid marketing by country and capture insights to guide our "market prioritization" framework for market development/expansion and penetration efforts.
 
-**As of May 11, we're missing some data in the `fivetran_mixpanel.people` dataset. Because of this, I've mostly used proportions rather than counts in this analysis. 
+**As of May 12, we're missing county data for around 8% of users. Because of this, I've mostly used proportions rather than counts in this analysis. 
 
 **A key assumption made in this analysis is that the data is missing _at random_, and that the sample of data we do have is representative of the population.
 
@@ -26,6 +26,8 @@ Countries that have high conversion rates but relatively low signup numbers incl
 Given that many citizens of European countries speak English, I'd recommend exploring translating site content into Spanish and French. This could help us expand into markets with existing demand but relatively low conversion rates like the Philippines.
 
 It might also be worth targeting countries with high conversion rates and lower signup numbers like Australia, New Zealand, and Ireland.
+
+At the end of this analysis you'll find a section on how this location data has been collected.
 
 ___
  
@@ -404,3 +406,9 @@ mrr %>%
 ```
 
 
+## How Country Data is Collected
+Each section of this analysis _besides the MRR breakdown_ uses country codes that are set in Mixpanel. Mixpanel's client-side libraries collect user location data (city, region, country) as roperties by default. 
+
+The way they do this is by pulling the user's IP address and running it through a third-party IP geolocator, MaxMind. MaxMind returns the city, region, and country, and Mixpanel sets those as user properties.
+
+For the MRR breakdown, we utilize the countries associated with Stripe customers' credit cards. 

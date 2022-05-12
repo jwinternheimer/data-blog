@@ -107,3 +107,9 @@ The US contributes the most to MRR by far, followed by the UK, Canada, Australia
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
 
 
+## How Country Data is Collected
+Each section of this analysis _besides the MRR breakdown_ uses country codes that are set in Mixpanel. Mixpanel's client-side libraries collect user location data (city, region, country) as roperties by default. 
+
+The way they do this is by pulling the user's IP address and running it through a third-party IP geolocator, MaxMind. MaxMind returns the city, region, and country, and Mixpanel sets those as user properties.
+
+For the MRR breakdown, we utilize the countries associated with Stripe customers' credit cards. 
