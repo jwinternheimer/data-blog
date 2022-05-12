@@ -17,15 +17,16 @@ This analysis should help guide budget allocation decisions related to paid mark
 
 
 ## Summary
-When we consider signups, usage, and paid conversions, Buffer's core markets are the US, UK, Canada, and Australia. 
+When we consider signups, usage, and paid conversions, Buffer's core markets are the US, UK, Canada, Australia, and possibly France. 
 
-Buffer gets a lot of signups and usage from India, but relatively few paid conversions. Other countries in which we see existing usage but relatively low conversion include France, Brazil, Bangladesh, and the Philippines.
+Buffer gets a lot of signups and usage from India, but relatively few paid conversions. It seems like there is an opportunity here given India's size and usage of Buffer. Brazil is another country with a low paid conversion rate that contributes a relatively large number of signups.
 
-Countries that have high conversion rates but relatively low signup numbers include South Africa, Belgium, Norway, New Zealand, Switzerland, Denmark, Finland, Ireland, and Germany.
+Countries that have high conversion rates but relatively low signup numbers include New Zealand, Ireland, Colombia, Australia, and Switzerland.
 
-Given that many citizens of European countries speak English, I'd recommend exploring translating site content into Spanish, Portuguese, and French. This could help us expand into markets with existing demand but relatively low conversion rates, like Brazil, the Philippines, and France. 
+Given that many citizens of European countries speak English, I'd recommend exploring translating site content into Spanish and French. This could help us expand into markets with existing demand but relatively low conversion rates like the Philippines.
 
-We could also consider German for Germany, Switzerland, and Austria, but people from these country may be more likely to already speak English.
+It might also be worth targeting countries with high conversion rates and lower signup numbers like Australia, New Zealand, and Ireland.
+
 ___
  
 
@@ -35,78 +36,13 @@ ___
 We'll collect the country codes from all signups, monthly active users, and new customers from the past 30 days.
 
 
-```r
-# define sql query
-sql <- "
-  select distinct
-    a.user_id
-    , a.created_with_trial
-    , p.country_code as country
-    , count(distinct k.id) as actions
-    , count(distinct s.id) as subs
-  from dbt_buffer.segment_accounts_created as a
-  left join fivetran_mixpanel.people as p
-    on a.user_id = p.distinct_id
-  left join dbt_buffer.buffer_key_actions as k
-    on k.user_id = a.user_id
-    and k.timestamp <= timestamp_add(a.timestamp, interval 30 day)
-  left join dbt_buffer.stripe_paid_subscriptions as s
-    on s.account_id = a.user_id
-  where a.timestamp >= '2022-01-01'
-  group by 1,2,3
-"
-
-# collect data from bigquery
-signups <- bq_query(sql = sql)
-
-# save data as rds object
-saveRDS(signups, "signups_by_country.rds")
-```
 
 
 
 
-```r
-# define sql query
-sql <- "
-  select distinct
-    k.user_id
-    , p.country_code as country
-  from dbt_buffer.buffer_key_actions as k
-  left join fivetran_mixpanel.people as p
-    on k.user_id = p.distinct_id
-  where k.date >= date_sub(current_date(), interval 30 day)
-"
-
-# collect data from bigquery
-mau <- bq_query(sql = sql)
-
-# save data as rds object
-saveRDS(mau, "mau_by_country.rds")
-```
 
 
 
-
-```r
-# define sql query
-sql <- "
-  select distinct
-    s.account_id as user_id
-    , p.country_code as country
-  from dbt_buffer.stripe_paid_subscriptions as s
-  left join fivetran_mixpanel.people as p
-    on s.account_id = p.distinct_id
-  where date(s.first_paid_invoice_created_at) >= 
-    date_sub(current_date(), interval 30 day)
-"
-
-# collect data from bigquery
-conversions <- bq_query(sql = sql)
-
-# save data as rds object
-saveRDS(conversions, "conversions_by_country.rds")
-```
 
 
 
@@ -114,7 +50,7 @@ saveRDS(conversions, "conversions_by_country.rds")
 ## Signups By Country
 First we'll look at which countries drive the most signups. We exclude users for which no geographical data is available.
 
-The United States, India, Great Britain, France, and Canada are the largest contributors to signups.  
+The United States, India, the UK, France, and Canada are the largest contributors to signups.  
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-8-1.png" width="672" />
 
@@ -123,26 +59,26 @@ If we only look at signups for which the `createdWithTrial` property is present 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
 
 ## Monthly Active Users By Country
-The United States, Great Britain, Canada, France, and India are the largest contributors to Buffer's monthly active users.
+The United States, Great Britain, Canada, India, and France are the largest contributors to Buffer's monthly active users.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
 
 ## Paid Conversions By Country
-The United States, Great Britain, Canada, Australia, France, and Germany are the largest contributors to paid conversions over the past 30 days.
+The United States, the UK, Canada, Australia, France, and Germany are the largest contributors to paid conversions since the beginning of 2022.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
 
 ## Paid Conversion Rates
-Next we'll calculate the proportion of signups that started a paid Stripe subscription.
+Next we'll calculate the proportion of signups that started a paid Stripe subscription within 30 days.
 
-Norway, the United States, Canada, Australia, and New Zealand have the highest proportion of signups that convert to paying plans. 
+Colombia, Canada, the US, Australia, and the UK have the highest proportion of signups that convert to paying plans within 30 days of signing up. 
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" />
 
 ## Activation Rates
-We'll take the same approach to looking at activation rates. We only include countries that have contributed at least 100 signups. 
+We'll take the same approach to looking at activation rates. We only include countries that have contributed at least 500 signups. 
 
-Here we can see a very different list of countries.
+The UK, Netherlands, Australia, Canada, and Japan have the highest activation rates.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-1.png" width="672" />
 
@@ -155,7 +91,7 @@ Another (possibly dubious) approach we could take is to create a custom metric t
 
 The metric can be simple -- if we want to identify countries with relatively high conversion rates that don't make up a large proportion of signups, we can divide `prop_conversions` by `prop_signup`, which effectively penalizes countries that already make up a large proportion of signups.
 
-These are the countries that have the highest values of the resulting metric. Australia leads the pack, followed by Great Britain, the US, Canada, Belgium, Germany, and South Africa.
+These are the countries that have the highest values of the resulting metric. The US, Australia, New Zealand, Ireland, Switzerland, and Canada lead the pack if we go by this metric.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
 
