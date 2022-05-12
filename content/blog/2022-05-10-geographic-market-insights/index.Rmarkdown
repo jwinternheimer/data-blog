@@ -46,7 +46,35 @@ library(tidytext)
 ## Data Collection
 We'll collect the country codes from all signups, monthly active users, and new customers from the past 30 days.
 
-```{r include = FALSE, warning = FALSE, message = FALSE}
+```{r include = FALSE, eval = FALSE}
+# sql
+sql <- "
+  select distinct
+    s.id as sub_id
+    , s.customer_id
+    , s.plan_id
+    , p.interval
+    , p.amount / 100 as plan_amount
+    , case when p.interval = 'year' then p.amount / 1200 else p.amount / 100 end as   monthly_amount
+    , coalesce(c.country, pm.card_country) as country
+  from dbt_buffer.stripe_paid_subscriptions as s
+  left join dbt_buffer.stripe_plans as p
+    on p.id = s.plan_id
+  left join dbt_buffer.stripe_cards as c
+    on c.customer_id = s.customer_id
+  left join segment_stripe.payment_method as pm
+    on pm.customer_id = s.customer_id
+  where s.status in ('active', 'past_due')
+"
+
+# get data
+mrr <- bq_query(sql = sql)
+
+# save data
+saveRDS(mrr, "mrr_by_country.rds")
+```
+
+```{r include = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 # read signups data https://mixpanel.com/s/3w3ixt
 signups <- read_csv("~/Desktop/signups2.csv")
 
@@ -60,7 +88,7 @@ signups$event <- NULL
 saveRDS(signups, "signups_by_country.rds")
 ```
 
-```{r include = FALSE, warning = FALSE, message = FALSE}
+```{r include = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 # read mau data https://mixpanel.com/s/31gcwE
 mau <- read_csv("~/Desktop/mau.csv")
 
@@ -74,7 +102,7 @@ mau$event <- NULL
 saveRDS(mau, "mau_by_country.rds")
 ```
 
-```{r include = FALSE, warning = FALSE, message = FALSE}
+```{r include = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 # read conversions data https://mixpanel.com/s/2E8Zgx
 conversions <- read_csv("~/Desktop/conversions.csv")
 
@@ -88,7 +116,7 @@ conversions$event <- NULL
 saveRDS(conversions, "conversions_by_country.rds")
 ```
 
-```{r include = FALSE, warning = FALSE, message = FALSE}
+```{r include = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 # read conversion rates
 conversion_rates <- read_csv("~/Desktop/conversion_rates.csv")
 
@@ -103,7 +131,7 @@ conversion_rates <- conversion_rates %>%
 saveRDS(conversion_rates, "conversion_rates_by_country.rds")
 ```
 
-```{r include = FALSE, warning = FALSE, message = FALSE}
+```{r include = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 # read activation rates
 activation <- read_csv("~/Desktop/activation.csv")
 
@@ -118,6 +146,7 @@ activation <- activation %>%
 saveRDS(activation, "activation_by_country.rds")
 ```
 
+
 ```{r include = FALSE}
 # read data
 signups <- readRDS("signups_by_country.rds")
@@ -125,6 +154,7 @@ mau <- readRDS("mau_by_country.rds")
 conversions <- readRDS("conversions_by_country.rds")
 conversion_rates <- readRDS("conversion_rates_by_country.rds")
 activation <- readRDS("activation_by_country.rds")
+mrr <- readRDS("mrr_by_country.rds")
 ```
 
 ## Signups By Country
@@ -313,6 +343,7 @@ props %>%
             nudge_y = 0.1) +
   theme_minimal() +
   theme(legend.position = "none") +
+  stat_function(fun = function(x) x * 1, color = "red", linetype = 2) +
   scale_x_continuous(trans = 'log2', labels = percent) +
   scale_y_continuous(trans='log2', labels = percent) +
   labs(x = "Proportion of Signups (log2)", y = "Proportion of Conversions (log2)",
@@ -336,6 +367,40 @@ props %>%
   buffplot(aes(x = country, y = custom)) +
   geom_col(show.legend = FALSE) +
   coord_flip() +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      ) +
   labs(x = NULL, y = "Prop Conversions / Prop Signups")
 ```
+
+
+## MRR by Country
+The MRR amounts used to generate the plot below are estimates based on plan values and exclude any and all discounts.
+
+The US contributes the most to MRR by far, followed by the UK, Canada, Australia, and Germany. 
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot mrr by country
+mrr %>% 
+  group_by(country) %>% 
+  summarise(total_mrr = sum(monthly_amount, na.rm = T)) %>% 
+  mutate(country = reorder(country, total_mrr)) %>% 
+  arrange(desc(total_mrr)) %>% 
+  head(20) %>% 
+  buffplot(aes(x = country, y = total_mrr)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      ) +
+  scale_y_continuous(labels = dollar) +
+  labs(x = NULL, y = "Total MRR")
+```
+
 

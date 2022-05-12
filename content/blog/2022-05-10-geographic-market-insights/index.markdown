@@ -47,45 +47,48 @@ We'll collect the country codes from all signups, monthly active users, and new 
 
 
 
+
+
+
 ## Signups By Country
 First we'll look at which countries drive the most signups. We exclude users for which no geographical data is available.
 
 The United States, India, the UK, France, and Canada are the largest contributors to signups.  
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
 
 If we only look at signups for which the `createdWithTrial` property is present -- we started tracking this on March 1, 2022 -- then Bangladesh and the Philippines join the top 6.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
 
 ## Monthly Active Users By Country
 The United States, Great Britain, Canada, India, and France are the largest contributors to Buffer's monthly active users.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
 
 ## Paid Conversions By Country
 The United States, the UK, Canada, Australia, France, and Germany are the largest contributors to paid conversions since the beginning of 2022.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" />
 
 ## Paid Conversion Rates
 Next we'll calculate the proportion of signups that started a paid Stripe subscription within 30 days.
 
 Colombia, Canada, the US, Australia, and the UK have the highest proportion of signups that convert to paying plans within 30 days of signing up. 
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-1.png" width="672" />
 
 ## Activation Rates
 We'll take the same approach to looking at activation rates. We only include countries that have contributed at least 500 signups. 
 
 The UK, Netherlands, Australia, Canada, and Japan have the highest activation rates.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
 
 ## Market Opportunities
 The plot 
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
 
 Another (possibly dubious) approach we could take is to create a custom metric that combines the proportion of signups (`prop_signups`) and the proportion of conversions (`prop_conversions`). 
 
@@ -93,5 +96,14 @@ The metric can be simple -- if we want to identify countries with relatively hig
 
 These are the countries that have the highest values of the resulting metric. The US, Australia, New Zealand, Ireland, Switzerland, and Canada lead the pack if we go by this metric.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
+
+
+## MRR by Country
+The MRR amounts used to generate the plot below are estimates based on plan values and exclude any and all discounts.
+
+The US contributes the most to MRR by far, followed by the UK, Canada, Australia, and Germany. 
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
+
 
