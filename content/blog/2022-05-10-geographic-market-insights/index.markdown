@@ -150,50 +150,11 @@ countries$cluster4 <- km4$cluster
 
 Now we can plot each of the clusters. If we only include two clusters, the United States is in a cluster of it's own.
 
-
-```r
-# plot top
-countries %>% 
-  ggplot(aes(x = signups, 
-             y = conversions, 
-             label = country, 
-             color = as.factor(cluster2))) +
-  geom_point(position = "jitter") +
-  geom_text(check_overlap = T,
-            nudge_x = 0.1, 
-            nudge_y = 0.1) +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  scale_x_continuous(trans = 'log2', labels = comma, expand=c(0,1)) +
-  scale_y_continuous(trans='log2', labels = comma) +
-  labs(x = "Signups", y = "Conversions",
-       title = "Signups and Conversions by Country",
-       subtitle = "Two Clusters") +
-  scale_color_brewer(palette = "Set1")
-```
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-1.png" width="672" />
 
 If we cluster the countries into three groups, the US makes up one cluster, France, the UK, and India make up the second, and the rest of the world makes up the third.
 
-
-```r
-countries %>% 
-  ggplot(aes(x = signups, 
-             y = conversions, 
-             label = country, 
-             color = as.factor(cluster3))) +
-  geom_point(position = "jitter") +
-  geom_text(check_overlap = T,
-            nudge_x = 0.1, 
-            nudge_y = 0.1) +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  scale_x_continuous(trans = 'log2', labels = comma, expand=c(0,1)) +
-  scale_y_continuous(trans='log2', labels = comma) +
-  labs(x = "Signups", y = "Conversions",
-       title = "Signups and Conversions by Country",
-       subtitle = "Three Clusters") +
-  scale_color_brewer(palette = "Set1")
-```
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-20-1.png" width="672" />
 
 If we cluster the countries into four groups, this is how they turn out:
 
@@ -203,26 +164,9 @@ If we cluster the countries into four groups, this is how they turn out:
  - Cluster 4: Rest of the world.
 
 
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-21-1.png" width="672" />
 
-```r
-countries %>% 
-  ggplot(aes(x = signups, 
-             y = conversions, 
-             label = country, 
-             color = as.factor(cluster4))) +
-  geom_point(position = "jitter") +
-  geom_text(check_overlap = T,
-            nudge_x = 0.1, 
-            nudge_y = 0.1) +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  scale_x_continuous(trans = 'log2', labels = comma, expand=c(0,1)) +
-  scale_y_continuous(trans='log2', labels = comma) +
-  labs(x = "Signups", y = "Conversions",
-       title = "Signups and Conversions by Country",
-       subtitle = "Four Clusters") +
-  scale_color_brewer(palette = "Set1")
-```
+
 ## How Country Data is Collected
 Each section of this analysis _besides the MRR breakdown_ uses country codes that are set in Mixpanel. Mixpanel's client-side libraries collect user location data (city, region, country) as roperties by default. 
 

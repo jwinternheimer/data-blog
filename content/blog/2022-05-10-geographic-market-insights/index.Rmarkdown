@@ -383,7 +383,7 @@ props %>%
   theme_minimal() +
   theme(legend.position = "none") +
   stat_function(fun = function(x) x * 1, color = "red", linetype = 2) +
-  scale_x_continuous(trans = 'log2', labels = percent) +
+  scale_x_continuous(trans = 'log2', labels = percent, expand=c(0,1)) +
   scale_y_continuous(trans='log2', labels = percent) +
   labs(x = "Proportion of Signups (log2)", y = "Proportion of Conversions (log2)",
        title = "Proportion of Signups and Conversions by Country")
@@ -454,7 +454,7 @@ countries$cluster4 <- km4$cluster
 
 Now we can plot each of the clusters. If we only include two clusters, the United States is in a cluster of it's own.
 
-```{r eval = FALSE, warning = FALSE, message = FALSE}
+```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot top
 countries %>% 
   ggplot(aes(x = signups, 
@@ -477,7 +477,7 @@ countries %>%
 
 If we cluster the countries into three groups, the US makes up one cluster, France, the UK, and India make up the second, and the rest of the world makes up the third.
 
-```{r eval = FALSE, warning = FALSE, message = FALSE}
+```{r echo = FALSE, warning = FALSE, message = FALSE}
 countries %>% 
   ggplot(aes(x = signups, 
              y = conversions, 
@@ -505,7 +505,7 @@ If we cluster the countries into four groups, this is how they turn out:
  - Cluster 4: Rest of the world.
 
 
-```{r eval = FALSE, warning = FALSE, message = FALSE}
+```{r echo = FALSE, warning = FALSE, message = FALSE}
 countries %>% 
   ggplot(aes(x = signups, 
              y = conversions, 
@@ -524,6 +524,8 @@ countries %>%
        subtitle = "Four Clusters") +
   scale_color_brewer(palette = "Set1")
 ```
+
+
 ## How Country Data is Collected
 Each section of this analysis _besides the MRR breakdown_ uses country codes that are set in Mixpanel. Mixpanel's client-side libraries collect user location data (city, region, country) as roperties by default. 
 
