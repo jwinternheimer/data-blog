@@ -17,11 +17,15 @@ This analysis should help guide budget allocation decisions related to paid mark
 
 
 ## Summary
-When we consider signups, usage, and paid conversions, Buffer's core markets are the US, UK, Canada, Australia, and possibly France. 
+When we consider signups, activation, and paid conversions, Buffer's core market is the United States. It's singular and distinct from the rest of the countries in this analysis in its contribution to Buffer's business and financial success.
 
-Buffer gets a lot of signups and usage from India, but relatively few paid conversions. It seems like there is an opportunity here given India's size and usage of Buffer. Brazil is another country with a low paid conversion rate that contributes a relatively large number of signups.
+The UK, Canada, and Australia are secondary, but still very important, markets for Buffer. Of these, the UK contributes the most -- the contribution of signups and revenue from the UK is more than that of Australia and Canada combined. Together with the US, Canada, Australia, and the UK contribute more conversions than the rest of the world.
 
-Countries that have high conversion rates but relatively low signup numbers include New Zealand, Ireland, Colombia, Australia, and Switzerland.
+The lowest performing market contains a group of countries including Bangladesh, Russia, Brazil, Algeria, and Venezuela. The rest of the world can be grouped together into a third-tier market.
+
+Buffer gets a lot of signups and usage from India, but relatively few paid conversions. It seems like there is an opportunity here given India's size and usage of Buffer. We should do what we can to make it easier for people in India to subscribe to Buffer's paid products.
+
+Countries that have high conversion rates but relatively low signup numbers include New Zealand, Ireland, Denmark, Sweden, and Switzerland.
 
 Given that many citizens of European countries speak English, I'd recommend exploring translating site content into Spanish and French. This could help us expand into markets with existing demand but relatively low conversion rates like the Philippines.
 
@@ -43,6 +47,7 @@ library(ggplot2)
 library(scales)
 library(tidytext)
 library(RColorBrewer)
+library(countrycode)
 ```
  
 
@@ -158,6 +163,46 @@ conversions <- readRDS("conversions_by_country.rds")
 conversion_rates <- readRDS("conversion_rates_by_country.rds")
 activation <- readRDS("activation_by_country.rds")
 mrr <- readRDS("mrr_by_country.rds")
+
+# get proportion of signups
+signup_prop <- signups %>% 
+  filter(!is.na(country)) %>% 
+  group_by(country) %>% 
+  summarise(signups = sum(users)) %>% 
+  mutate(prop_signups = signups / sum(signups))
+
+# get proportion of conversions
+conversion_prop <- conversions %>% 
+  filter(!is.na(country)) %>% 
+  rename(conversions = users) %>% 
+  mutate(prop_conversions = conversions / sum(conversions))
+
+# get mrr prop
+mrr_prop <- mrr %>% 
+  filter(!is.na(country)) %>% 
+  mutate(country = countrycode(country, "iso2c", "country.name")) %>% 
+  group_by(country) %>% 
+  summarise(total_mrr = sum(monthly_amount, na.rm = TRUE),
+            customers = n_distinct(customer_id)) %>% 
+  mutate(prop_mrr = total_mrr / sum(total_mrr))
+
+# get activation rates
+activation_prop <- activation %>% 
+  filter(!is.na(country) & country != "$overall") %>% 
+  select(country, rate) %>% 
+  rename(activation_rate = rate)
+
+# join data
+props <- signup_prop %>% 
+  left_join(conversion_prop, by = "country")
+
+# join all data into countries
+countries <- signup_prop %>% 
+  inner_join(conversion_prop, by = "country") %>% 
+  inner_join(mrr_prop, by = "country") %>% 
+  inner_join(activation_prop, by = "country") %>% 
+  select(country, signups, conversions, 
+         total_mrr, customers, activation_rate)
 ```
 
 ## Signups By Country
@@ -345,30 +390,6 @@ The plot below shows the proportion of signups for each country on the x-axis an
 Countries above the dotted line contribute a higher percentage of conversions relative to the number of signups than countries located below the dotted line. Countries like Switzerland, Canada, Australia, New Zealand, and Ireland are in this group.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
-# get proportion of signups
-signup_prop <- signups %>% 
-  filter(!is.na(country)) %>% 
-  group_by(country) %>% 
-  summarise(signups = sum(users)) %>% 
-  mutate(prop_signups = signups / sum(signups))
-
-# get proportion of conversions
-conversion_prop <- conversions %>% 
-  filter(!is.na(country)) %>% 
-  rename(conversions = users) %>% 
-  mutate(prop_conversions = conversions / sum(conversions))
-
-# get mrr prop
-mrr_prop <- mrr %>% 
-  filter(!is.na(country)) %>% 
-  group_by(country) %>% 
-  summarise(total_mrr = sum(monthly_amount, na.rm = TRUE)) %>% 
-  mutate(prop_mrr = total_mrr / sum(total_mrr))
-
-# join data
-props <- signup_prop %>% 
-  left_join(conversion_prop, by = "country")
-
 # plot top
 props %>% 
   filter(signups > 500) %>% 
@@ -426,37 +447,36 @@ To perform K-means clustering, we must first specify the desired number of clust
 In this simple exercise we'll only utilize two features, `prop_signups` and `prop_conversions`, for each country. This makes visualizing the clusters very simple.
 
 ```{r}
-# collect countries data
-countries <- props %>% 
-  filter(signups >= 500 &
-           country != "undefined" &
-           country != "Bangladesh") %>% 
-  select(country, signups, conversions) %>% 
-  na.omit() %>% 
+# set seed for reproducability
+set.seed(13)
+
+# scale signups and conversions
+countries_scaled <- countries %>% 
+  filter(signups > 500) %>% 
   mutate(signups_scaled = scale(signups),
          conversions_scaled = scale(conversions))
 
 # perform k-means clustering with k = 2,3,4
-km2 <- kmeans(select(countries, signups_scaled:conversions_scaled), 
+km2 <- kmeans(select(countries_scaled, signups_scaled:conversions_scaled), 
               centers = 2, nstart = 25)
 
-km3 <- kmeans(select(countries, signups_scaled:conversions_scaled), 
+km3 <- kmeans(select(countries_scaled, signups_scaled:conversions_scaled),  
               centers = 3, nstart = 25)
 
-km4 <- kmeans(select(countries, signups_scaled:conversions_scaled), 
+km4 <- kmeans(select(countries_scaled, signups_scaled:conversions_scaled), 
               centers = 4, nstart = 25)
 
 # add to countries
-countries$cluster2 <- km2$cluster
-countries$cluster3 <- km3$cluster
-countries$cluster4 <- km4$cluster
+countries_scaled$cluster2 <- km2$cluster
+countries_scaled$cluster3 <- km3$cluster
+countries_scaled$cluster4 <- km4$cluster
 ```
 
-Now we can plot each of the clusters. If we only include two clusters, the United States is in a cluster of it's own.
+Now we can plot each of the clusters. If we only include two clusters, the United States is in a cluster of its own.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot top
-countries %>% 
+countries_scaled %>% 
   ggplot(aes(x = signups, 
              y = conversions, 
              label = country, 
@@ -471,14 +491,14 @@ countries %>%
   scale_y_continuous(trans='log2', labels = comma) +
   labs(x = "Signups", y = "Conversions",
        title = "Signups and Conversions by Country",
-       subtitle = "Two Clusters") +
+       subtitle = "K-Means Clustering with K = 2") +
   scale_color_brewer(palette = "Set1")
 ```
 
 If we cluster the countries into three groups, the US makes up one cluster, France, the UK, and India make up the second, and the rest of the world makes up the third.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
-countries %>% 
+countries_scaled %>% 
   ggplot(aes(x = signups, 
              y = conversions, 
              label = country, 
@@ -493,7 +513,7 @@ countries %>%
   scale_y_continuous(trans='log2', labels = comma) +
   labs(x = "Signups", y = "Conversions",
        title = "Signups and Conversions by Country",
-       subtitle = "Three Clusters") +
+       subtitle = "K-Means Clustering with K = 3") +
   scale_color_brewer(palette = "Set1")
 ```
 
@@ -506,7 +526,7 @@ If we cluster the countries into four groups, this is how they turn out:
 
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
-countries %>% 
+countries_scaled %>% 
   ggplot(aes(x = signups, 
              y = conversions, 
              label = country, 
@@ -521,9 +541,113 @@ countries %>%
   scale_y_continuous(trans='log2', labels = comma) +
   labs(x = "Signups", y = "Conversions",
        title = "Signups and Conversions by Country",
-       subtitle = "Four Clusters") +
+       subtitle = "K-Means Clustering with K = 4") +
   scale_color_brewer(palette = "Set1")
 ```
+
+
+## Hierarchical Clustering
+One potential disadvantage of K-means clustering is that it requires us to specify the number of clusters K. Hierarchical clustering is a clustering technique that does not require a specified number of clusters.
+
+In the dendrogram below, each leaf corresponds to one country As we move up the tree, countries that are similar to each other are combined into branches, which are themselves fused at a higher height.
+
+The height of the fusion indicates the dissimilarity between two observations. The higher the height of the fusion, the less similar the countries are.
+
+It's important to remember that we use the _height_ of the fusion to visualize the similarity of countries, not the proximity on the x-axis. For example, the US is not similar to Bangladesh. However, Bangladesh and Russia are similar.
+
+```{r}
+# set seed
+set.seed(8)
+
+# hierarchical cluster
+m <- countries %>% 
+  filter(signups >= 500) %>% 
+  mutate(signups = scale(signups),
+         conversions = scale(conversions),
+         total_mrr = scale(total_mrr),
+         activation_rate = scale(activation_rate)) %>% 
+  select(country, signups, conversions, total_mrr, activation_rate) %>% 
+  as.data.frame()
+
+# set row names
+rownames(m) <- m$country
+
+# remove country column
+m <- m %>% select(-country)
+
+# cluster countries with complete linkeage
+hc_complete <- hclust(dist(m), method = "complete")
+
+# convert hclust into a dendrogram and plot
+hcd <- as.dendrogram(hc_complete)
+
+# plot dendro
+plot(hcd, type = "rectangle", ylab = "Height",
+     nodePar = list(lab.cex = 0.6, pch = NA, cex = NA, col = NA))
+
+```
+
+We can "cut" the dendrogram to obtain clusters of countries. The height of the cut controls the number of clusters obtained -- it plays the same role as the k in k-means clustering. In order to identify sub-groups (i.e. clusters), we can cut the dendrogram with the `cutree` function.
+
+If we cut the dendrogram into 4 distinct clusters, we get the following groups:
+
+ - The United States
+ - The UK
+ - Australia and Canada
+ - The rest of the world.
+
+```{r}
+#cut tree into 4 distinct groups
+sub_grp <- cutree(hc_complete, k = 4)
+
+# number of countries in each cluster
+table(sub_grp)
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+plot(hc_complete, cex = 0.6, hang = -1, 
+     xlab = NA, sub = NA, main = "Hierarchical Clustering With K = 4")
+rect.hclust(hc_complete, k = 4, border = 2:5)
+```
+
+We can also use the `cutree` output to add the the cluster each observation belongs to to our original data.
+
+```{r}
+# add back to original data
+m <- m %>%
+  mutate(cluster = sub_grp)
+
+# set country
+m$country = rownames(m)
+
+# preview data
+head(m)
+```
+
+We can then join this back into the original `countries` data frame and compute summary statistics.
+
+```{r warning = FALSE, message = FALSE}
+# join clusters
+countries <- countries %>% 
+  inner_join(select(m, country, cluster))
+
+# summarise clusters
+countries %>% 
+  group_by(cluster) %>% 
+  summarise(countries = n_distinct(country, na.rm = T),
+            avg_signups = mean(signups, na.rm = T),
+            avg_conversions = mean(conversions, na.rm = T),
+            avg_activation_rate = mean(activation_rate, na.rm = T),
+            avg_mrr = mean(total_mrr, na.rm = T),
+            total_signups = sum(signups),
+            total_conversions = sum(conversions))
+```
+
+The US is in a cluster of its own. It contributes the most to signups and conversions, and contributes the most MRR.
+
+The UK contributes the second most to signups and conversions, and contributes the second most to MRR. It also has the highest activation rate.
+
+Australia and Canada have high activation rates but contribute less than half the MRR that the UK does. Combined they contribute about a third of the signups and conversion that the UK does.
 
 
 ## How Country Data is Collected
