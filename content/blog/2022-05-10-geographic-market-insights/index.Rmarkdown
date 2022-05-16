@@ -125,6 +125,31 @@ saveRDS(conversions, "conversions_by_country.rds")
 ```
 
 ```{r include = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
+# read retention data https://mixpanel.com/s/1T5TLR
+retention <- read_csv("~/Desktop/retention.csv")
+
+# update names
+names(retention) <- c("country", "first_month", "users", "month0",
+                        "month1", "month2", "month3", "month4",
+                        "month5", "month6", "month7", "month8",
+                        "month9", "month10", "month11", "month12")
+
+# select columns and calculate rate
+retention <- retention[!grepl("\\$", retention$first_month),]
+retention <- retention %>% 
+  group_by(country) %>% 
+  summarise(users = sum(users, na.rm = T),
+            month1 = sum(month1, na.rm = T),
+            month2 = sum(month2, na.rm = T),
+            month3 = sum(month3, na.rm = T)) %>% 
+  mutate(month3_retention = month3 / users) %>% 
+  filter(users > 500)
+
+# save data as rds object
+saveRDS(retention, "retention_by_country.rds")
+```
+
+```{r include = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 # read conversion rates
 conversion_rates <- read_csv("~/Desktop/conversion_rates.csv")
 
@@ -163,6 +188,7 @@ conversions <- readRDS("conversions_by_country.rds")
 conversion_rates <- readRDS("conversion_rates_by_country.rds")
 activation <- readRDS("activation_by_country.rds")
 mrr <- readRDS("mrr_by_country.rds")
+retention <- readRDS("retention_by_country.rds")
 
 # get proportion of signups
 signup_prop <- signups %>% 
@@ -383,6 +409,33 @@ mrr %>%
   scale_y_continuous(labels = dollar) +
   labs(x = NULL, y = "Total MRR")
 ```
+
+
+## Active User Retention
+The plot below shows the countries with the highest 3-month retention rates for the `Key Action Taken` event. For each country, this shows the percentage of people that take a key action 3 months after taking their first key action.
+
+People from the UK, Australia, US, Japan, and Canada have the highest 3-month retention rates.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot top retention rates
+retention %>% 
+  filter(country != "undefined") %>% 
+  mutate(country = reorder(country, month3_retention)) %>% 
+  arrange(desc(month3_retention)) %>% 
+  head(20) %>% 
+  buffplot(aes(x = country, y = month3_retention)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      ) +
+  scale_y_continuous(labels = percent) +
+  labs(x = NULL, y = "3 Month Retention Rate")
+```
+
 
 ## Market Opportunities
 The plot below shows the proportion of signups for each country on the x-axis and the proportion of conversions for each country on the y-axis. 

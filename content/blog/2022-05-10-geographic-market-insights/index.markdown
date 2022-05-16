@@ -56,40 +56,42 @@ We'll collect the country codes from all signups, monthly active users, and new 
 
 
 
+
+
 ## Signups By Country
 First we'll look at which countries drive the most signups. We exclude users for which no geographical data is available.
 
 The United States, India, the UK, France, and Canada are the largest contributors to signups.  
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
 
 If we only look at signups for which the `createdWithTrial` property is present -- we started tracking this on March 1, 2022 -- then Bangladesh and the Philippines join the top 6.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
 
 ## Monthly Active Users By Country
 The United States, Great Britain, Canada, India, and France are the largest contributors to Buffer's monthly active users.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" />
 
 ## Paid Conversions By Country
 The United States, the UK, Canada, Australia, France, and Germany are the largest contributors to paid conversions since the beginning of 2022.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-1.png" width="672" />
 
 ## Paid Conversion Rates
 Next we'll calculate the proportion of signups that started a paid Stripe subscription within 30 days.
 
 Colombia, Canada, the US, Australia, and the UK have the highest proportion of signups that convert to paying plans within 30 days of signing up. 
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
 
 ## Activation Rates
 We'll take the same approach to looking at activation rates. We only include countries that have contributed at least 500 signups. 
 
 The UK, Netherlands, Australia, Canada, and Japan have the highest activation rates.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
 
 
 ## MRR by Country
@@ -97,14 +99,23 @@ The MRR amounts used to generate the plot below are estimates based on plan valu
 
 The US contributes the most to MRR by far, followed by the UK, Canada, Australia, and Germany. 
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
+
+
+## Active User Retention
+The plot below shows the countries with the highest 3-month retention rates for the `Key Action Taken` event. For each country, this shows the percentage of people that take a key action 3 months after taking their first key action.
+
+People from the UK, Australia, US, Japan, and Canada have the highest 3-month retention rates.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
+
 
 ## Market Opportunities
 The plot below shows the proportion of signups for each country on the x-axis and the proportion of conversions for each country on the y-axis. 
 
 Countries above the dotted line contribute a higher percentage of conversions relative to the number of signups than countries located below the dotted line. Countries like Switzerland, Canada, Australia, New Zealand, and Ireland are in this group.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-18-1.png" width="672" />
 
 Another (possibly dubious) approach we could take is to create a custom metric that combines the proportion of signups (`prop_signups`) and the proportion of conversions (`prop_conversions`). 
 
@@ -112,7 +123,7 @@ The metric can be simple -- if we want to identify countries with relatively hig
 
 These are the countries that have the highest values of the resulting metric. The US, Australia, New Zealand, Ireland, Switzerland, and Canada lead the pack if we go by this metric.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-1.png" width="672" />
 
 
 ## Clustering Countries
@@ -153,11 +164,11 @@ countries_scaled$cluster4 <- km4$cluster
 
 Now we can plot each of the clusters. If we only include two clusters, the United States is in a cluster of its own.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-21-1.png" width="672" />
 
 If we cluster the countries into three groups, the US makes up one cluster, France, the UK, and India make up the second, and the rest of the world makes up the third.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-20-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-22-1.png" width="672" />
 
 If we cluster the countries into four groups, this is how they turn out:
 
@@ -167,7 +178,7 @@ If we cluster the countries into four groups, this is how they turn out:
  - Cluster 4: Rest of the world.
 
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-21-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-23-1.png" width="672" />
 
 
 ## Hierarchical Clustering
@@ -211,7 +222,7 @@ plot(hcd, type = "rectangle", ylab = "Height",
      nodePar = list(lab.cex = 0.6, pch = NA, cex = NA, col = NA))
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-22-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-24-1.png" width="672" />
 
 We can "cut" the dendrogram to obtain clusters of countries. The height of the cut controls the number of clusters obtained -- it plays the same role as the k in k-means clustering. In order to identify sub-groups (i.e. clusters), we can cut the dendrogram with the `cutree` function.
 
@@ -237,7 +248,7 @@ table(sub_grp)
 ##  5 46  2  1
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-24-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-26-1.png" width="672" />
 
 We can also use the `cutree` output to add the the cluster each observation belongs to to our original data.
 
