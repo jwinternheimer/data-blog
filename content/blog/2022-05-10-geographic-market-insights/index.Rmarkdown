@@ -19,7 +19,7 @@ This analysis should help guide budget allocation decisions related to paid mark
 ## Summary
 When we consider signups, activation, and paid conversions, Buffer's core market is the United States. It's singular and distinct from the rest of the countries in this analysis in its contribution to Buffer's business and financial success.
 
-The UK, Canada, India, and Australia are secondary, but still important, markets for Buffer. Of these, the UK contributes the most -- the contribution of signups and revenue from the UK is more than that of Australia and Canada combined. Together with the US, Canada, Australia, and the UK contribute more conversions than the rest of the world.
+The UK, Canada, India, and Australia are secondary markets for Buffer. Of these, the UK contributes the most signups and conversions-- it's contribution is more than that of Australia and Canada combined.
 
 The lowest performing market contains a group of countries including Bangladesh, Russia, Brazil, Algeria, and Venezuela. The rest of the world can be grouped together into a third market.
 
