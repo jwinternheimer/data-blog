@@ -19,9 +19,9 @@ This analysis should help guide budget allocation decisions related to paid mark
 ## Summary
 When we consider signups, activation, and paid conversions, Buffer's core market is the United States. It's singular and distinct from the rest of the countries in this analysis in its contribution to Buffer's business and financial success.
 
-The UK, Canada, and Australia are secondary, but still very important, markets for Buffer. Of these, the UK contributes the most -- the contribution of signups and revenue from the UK is more than that of Australia and Canada combined. Together with the US, Canada, Australia, and the UK contribute more conversions than the rest of the world.
+The UK, Canada, India, and Australia are secondary, but still important, markets for Buffer. Of these, the UK contributes the most -- the contribution of signups and revenue from the UK is more than that of Australia and Canada combined. Together with the US, Canada, Australia, and the UK contribute more conversions than the rest of the world.
 
-The lowest performing market contains a group of countries including Bangladesh, Russia, Brazil, Algeria, and Venezuela. The rest of the world can be grouped together into a third-tier market.
+The lowest performing market contains a group of countries including Bangladesh, Russia, Brazil, Algeria, and Venezuela. The rest of the world can be grouped together into a third market.
 
 Buffer gets a lot of signups and usage from India, but relatively few paid conversions. It seems like there is an opportunity here given India's size and usage of Buffer. We should do what we can to make it easier for people in India to subscribe to Buffer's paid products.
 
@@ -137,7 +137,7 @@ In this simple exercise we'll only utilize two features, `prop_signups` and `pro
 
 
 ```r
-# set seed for reproducability
+# set seed for reproducibility
 set.seed(13)
 
 # scale signups and conversions
@@ -202,7 +202,7 @@ m <- countries %>%
          conversions = scale(conversions),
          total_mrr = scale(total_mrr),
          activation_rate = scale(activation_rate)) %>% 
-  select(country, signups, conversions, total_mrr, activation_rate) %>% 
+  select(country, signups, conversions, activation_rate, total_mrr) %>% 
   as.data.frame()
 
 # set row names
@@ -217,7 +217,7 @@ hc_complete <- hclust(dist(m), method = "complete")
 # convert hclust into a dendrogram and plot
 hcd <- as.dendrogram(hc_complete)
 
-# plot dendro
+# plot dendrogram
 plot(hcd, type = "rectangle", ylab = "Height",
      nodePar = list(lab.cex = 0.6, pch = NA, cex = NA, col = NA))
 ```
@@ -229,8 +229,8 @@ We can "cut" the dendrogram to obtain clusters of countries. The height of the c
 If we cut the dendrogram into 4 distinct clusters, we get the following groups:
 
  - The United States
- - The UK
- - Australia and Canada
+ - The UK and India
+ - Bangladesh, Russia, Algeria, Brazil, and Venezuela.
  - The rest of the world.
 
 
@@ -266,13 +266,13 @@ head(m)
 ```
 
 ```
-##                signups conversions  total_mrr activation_rate cluster
-## Algeria    -0.44424774  -0.2769158 -0.2287470      -1.7043142       1
-## Argentina  -0.26572985  -0.2422497 -0.2182506      -0.7410994       2
-## Australia   0.03924935   0.3272641  0.3349677       1.0500353       2
-## Austria    -0.42537891  -0.2187263 -0.1851314       0.7706291       2
-## Bangladesh  0.28146627  -0.2657731 -0.2286690      -2.8115030       1
-## Belgium    -0.35231237  -0.1791080 -0.1651913       0.6532620       2
+##                signups conversions activation_rate  total_mrr cluster
+## Algeria    -0.44424774  -0.2769158      -1.7043142 -0.2287470       1
+## Argentina  -0.26572985  -0.2422497      -0.7410994 -0.2182506       2
+## Australia   0.03924935   0.3272641       1.0500353  0.3349677       2
+## Austria    -0.42537891  -0.2187263       0.7706291 -0.1851314       2
+## Bangladesh  0.28146627  -0.2657731      -2.8115030 -0.2286690       1
+## Belgium    -0.35231237  -0.1791080       0.6532620 -0.1651913       2
 ##               country
 ## Algeria       Algeria
 ## Argentina   Argentina
@@ -313,11 +313,13 @@ countries %>%
 ## # … with 2 more variables: total_signups <dbl>, total_conversions <dbl>
 ```
 
-The US is in a cluster of its own. It contributes the most to signups and conversions, and contributes the most MRR.
+The US is in a cluster of its own. It contributes the most to signups and conversions by a long shot.
 
-The UK contributes the second most to signups and conversions, and contributes the second most to MRR. It also has the highest activation rate.
+The UK and India also contribute a lot of signups and conversions. Excluding the US, the UK and India contribute over 8 times the number of signups and conversions than the rest of the world, on average. 
 
-Australia and Canada have high activation rates but contribute less than half the MRR that the UK does. Combined they contribute about a third of the signups and conversion that the UK does.
+The five countries including Brazil, Venezuela, Russia, Bangladesh, and Algeria, contribute a relatively high number of signups, but their activation and paid conversion rates are extremely low compared to the rest of the world.
+
+It might be worth mentioning that Australia and Canada have high activation rates and contribute a significant amount of signups and conversions, but combined they still contribute less conversions than the UK.
 
 
 ## How Country Data is Collected
