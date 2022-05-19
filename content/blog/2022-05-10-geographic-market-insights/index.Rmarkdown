@@ -228,7 +228,8 @@ countries <- signup_prop %>%
   inner_join(mrr_prop, by = "country") %>% 
   inner_join(activation_prop, by = "country") %>% 
   select(country, signups, conversions, 
-         total_mrr, customers, activation_rate)
+         total_mrr, customers, activation_rate) %>% 
+  filter(country != "undefined")
 ```
 
 ## Signups By Country
@@ -315,7 +316,7 @@ The United States, the UK, Canada, Australia, France, and Germany are the larges
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot top countries
 conversions %>% 
-  filter(!is.na(country)) %>% 
+  filter(!is.na(country) & country != "undefined") %>% 
   mutate(prop = users / sum(users)) %>% 
   mutate(country = reorder(country, prop)) %>% 
   arrange(desc(prop)) %>% 
@@ -445,15 +446,15 @@ Countries above the dotted line contribute a higher percentage of conversions re
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot top
 props %>% 
-  filter(signups > 500) %>% 
+  filter(signups > 500 & country != "undefined") %>% 
   ggplot(aes(x = prop_signups, 
              y = prop_conversions, 
              label = country, 
              color = country)) +
   geom_point(position = "jitter") +
   geom_text(check_overlap = T,
-            nudge_x = 0.1, 
-            nudge_y = 0.1) +
+            nudge_x = 0.0, 
+            nudge_y = 0.3) +
   theme_minimal() +
   theme(legend.position = "none") +
   stat_function(fun = function(x) x * 1, color = "red", linetype = 2) +
@@ -536,8 +537,8 @@ countries_scaled %>%
              color = as.factor(cluster2))) +
   geom_point(position = "jitter") +
   geom_text(check_overlap = T,
-            nudge_x = 0.1, 
-            nudge_y = 0.1) +
+            nudge_x = 0.0, 
+            nudge_y = 0.3) +
   theme_minimal() +
   theme(legend.position = "none") +
   scale_x_continuous(trans = 'log2', labels = comma, expand=c(0,1)) +
@@ -558,8 +559,8 @@ countries_scaled %>%
              color = as.factor(cluster3))) +
   geom_point(position = "jitter") +
   geom_text(check_overlap = T,
-            nudge_x = 0.1, 
-            nudge_y = 0.1) +
+            nudge_x = 0.0, 
+            nudge_y = 0.3) +
   theme_minimal() +
   theme(legend.position = "none") +
   scale_x_continuous(trans = 'log2', labels = comma, expand=c(0,1)) +
@@ -586,8 +587,8 @@ countries_scaled %>%
              color = as.factor(cluster4))) +
   geom_point(position = "jitter") +
   geom_text(check_overlap = T,
-            nudge_x = 0.1, 
-            nudge_y = 0.1) +
+            nudge_x = 0.0, 
+            nudge_y = 0.3) +
   theme_minimal() +
   theme(legend.position = "none") +
   scale_x_continuous(trans = 'log2', labels = comma, expand=c(0,1)) +
@@ -706,7 +707,7 @@ It might be worth mentioning that Australia and Canada have high activation rate
 
 
 ## How Country Data is Collected
-Each section of this analysis _besides the MRR breakdown_ uses country codes that are set in Mixpanel. Mixpanel's client-side libraries collect user location data (city, region, country) as roperties by default. 
+Each section of this analysis _besides the MRR breakdown_ uses country codes that are set in Mixpanel. Mixpanel's client-side libraries collect user location data (city, region, country) as properties by default. 
 
 The way they do this is by pulling the user's IP address and running it through a third-party IP geolocator, MaxMind. MaxMind returns the city, region, and country, and Mixpanel sets those as user properties.
 
