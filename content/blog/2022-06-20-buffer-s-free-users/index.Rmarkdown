@@ -1,0 +1,1133 @@
+---
+title: Buffer's Free Users
+author: Julian
+date: '2022-06-20'
+slug: []
+categories: []
+tags: []
+---
+
+There are four main goals for this data analysis:
+
+1. Better understand Buffer's active free user base
+2. Identify opportunities for converting free users to paid
+3. Map our free user onboarding actions
+4. Define cohorts within our free user base to inform user qualification
+
+There are a lot of sections below, so settle in with a cup of tea and enjoy. Thank you in advance for reading this and taking the time to learn about Buffer's free users!
+
+
+```{r include = FALSE, message = FALSE, warning = FALSE}
+# load libraries
+library(buffer)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(lubridate)
+library(ggplot2)
+library(scales)
+```
+
+
+## Breakdown of Buffer's Monthly Active Users
+The first thing we want to do is see how many of Buffer's monthly active users are on free plans.
+
+As of June 2022, there are around 105k monthly active users on a free plan and 32k on a paid subscription. Around 76% of monthly active users are on a free plan.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "select * from dbt_buffer.buffer_metrics_mau_movements"
+
+# collect data from bigquery
+mau <- bq_query(sql = sql)
+
+# save data
+saveRDS(mau, "buffer_mau.rds")
+```
+
+```{r include = FALSE}
+# read data
+mau <- readRDS("buffer_mau.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot percent on free
+mau %>% 
+  select(date, paid_monthly_active_users, free_monthly_active_users) %>% 
+  pivot_longer(-date, names_to = "type", values_to = "users") %>% 
+  mutate(type = gsub("paid_monthly_active_users", "paid", type),
+         type = gsub("free_monthly_active_users", "free", type)) %>% 
+  buffplot(aes(x = date, y = users, color = type)) +
+  geom_line() +
+  scale_y_continuous(labels = comma) +
+  facet_wrap(~type, scales = "free_y", nrow = 2) +
+  theme(legend.position = "none") +
+  labs(x = NULL, y = "MAU")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot percent on free
+mau %>% 
+  mutate(percent_free = free_monthly_active_users / monthly_active_users) %>% 
+  buffplot(aes(x = date, y = percent_free)) +
+  geom_line() +
+  scale_y_continuous(labels = percent) +
+  theme(legend.position = "none") +
+  labs(x = NULL, y = NULL, subtitle = "Percent of MAU on Free Plan")
+```
+
+
+## Account Age of Active Free Users
+Next we'll look at the distribution of account age for Buffer's free active users. To do this, we'll need to calculate the number of months that have elapsed between their signup dates and the current date.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select distinct
+    u.user_id
+    , u.signup_at_date as signup_date
+  from dbt_buffer.buffer_users as u
+  inner join dbt_buffer.buffer_key_actions as a
+    on u.user_id = a.user_id
+    and a.timestamp >= timestamp_sub(current_timestamp(), interval 30 day)
+  where u.is_currently_paying_buffer_user is not true 
+"
+
+# collect data from bigquery
+free_mau <- bq_query(sql = sql)
+
+# save data
+saveRDS(free_mau, "buffer_free_mau.rds")
+```
+
+```{r include = FALSE}
+# read data
+free_mau <- readRDS("buffer_free_mau.rds") %>% 
+  mutate(age = as.numeric(Sys.Date() - signup_date))
+```
+
+```{r}
+# calculate months elapsed
+free_mau <- free_mau %>% 
+  mutate(months_passed = (interval(ymd(signup_date), 
+             ymd(Sys.Date()))) %/% months(1))
+```
+
+Now we can plot the distribution of account age for Buffer's free monthly active users. The plot shows that a large portion of Buffer's free MAUs signed up less than one month ago.  
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot 
+free_mau %>% 
+  group_by(months_passed) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  buffplot(aes(x = months_passed, y = users)) +
+  geom_col(show.legend = F) +
+  scale_y_continuous(labels = comma) +
+  labs(x = "Months Since Signup", y = NULL,
+       subtitle = "Free Monthly Active Users")
+```
+
+The plot below shows the months grouped into buckets. As a reminder, the "(" parenthesis preceding a number is _exclusive_ -- the number to the right is not included. The "]" bracket is _inclusive_, meaning that the number is included.
+
+```{r echo = FALSE}
+# define cuts
+cuts <- c(-Inf, 0, 1, 3, 6, 12, 24, 48, Inf)
+
+# plot 
+free_mau %>% 
+  group_by(month_groups = cut(months_passed, breaks = cuts)) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  buffplot(aes(x = month_groups, y = users)) +
+  geom_col(show.legend = F) +
+  scale_y_continuous(labels = comma) +
+  labs(x = "Months Since Signup", y = NULL,
+       subtitle = "Free Monthly Active Users")
+```
+
+We can see that Buffer's monthly active users are largely made up of new users and people that have been using Buffer for years! 
+
+If we consider people to be "new to Buffer" if they signed up less than 6 months ago, approximately 36% (37.7k) are new and 64% (67.5k) are not.
+
+```{r}
+# new to buffer proportion
+free_mau %>% 
+  group_by(new = signup_date >= "2021-12-22") %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users))
+```
+
+## Geographic Region
+Next we'll look at the geographic regions of our MAUs. Over 50% of free MAUs are from the US, UK, Canada, or France. Around 31% are from the US. 
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select distinct
+    u.user_id
+    , p.country_code
+  from dbt_buffer.buffer_users as u
+  left join fivetran_mixpanel.people as p
+    on p.distinct_id = u.user_id
+  inner join dbt_buffer.buffer_key_actions as a
+    on u.user_id = a.user_id
+    and a.timestamp >= timestamp_sub(current_timestamp(), interval 30 day)
+  where u.is_currently_paying_buffer_user is not true 
+"
+
+# collect data from bigquery
+countries <- bq_query(sql = sql)
+
+# save data
+saveRDS(countries, "mau_countries.rds")
+```
+
+```{r include = FALSE}
+# read data
+countries <- readRDS("mau_countries.rds")
+```
+
+```{r echo = FALSE}
+# plot 
+countries %>% 
+  group_by(country_code) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(country_code = reorder(country_code, users)) %>% 
+  arrange(desc(users)) %>% 
+  head(20) %>% 
+  buffplot(aes(x = country_code, y = users)) +
+  geom_col(show.legend = F) +
+  coord_flip() +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      ) +
+  scale_y_continuous(labels = comma) +
+  labs(y = "Free MAU", x = NULL)
+```
+
+Next we'll look at the geographic breakdown of free _signups_ that ended up paying for a paid subscription.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select
+    u.user_id
+    , p.country_code
+    , count(distinct t.id) as trials
+  from dbt_buffer.buffer_users as u
+  left join fivetran_mixpanel.people as p
+    on p.distinct_id = u.user_id
+  inner join dbt_buffer.stripe_paid_subscriptions as s
+    on s.account_id = u.user_id
+    and s.status = 'active'
+  left join dbt_buffer.stripe_trials as t
+    on t.customer_id = s.customer_id
+    and t.trial_started_at between 
+      timestamp_sub(s.first_paid_invoice_created_at, interval 30 day) and 
+      s.first_paid_invoice_created_at
+  where u.did_signup_on_trial is not true
+  group by 1,2
+"
+
+# collect data from bigquery
+paid <- bq_query(sql = sql)
+
+# save data
+saveRDS(paid, "free_paid.rds")
+```
+
+```{r include = FALSE}
+# read data
+paid <- readRDS("free_paid.rds")
+```
+
+Over 50% of converted free users -- defined as not having signed up with a trial -- are from the US. A further 14% or so are from the UK, and around 6% are from Canada. **Over 75% of conversions from free users come from people based in the US, UK, Canada, or Australia**. 
+
+```{r echo = FALSE}
+# plot 
+paid %>% 
+  filter(!is.na(country_code)) %>% 
+  group_by(country_code) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users)) %>% 
+  mutate(country_code = reorder(country_code, users)) %>% 
+  arrange(desc(users)) %>% 
+  head(20) %>% 
+  buffplot(aes(x = country_code, y = prop)) +
+  geom_col(show.legend = F) +
+  coord_flip() +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      ) +
+  scale_y_continuous(labels = percent) +
+  labs(y = "Converted Free MAU", x = NULL)
+```
+
+Interestingly, around 19% of conversions from free users, i.e. those that do not sign up with a trial, did have a trial in the 30 days prior to subscribing to the paid plan.
+
+```{r}
+paid %>% 
+  group_by(had_trial = trials >= 1) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = scales::percent(users / sum(users)))
+```
+
+## Free Usage Patterns
+Next we'll look at how usage patterns differ for different user Segments. We'll look at new Free MAU, old Free MAU, and Paying MAU.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# read data from Mixpanel: https://mixpanel.com/s/4zBctB
+freq <- read_csv("~/Desktop/mau_frequency.csv")
+
+# update column names
+names(freq) <- c("date", "event", "cohort", "paid", "med_key_actions")
+
+# remove column
+freq$event <- NULL
+
+# filter
+freq <- freq %>% filter(cohort != "All User Profiles")
+
+# save data
+saveRDS(freq, "mau_key_action_frequency.rds")
+```
+
+```{r include = FALSE}
+# read data
+freq <- readRDS("mau_key_action_frequency.rds") %>% 
+  mutate(cohort = gsub("Users That Signed Up Over 90 Days Ago", "old", cohort),
+         cohort = gsub("Users That Signed Up in Past 90 Days", "new", cohort))
+```
+
+
+The plot below shows us that, in general, free MAU take around 5-7 key actions per week and paying MAU take about twice as many. This makes sense given that paying customers are more likely to have more channels connected.
+
+New MAU also take slightly fewer key actions in a given week than old MAU (those that signed up over 90 days ago). 
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot median frequency
+freq %>% 
+  filter(date < "2022-07-04") %>% 
+  mutate(paying = ifelse(paid, "paying", "free"),
+         part = paste(cohort, paying, sep = " - ")) %>% 
+  buffplot(aes(x = date, y = med_key_actions, color = part)) +
+  geom_line() +
+  labs(x = NULL, y = "Median Key Actions Per Week", color = "Group")
+```
+
+Next we'll look at how likely free MAU are to post to different social networks. Unsurprisingly, paying customers are more likely to create posts in general. Free MAU are more likely to post to Twitter and less likely to post to Instagram.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# read data from Mixpanel: https://mixpanel.com/s/2OwcWZ
+channels <- read_csv("~/Desktop/mau_channels.csv")
+
+# update column names
+names(channels) <- c("week", "event", "paid", "channel", "users")
+
+# remove column
+channels$event <- NULL
+
+# save data
+saveRDS(channels, "mau_channels.csv")
+```
+
+```{r include = FALSE}
+# read data
+channels <- readRDS("mau_channels.csv")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot channels
+channels %>% 
+  filter(channel != "googlebusiness" & channel != "tiktok" & channel != "pinterest") %>%
+  mutate(prop = ifelse(paid, users / 32405, users / 105662),
+         is_paid = ifelse(paid, "paid", "free")) %>% 
+  buffplot(aes(x = week, y = prop, color = channel)) +
+  geom_line() +
+  facet_wrap(~is_paid) +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Week", y = "% of MAU", color = "Channel")
+```
+
+
+## Signup Referrers
+Next we'll compare the signup referrers for both free and paid MAU. We'll only do this for MAU that signed up since April 2022, since that's when we were able to create our new attribution model.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select distinct
+    u.user_id
+    , u.is_currently_paying_buffer_user as paid
+    , s.referrer_domain_grouped as referrer
+  from dbt_buffer.buffer_users as u
+  inner join dbt_buffer.buffer_key_actions as a
+    on u.user_id = a.user_id
+    and a.timestamp >= timestamp_sub(current_timestamp(), interval 30 day)
+  inner join dbt_buffer.segment_sessions as s
+    on s.dbt_visitor_id = u.user_id
+    and s.signup_session
+  where u.signup_at >= '2022-04-01'
+"
+
+# collect data from bigquery
+mau_referrers <- bq_query(sql = sql)
+
+# save data
+saveRDS(mau_referrers, "mau_referrers.rds")
+```
+
+```{r include = FALSE}
+# read data
+mau_referrers <- readRDS("mau_referrers.rds")
+```
+
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot top by percent
+mau_referrers %>% 
+  group_by(paid, referrer) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users),
+         referrer = reorder(referrer, prop)) %>% 
+  buffplot(aes(x = referrer, y = prop, fill = as.factor(paid))) +
+  geom_col(show.legend = T, position = "dodge") +
+  coord_flip() +
+  scale_y_continuous(labels = percent) + 
+  labs(x = NULL, y = "Proportion of MAU", fill = "Paid")
+```
+
+Free MAU are much more likely to have signed up on a mobile app or been invited to a team. They're also more likely to have signed up through social. Paying MAU are more likely to have signed up to Buffer directly, through organic search, or through a paid advertisement.
+
+Let's see what this would look like if we removed team members.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot top by percent
+mau_referrers %>% 
+  filter(referrer != "team_invite") %>% 
+  group_by(paid, referrer) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users),
+         referrer = reorder(referrer, prop)) %>% 
+  buffplot(aes(x = referrer, y = prop, fill = as.factor(paid))) +
+  geom_col(show.legend = T, position = "dodge") +
+  coord_flip() +
+  scale_y_continuous(labels = percent) + 
+  labs(x = NULL, y = "Proportion of MAU", fill = "Paid")
+```
+
+Free MAU are much more likely to have signed up or through social, but other than that the distributions look fairly similar.
+
+
+## How Many Free MAU Receive Buffer's Emails?
+Approximately 84% of free monthly active users has received one of Buffer's emails since June 1, and approximately 64% have opened an email.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select distinct
+    u.user_id
+    , count(distinct ed.id) as emails_delivered
+    , count(distinct eo.id) as emails_opened
+  from dbt_buffer.buffer_users as u
+  inner join dbt_buffer.buffer_metrics_mau_movements_per_user as a
+    on u.user_id = a.user_id
+    and a.date = '2022-07-14'
+    and a.is_active_last_30_days
+  left join segment_customerio_webhook.email_delivered as ed
+    on ed.user_id = u.user_id
+    and ed.timestamp >= '2022-06-01'
+  left join segment_customerio_webhook.email_opened as eo
+    on eo.user_id = u.user_id
+    and eo.timestamp >= '2022-06-01'
+  where u.is_currently_paying_buffer_user is not true
+  group by 1
+"
+
+# collect data from bigquery
+free_mau_emails <- bq_query(sql = sql)
+
+# save data
+saveRDS(free_mau_emails, "free_mau_emails.rds")
+```
+
+```{r include = FALSE}
+# read data
+free_mau_emails <- readRDS("free_mau_emails.rds")
+```
+
+```{r}
+# calculate percent
+free_mau_emails %>% 
+  group_by(has_emails = emails_delivered >= 1) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users))
+```
+
+```{r}
+# calculate percent
+free_mau_emails %>% 
+  group_by(opened_email = emails_opened >= 1) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users))
+```
+
+## How Many Active Free Users Previously Had a Subscription
+Here we'll only look at Stripe subscriptions, but it's possible that free users previously had a mobile subscription.
+
+Around 6% of active free users previously had a subscription. However, if we exclude team members, only around 1% of active free users previously had a paid subscription.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select distinct
+    u.user_id
+    , u.is_team_member as team_member
+    , count(distinct s.id) as previous_subscriptions
+  from dbt_buffer.buffer_users as u
+  inner join dbt_buffer.buffer_metrics_mau_movements_per_user as a
+    on u.user_id = a.user_id
+    and a.date = '2022-07-14'
+    and a.is_active_last_30_days
+  left join dbt_buffer.stripe_paid_subscriptions as s
+    on s.customer_id = u.stripe_customer_id
+  where u.is_currently_paying_buffer_user is not true
+  group by 1,2
+"
+
+# collect data from bigquery
+free_mau_subs <- bq_query(sql = sql)
+
+# save data
+saveRDS(free_mau_subs, "free_mau_subs.rds")
+```
+
+```{r include = FALSE}
+# read data
+free_mau_subs <- readRDS("free_mau_subs.rds")
+```
+
+```{r}
+# calculate percent with sub
+free_mau_subs %>%  
+  group_by(has_sub = previous_subscriptions >= 1) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users))
+```
+
+## Channel Distribution
+The plot below shows the distribution of channels connected for active free users that are not on a trial. We can see that most tend to have three channels connected.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select
+    u.user_id
+    , ca.organization_id
+    , u.is_currently_on_one_buffer as new_buffer
+    , u.is_team_member as team_member
+    , u.is_currently_trialing as trialing
+    , count(distinct c.id) as channels_connected
+  from dbt_buffer.buffer_users as u
+  inner join dbt_buffer.core_accounts as ca
+    on u.user_id = ca.id
+  inner join dbt_buffer.buffer_metrics_mau_movements_per_user as a
+    on u.user_id = a.user_id
+    and a.date = '2022-07-14'
+    and a.is_active_last_30_days
+  left join dbt_buffer.core_channels as c
+      on ca.organization_id = c.organization_id
+      and c.is_deleted is not true
+      and c.is_locked is not true
+  where u.is_currently_paying_buffer_user is not true
+  and u.stripe_customer_id is not null
+  group by 1,2,3,4,5
+"
+
+# collect data from bigquery
+free_channels <- bq_query(sql = sql)
+
+# save data
+saveRDS(free_channels, "free_channels_dist.rds")
+```
+
+```{r include = FALSE}
+# read data
+free_channels <- readRDS("free_channels_dist.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot channels 
+free_channels %>% 
+  filter(!trialing) %>% 
+  group_by(new_buffer, channels_connected) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users)) %>% 
+  buffplot(aes(x = channels_connected, y = prop, fill = new_buffer)) +
+  geom_col() +
+  scale_x_continuous(limits = c(0, 10), breaks = seq(0, 10, 2)) +
+  scale_y_continuous(labels = percent) +
+  facet_wrap(~new_buffer) +
+  labs(x = "Channels Connected", y = "% of MAU", fill = "New Buffer")
+```
+
+## How Many Hit Queue and Channel Limits?
+Very few (around 0.3%) of free MAU hit the queue limit. Around 2.2% hit the channel limit.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# read data from Mixpanel:https://mixpanel.com/s/1KOXgS
+paths <- read_csv("~/Desktop/upgrade_paths.csv")
+
+# update column names
+names(paths) <- c("event", "paid", "path", "users")
+
+# remove column
+paths$event <- NULL
+
+# save data
+saveRDS(paths, "mau_upgrade_paths.rds")
+```
+
+```{r include = FALSE}
+# read data
+paths <- readRDS("mau_upgrade_paths.rds")
+```
+
+```{r}
+# calculate percentages
+paths %>% 
+  filter(!paid) %>% 
+  mutate(prop = percent(users / 107333)) %>% 
+  arrange(desc(prop))
+```
+
+
+
+## Which Channels Are Connected and Used Most Often by Free Users?
+The most commonly connected channels connected for Buffer's free users are Facebook, Twitter, Instagram, and LinkedIn. StartPage, Pinterest, TikTok, Shopify, and GoogleMyBusiness all lag behind the top four channels.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select
+    u.user_id
+    , ca.organization_id
+    , u.is_currently_on_one_buffer as new_buffer
+    , u.is_team_member as team_member
+    , u.is_currently_trialing as trialing
+    , c.service_type as channel
+    , count(distinct c.id) as channels_connected
+  from dbt_buffer.buffer_users as u
+  inner join dbt_buffer.core_accounts as ca
+    on u.user_id = ca.id
+  inner join dbt_buffer.buffer_metrics_mau_movements_per_user as a
+    on u.user_id = a.user_id
+    and a.date = '2022-07-18'
+    and a.is_active_last_30_days
+  left join dbt_buffer.core_channels as c
+      on ca.organization_id = c.organization_id
+      and c.is_deleted is not true
+      and c.is_locked is not true
+  where u.is_currently_paying_buffer_user is not true
+  and u.stripe_customer_id is not null
+  group by 1,2,3,4,5,6
+"
+
+# collect data from bigquery
+channel_counts <- bq_query(sql = sql)
+
+# save data
+saveRDS(channel_counts, "free_channel_counts.rds")
+```
+
+```{r include = FALSE}
+# read data
+channel_counts <- readRDS("free_channel_counts.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# count users per channel
+channel_counts %>% 
+  filter(!is.na(channel)) %>% 
+  group_by(channel) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users, na.rm = T),
+         channel = reorder(channel, prop)) %>% 
+  ggplot(aes(x = channel, y = prop, fill = channel)) +
+  geom_col(show.legend = F) +
+  coord_flip() +
+  buffer_theme() +
+  scale_y_continuous(labels = percent) +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      )  +
+  labs(x = NULL, y = "Percent of MAU with Channel")
+```
+
+
+Interestingly, more active free users tend to post to Facebook, LinkedIn, and Twitter than to Instagram. 
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select
+    p.user_id
+    , p.channel
+    , count(distinct p.id) as posts
+  from dbt_buffer.segment_posts_created as p
+  inner join dbt_buffer.buffer_users as u
+    on u.user_id = p.user_id
+    and u.is_currently_paying_buffer_user is not true
+  where p.timestamp >= '2022-06-17'
+  group by 1,2
+"
+
+# collect data from bigquery
+post_channels <- bq_query(sql = sql)
+
+# save data
+saveRDS(post_channels, "free_post_channels.rds")
+```
+
+```{r include = FALSE}
+# read data
+post_channels <- readRDS("free_post_channels.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# count users per channel
+post_channels %>% 
+  filter(!is.na(channel)) %>% 
+  group_by(channel) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users, na.rm = T),
+         channel = reorder(channel, prop)) %>% 
+  ggplot(aes(x = channel, y = prop, fill = channel)) +
+  geom_col(show.legend = F) +
+  coord_flip() +
+  buffer_theme() +
+  scale_y_continuous(labels = percent) +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      )  +
+  labs(x = NULL, y = "Percent of MAU Using Each Channel")
+```
+
+
+
+## Free Conversions Rates
+Now we'll look at the rate at which free active users convert to paid customers. To do this, we'll calculate the proportion of active free users on a given date that start a paid _Stripe_ subscription within 30 days of that date.
+
+The data shows us that there are some cyclical patterns with clear peaks and troughs, but the conversion rate is generally between 0.7% and 0.9%. 
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select
+    m.date
+    , count(distinct m.user_id) as active_users
+    , count(distinct s.customer_id) as conversions
+  from dbt_buffer.buffer_metrics_mau_movements_per_user as m
+  left join dbt_buffer.stripe_paid_subscriptions as s
+    on m.user_id = s.account_id
+    and date(s.first_paid_invoice_created_at) between m.date and date_add(m.date, interval 30 day)
+  where m.date >= '2021-01-01'
+    and m.is_paid is not true
+    and m.is_active_last_30_days
+    group by 1
+"
+
+# collect data from bigquery
+conversions <- bq_query(sql = sql)
+
+# save data
+saveRDS(conversions, "free_conversions.rds")
+```
+
+```{r include = FALSE}
+# read data
+conversions <- readRDS("free_conversions.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot conversion rate
+conversions %>% 
+  filter(date <= "2022-06-19") %>% 
+  mutate(rate = conversions / active_users) %>% 
+  buffplot(aes(x = date, y = rate)) +
+  geom_line() +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Date", y = "Conversion Rate",
+       subtitle = "% of Free MAU That Convert Within 30 Days")
+```
+
+## When Do Free Users Become Inactive
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  with users as (
+    select distinct
+      m.user_id
+      , u.signup_at_date as signup_date
+      , min(m.date) as inactive_date
+    from dbt_buffer.buffer_metrics_mau_movements_per_user as m
+    inner join dbt_buffer.buffer_users as u
+      on m.user_id = u.user_id
+    where m.is_paid is not true
+    and m.is_churn_mau
+    and m.date >= '2021-01-01'
+    group by 1,2
+  )
+  select distinct
+    user_id
+    , signup_date
+    , inactive_date
+    , date_diff(inactive_date, signup_date, day) as days_to_inactive
+  from users
+"
+
+# collect data from bigquery
+inactive <- bq_query(sql = sql)
+
+# save data
+saveRDS(inactive, "inactive_free_users.rds")
+```
+
+```{r include = FALSE}
+# read data
+inactive <- readRDS("inactive_free_users.rds")
+```
+
+
+First it's important to note that users can become inactive multiple times. This distribution only shows the number of days until the _first_ time that a free user becomes inactive.
+
+We can see that it's most common for people to become inactive 30 days after they first become active, indicating that they were only active for a single day. The distribution, unsurprisingly, is markedly different for users that had signed up recently and for those that hadn't. 
+
+Users that had signed up earlier than 30 days prior to the inactivity date tended to be active longer. This bimodal distribution makes it clear that there are two distinct populations here. 
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+# plot density
+inactive %>% 
+  mutate(is_new = as.numeric(inactive_date - signup_date) <= 30) %>% 
+  buffplot(aes(x = days_to_inactive, color = is_new, fill = is_new)) +
+  geom_density(alpha = 0.8) +
+  coord_cartesian(xlim = c(0, 180)) +
+  scale_x_continuous(limits = c(0, 180), breaks = seq(0, 180, 30)) +
+  labs(x = "Days to Become Inactive", y = "Density",
+       color = "Is New", fill = "Is New")
+```
+
+## Time to Activation
+Next we'll visualize the distribution of the amount of time it takes for free users to take their first key action.
+
+The distributions suggest that most people that activate do so very early on. In fact, [this Mixpanel report](https://mixpanel.com/s/2NQw3T) shows us that most people that activate do so within the first 30 minutes after signing up.
+
+The distribution is similar for those that did and didn't end up converting to a paid plan. It's worth noting that a larger proportion of people that did end up converting took longer to a full day or more to activate.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select
+    u.user_id
+    , u.signup_at
+    , u.first_key_action_at as activated_at
+    , u.did_signup_from_mobile as mobile_signup
+    , u.did_signup_on_trial as trial_signup
+    , timestamp_diff(u.first_key_action_at, u.signup_at, hour) as hours_to_activate
+    , min(s.timestamp) as converted_at
+  from dbt_buffer.buffer_users as u
+  left join dbt_buffer.segment_subscription_starts as s
+    on u.user_id = s.user_id
+  where u.signup_at >= '2022-01-01'
+  group by 1,2,3,4,5,6
+"
+
+# collect data from bigquery
+activation_time <- bq_query(sql = sql)
+
+# save data
+saveRDS(activation_time, "free_activation_time.rds")
+```
+
+```{r include = FALSE}
+# read data
+activation_time <- readRDS("free_activation_time.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# define cuts
+cuts <- c(-Inf, 0, 1, 12, 24, 168, Inf)
+
+# plot distribution of activation time
+activation_time %>% 
+  filter(!is.na(hours_to_activate)) %>% 
+  mutate(converted = !is.na(converted_at)) %>% 
+  group_by(converted, bucket = cut(hours_to_activate, breaks = cuts)) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users)) %>% 
+  buffplot(aes(x = bucket, y = prop, fill = converted)) +
+  geom_col() +
+  facet_wrap(~converted) +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Hours to Activate", y = "% of Signups", fill = "Converted")
+```
+
+## Email Domains
+The plots below show the most common email domains for Buffer users and the conversion rates for each. I've listed the 15 most common domains and grouped the rest into the "Other" category.
+
+Gmail is the most common domain by far, however there are several other domains that have higher conversion rates (e.g. me.com, outlook.com, protonmail.com).
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select
+    u.user_id
+    , net.host(u.email) as domain
+    , u.signup_at
+    , u.first_key_action_at as activated_at
+    , u.did_signup_from_mobile as mobile_signup
+    , u.did_signup_on_trial as trial_signup
+    , min(s.timestamp) as converted_at
+  from dbt_buffer.buffer_users as u
+  left join dbt_buffer.segment_subscription_starts as s
+    on u.user_id = s.user_id
+  where u.signup_at >= '2022-01-01'
+  group by 1,2,3,4,5,6
+"
+
+# collect data from bigquery
+domains <- bq_query(sql = sql)
+
+# save data
+saveRDS(domains, "free_domains.rds")
+```
+
+```{r include = FALSE}
+# read data
+domains <- readRDS("free_domains.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+library(forcats)
+
+# plot top domains
+domains %>% 
+  filter(!is.na(activated_at)) %>% 
+  mutate(converted = !is.na(converted_at),
+         domain_group = fct_lump(domain, n = 15)) %>% 
+  group_by(domain_group) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(domain_group = reorder(domain_group, users)) %>% 
+  buffplot(aes(x = domain_group, y = users)) +
+  geom_col(show.legend = F) +
+  coord_flip() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  scale_y_continuous(labels = comma) +
+  labs(x = NULL, y = "Signups") +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      ) 
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot conversion rates for domains
+domains %>% 
+  filter(!is.na(activated_at)) %>% 
+  mutate(converted = !is.na(converted_at),
+         domain_group = fct_lump(domain, n = 15)) %>% 
+  group_by(domain_group, converted) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users)) %>% 
+  filter(converted) %>% 
+  ungroup %>% 
+  mutate(domain_group = reorder(domain_group, -prop)) %>% 
+  buffplot(aes(x = domain_group, y = prop)) +
+  geom_col(show.legend = F) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  scale_y_continuous(labels = percent) +
+  labs(x = NULL, y = "Conversion Rate") 
+```
+
+
+## How Many Free Users Start Trials?
+The dataset used to answer this question includes all users that signed up since January 2021. It includes whether or not they signed up on a trial, the number of subscriptions they started (both with and without trials in the preceding 30 days), and the number of trials started. 
+
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select
+    u.user_id
+    , u.signup_at_date as signup_date
+    , u.did_signup_on_trial as trial_signup
+    , count(distinct s.id) as subs
+    , count(distinct t.id) as trials
+    , count(distinct case when s.has_trial then s.id end) as subs_with_trial
+  from dbt_buffer.buffer_users as u
+  left join dbt_buffer.buffer_subscription_starts as s
+        on u.user_id = s.user_id
+  left join dbt_buffer.segment_trial_starts as t
+    on u.user_id = t.user_id
+  where u.signup_at >= '2021-01-01'
+  and not u.did_signup_on_trial
+  group by 1,2,3
+"
+
+# collect data from bigquery
+user_trials <- bq_query(sql = sql)
+
+# save data
+saveRDS(user_trials, "free_user_trials.rds")
+```
+
+```{r include = FALSE}
+# read data
+user_trials <- readRDS("free_user_trials.rds")
+```
+
+The data tells us that only around 7% of free signups go on to start a trial after they sign up.
+
+```{r}
+# calculate percent that end up starting trial
+user_trials %>% 
+  filter(!trial_signup) %>% 
+  group_by(started_trial = trials >= 1) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = percent(users / sum(users), 0.01))
+```
+
+Only around 1.38% of free signups go on to purchase a paid subscription.
+
+```{r}
+# calculate percent that end up starting subscription
+user_trials %>% 
+  filter(!trial_signup) %>% 
+  group_by(started_sub = subs >= 1) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = percent(users / sum(users), 0.01))
+```
+
+However, of those 1.38% of free signups that went on to start a subscription, approximately 53% of them had started a trial in the 30 days prior to starting the subscription! 
+
+```{r}
+# calculate percent of subscribers that have trial
+user_trials %>% 
+  filter(!trial_signup) %>% 
+  mutate(converted = subs >= 1,
+         converted_with_trial = subs_with_trial >= 1) %>% 
+  filter(converted) %>% 
+  group_by(converted_with_trial) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = percent(users / sum(users), 0.01))
+```
+
+
+## Which Upgrade Paths Drive Conversions
+We'll only look at free signups that created an account on or after January 2021. The "Add Channel" button drives the most upgrades, followed by the top nav bar button and queue limit upgrade prompt
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  select
+    u.user_id
+    , u.signup_at_date as signup_date
+    , u.did_signup_on_trial as trial_signup
+    , s.last_upgrade_path_viewed as upgrade_path
+    , count(distinct s.id) as subs
+  from dbt_buffer.buffer_users as u
+  left join dbt_buffer.buffer_subscription_starts as s
+        on u.user_id = s.user_id
+  where u.signup_at >= '2021-01-01'
+  and not u.did_signup_on_trial
+  group by 1,2,3,4
+"
+
+# collect data from bigquery
+upgrade_paths <- bq_query(sql = sql)
+
+# save data
+saveRDS(upgrade_paths, "free_upgrade_paths.rds")
+```
+
+```{r include = FALSE}
+# read data
+upgrade_paths <- readRDS("free_upgrade_paths.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot top upgrade paths
+upgrade_paths %>% 
+  filter(subs > 0 & !is.na(upgrade_path)) %>% 
+  mutate(upgrade_path = gsub("publish-profileSidebar-addChannelButton-upgrade-1",
+                             "Add Channel Button", upgrade_path),
+         upgrade_path = gsub("publish-profile-nav-tabNavigation-upgrade-1",
+                             "Top Nav Bar", upgrade_path),
+         upgrade_path = gsub("publish-composer-profileQueueLimit-showPaidPlans-1",
+                             "Queue Limit", upgrade_path),
+         upgrade_path = gsub("profileSidebar-addChannelButton-upgrade-1",
+                             "Add Channel Button", upgrade_path),
+         upgrade_path = gsub("publish-campaigns-emptyState-upgrade-1",
+                             "Campaigns Empty State", upgrade_path),
+         upgrade_path = gsub("publish-awaitingApproval-paywall-upgrade-1",
+                             "Awaiting Approval Paywall", upgrade_path),
+         upgrade_path = gsub("analyze-paywallModal-paywallModal",
+                             "Analytics Paywall", upgrade_path),
+         upgrade_path = gsub("publish-composer-hashtagManager-upgrade-1",
+                             "Hashtag Manager Paywall", upgrade_path),
+         upgrade_path = gsub("publish-navBar-trialExpiredModal",
+                             "Trial Expiration Modal", upgrade_path),
+         upgrade_path = gsub("engage-paywallModal-paywallModal",
+                             "Engagement Paywall", upgrade_path),
+         upgrade_path = gsub("composer-profileQueueLimit-showPaidPlans-1",
+                             "Queue Limit", upgrade_path),
+         upgrade_path = gsub("composer-hashtagManager-upgrade-1",
+                             "Hashtag Manager Paywall", upgrade_path),
+         upgrade_path = gsub("campaigns-emptyState-upgrade-1",
+                             "Campaigns Empty State", upgrade_path),
+         upgrade_path = gsub("account-navBar-trialExpiredModal",
+                             "Trial Expiration Modal", upgrade_path),
+         upgrade_path = gsub("awaitingApproval-paywall-upgrade-1",
+                             "Awaiting Approval Paywall", upgrade_path),
+         upgrade_path = gsub("profile-nav-tabNavigation-upgrade-1",
+                             "Top Nav Bar", upgrade_path),
+         upgrade_path = gsub("app-shell-userMenu-upgrade",
+                             "Account Menu Upgrade Button", upgrade_path),
+         upgrade_path = gsub("publish-drafts-paywall-upgrade-1",
+                             "Drafts Paywall", upgrade_path),
+         upgrade_path = gsub("start_page-navBar-trialExpiredModal",
+                             "Trial Expiration Modal", upgrade_path),
+         upgrade_path = gsub("0-navBar-trialExpiredModal",
+                             "Trial Expiration Modal", upgrade_path)
+         ) %>% 
+  group_by(upgrade_path) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = users / sum(users),
+         upgrade_path = reorder(upgrade_path, prop)) %>% 
+  buffplot(aes(x = upgrade_path, y = prop)) + 
+  geom_col(show.legend = F) +
+  coord_flip() +
+  scale_y_continuous(labels = percent) +
+  labs(x = NULL, y = "Percent of Attributed Upgrades") +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      ) 
+```
+
