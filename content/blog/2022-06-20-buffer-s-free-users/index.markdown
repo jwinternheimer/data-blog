@@ -7,15 +7,50 @@ categories: []
 tags: []
 ---
 
-There are four main goals for this data analysis:
+The four main goals of this analysis are:
 
-1. Better understand Buffer's active free user base
-2. Identify opportunities for converting free users to paid
-3. Map our free user onboarding actions
-4. Define cohorts within our free user base to inform user qualification
+1. Gaining a better understanding of Buffer's active free users
+2. Identifying opportunities for converting free users to paid
+3. Mapping our free user onboarding actions
+4. Definning cohorts within our free user base to inform user qualification
 
 There are a lot of sections below, so settle in with a cup of tea and enjoy. Thank you in advance for reading this and taking the time to learn about Buffer's free users!
 
+
+## Summary
+Most of Buffer's active users (around 76%) are on free plans. However, there are a couple distinct populations within the free user base: one is a group of new users that signed up very recently and took a key action, and the other is a group of users that have been active in Buffer for a long time. Around 50% of Buffer's active free users signed up over one year ago. 
+
+Unsurprisingly, the US contributes the most to Buffer's free user base. **_Over 75% of conversions from free users come from people based in the US, UK, Canada, or Australia_**. 
+
+Only around 7% of free signups go on to start a trial after signing up and 1.38% end up upgrading to a paid plan. However, of those 1.38%, around 53% actually started a trial in the 30 days prior to starting a subscription! Buffer has upgrade paths that lead to people starting trials, so this makes sense.
+
+The Add Channel, Top Nav Bar, and Queue Limit upgrade paths contribute the most paid conversions from the free user base. The Add Channel button contributes over 36% of all attributed free user upgrades! The top nav bar contributes around 25%, and the queue limit upgrade path contributes around 13%.
+
+Usage patterns vary. Active free users take around 5-7 key actions per week and paying MAU take about twice as many. This is logical, as paying customers are likely to have more channels connected and more key actions to take.
+
+Paying customers are more likely to create posts in general, but free users are more likely to post to Twitter and less likely to post to Instagram. As many free active users post to LinkedIn as they do to Instagram.
+
+Relatively few free users hit the channel and queue limits. In the past 30 days, around 2.2% of active free users viewed the channel limit upgrade path and 0.3% viewed the queue limit upgrade path. It seems that many free users are operating within Buffer's free plan limits. 
+
+The main channels that Buffer's free users connect are Facebook, Twitter, Instagram, and LinkedIn. StartPage, Pinterest, TikTok, Shopify, and GoogleMyBusiness all lag behind the top four channels.
+
+Free users do convert to paid plans -- between 0.7% and 0.9% of active upgrade to paid plans _within 30 days of being active_. That number only takes Stripe subscriptions into account, so the actual percentage may be slightly higher.
+
+It's most common for people to become inactive 30 days after they first become active, which suggests that they were only active for a single day. The distribution, unsurprisingly, is markedly different for users that had signed up recently and for those that hadn't. There is a very long tail of free users that were active for a while before becoming inactive.
+
+Gmail is the most common email domain by far, but there are others that have higher conversion rates. People that sign up with protonmail.com, me.com, live.com, and icloud.com email addresses all have significantly higher probabilities of converting than people that sign up with gmail domains. Still, we should explore single sign on with Google since so many users sign up with a gmail address.
+
+## Recommendations
+
+ - Because Buffer's free users get so much value out of LinkedIn and Twitter, I'd suggest giving those networks due attention and trying to achieve as much parity as possible with the native posting experience. Twitter threads and LinkedIn tagging are two projects that I think are worthwhile investments for our free users.
+ 
+ - Very few free users hit the queue limit. That may a good thing, but we might consider testing another option: a scheduled post limit. Something like 100 scheduled posts per month could be worth trying. 
+ 
+ - Optimize the "Add Channel" upgrade path. Replace the "Manage Channels" button in the dashboard with an "Add Channel" button that directs people directly to the channel connection page. Add a (+) icon in the composer, calendar, and below the channels listed in the queue.
+ 
+ - Give free users basic analytics, like weekly aggregations. Give them a taste of what they could get with Buffer's paid offerings. 
+ 
+ - Build predictive model that identifies free signups that are most likely to convert and design communications to get them there more easily. Consider offering discounts if they do not convert after a certain time period.
 
 
 
@@ -94,7 +129,7 @@ If we consider people to be "new to Buffer" if they signed up less than 6 months
 ```r
 # new to buffer proportion
 free_mau %>% 
-  group_by(new = signup_date >= "2021-12-22") %>% 
+  group_by(new = signup_date >= "2021-07-22") %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(prop = users / sum(users))
 ```
@@ -103,8 +138,8 @@ free_mau %>%
 ## # A tibble: 2 × 3
 ##   new   users  prop
 ##   <lgl> <int> <dbl>
-## 1 FALSE 65297 0.619
-## 2 TRUE  40108 0.381
+## 1 FALSE 54173 0.514
+## 2 TRUE  51232 0.486
 ```
 
 ## Geographic Region
@@ -192,6 +227,7 @@ paid %>%
 ## 1 FALSE     26805 81%  
 ## 2 TRUE       6308 19%
 ```
+
 
 ## Free Usage Patterns
 Next we'll look at how usage patterns differ for different user Segments. We'll look at new Free MAU, old Free MAU, and Paying MAU.
@@ -643,7 +679,7 @@ First it's important to note that users can become inactive multiple times. This
 
 We can see that it's most common for people to become inactive 30 days after they first become active, indicating that they were only active for a single day. The distribution, unsurprisingly, is markedly different for users that had signed up recently and for those that hadn't. 
 
-Users that had signed up earlier than 30 days prior to the inactivity date tended to be active longer. This bimodal distribution makes it clear that there are two distinct populations here. 
+Users that had signed up earlier than 30 days prior to the inactivity date tended to be active longer. This bimodal distribution makes it clear that there are two distinct populations. 
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-53-1.png" width="672" />
 
