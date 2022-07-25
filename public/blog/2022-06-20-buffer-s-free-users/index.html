@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr"><head>
+  
+                           
+     
+
+
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="generator" content="Hugo 0.89.4" />
+<title>Buffer&#39;s Free Users | Buffer Data Blog</title>
+
+
+<meta property="twitter:site" content="@buffer">
+<meta property="twitter:creator" content="@buffer">
+
+
+
+
+
+
+
+  
+    
+  
+<meta name="description" content="A modern, beautiful, and easily configurable data team.">
+
+
+<meta property="og:site_name" content="Buffer Data Blog">
+<meta property="og:title" content="Buffer&#39;s Free Users | Buffer Data Blog">
+<meta property="og:description" content="A modern, beautiful, and easily configurable data team." />
+<meta property="og:type" content="page" />
+<meta property="og:url" content="/blog/2022-06-20-buffer-s-free-users/" />
+<meta property="og:locale" content="en">
+
+
+
+
+    
+        <meta property="og:image" content="/blog/2022-06-20-buffer-s-free-users/featured.jpg" >
+        <meta property="twitter:card" content="summary_large_image">
+        <meta name="twitter:image" content="/blog/2022-06-20-buffer-s-free-users/featured.jpg" >
+    
+    
+  <meta itemprop="name" content="Buffer&#39;s Free Users">
+<meta itemprop="description" content="There are four main goals for this data analysis:
+ Better understand Buffer&rsquo;s active free user base Identify opportunities for converting free users to paid Map our free user onboarding actions Define cohorts within our free user base to inform user qualification  There are a lot of sections below, so settle in with a cup of tea and enjoy. Thank you in advance for reading this and taking the time to learn about Buffer&rsquo;s free users!"><meta itemprop="datePublished" content="2022-06-20T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2022-06-20T00:00:00+00:00" />
+<meta itemprop="wordCount" content="3153"><meta itemprop="image" content="/blog/2022-06-20-buffer-s-free-users/featured.jpg">
+<meta itemprop="keywords" content="" />
+  
+  
+  <!--[if IE]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <link rel="shortcut icon" href="/img/buff_favicon.png" type="image/x-icon">
+  <link rel="icon" href="/img/buff_favicon.png" type="image/x-icon">
+  
+  
+  <link rel="stylesheet" href="/style.main.min.f72f5cc794fcc7b86cab520db152dc3ef55aea333df2e3496a4e1bac97849df2.css" integrity="sha256-9y9cx5T8x7hsq1INsVLcPvVa6jM98uNJak4brJeEnfI=" media="screen">
+  
+  
+  <script src="/panelset.min.078a92db9bd3228df502db3d9e0453c3cf3d910abe3f8deca0ad196c7071ad41.js" type="text/javascript"></script>
+  
+  
+  <script src="/main.min.484b72540b4e891877d2d642ab4763b3a5b9edcfe63dde87f294ca289e7207d8.js" type="text/javascript"></script>
+</head>
+<body>
+      <div class="grid-container">
+<header class="site-header pt4 pb2 mb4 bb b--transparent ph5 headroom z-max" role="banner">
+  <nav class="site-nav db dt-l w-100" role="navigation">
+    <a class="site-brand db dtc-l v-mid link no-underline w-100 w-33-l tc tl-l" href="/" title="Home">
+      <img src="/img/buffer-logo.png" class="dib db-l h2 w-auto" alt="Buffer Data Blog">
+    </a>
+    <div class="site-links db dtc-l v-mid w-100 w-47-l tc tr-l mt3 mt0-l ttu tracked">
+      
+        
+        
+        
+      <a class="link f6 f5-l dib pv1 ph2 active" href="/blog/" title="Blog">Blog</a>
+      
+      
+    </div>
+  </nav>
+</header>
+
+<main class="page-main pa4" role="main">
+  <section class="page-content mw7 center">
+    <article class="post-content pa0 ph4-l">
+      <header class="post-header">
+        <h1 class="f1 lh-solid measure-narrow mb3 fw4">Buffer&#39;s Free Users</h1>
+        
+        
+        <p class="f7 db mv0 ttu">June 20, 2022</p>
+
+      
+
+      </header>
+      <section class="post-body pt5 pb4">
+        <p>There are four main goals for this data analysis:</p>
+<ol>
+<li>Better understand Buffer&rsquo;s active free user base</li>
+<li>Identify opportunities for converting free users to paid</li>
+<li>Map our free user onboarding actions</li>
+<li>Define cohorts within our free user base to inform user qualification</li>
+</ol>
+<p>There are a lot of sections below, so settle in with a cup of tea and enjoy. Thank you in advance for reading this and taking the time to learn about Buffer&rsquo;s free users!</p>
+
+
+
+
+<h2 id="breakdown-of-buffers-monthly-active-users">Breakdown of Buffer&rsquo;s Monthly Active Users
+  <a href="#breakdown-of-buffers-monthly-active-users"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>The first thing we want to do is see how many of Buffer&rsquo;s monthly active users are on free plans.</p>
+<p>As of June 2022, there are around 105k monthly active users on a free plan and 32k on a paid subscription. Around 76% of monthly active users are on a free plan.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;select * from dbt_buffer.buffer_metrics_mau_movements&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+mau <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(mau, <span style="color:#d14">&#34;buffer_mau.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+<img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+
+
+
+
+<h2 id="account-age-of-active-free-users">Account Age of Active Free Users
+  <a href="#account-age-of-active-free-users"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Next we&rsquo;ll look at the distribution of account age for Buffer&rsquo;s free active users. To do this, we&rsquo;ll need to calculate the number of months that have elapsed between their signup dates and the current date.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select distinct
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , u.signup_at_date as signup_date
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  inner join dbt_buffer.buffer_key_actions as a
+</span><span style="color:#d14">    on u.user_id = a.user_id
+</span><span style="color:#d14">    and a.timestamp &gt;= timestamp_sub(current_timestamp(), interval 30 day)
+</span><span style="color:#d14">  where u.is_currently_paying_buffer_user is not true 
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+free_mau <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(free_mau, <span style="color:#d14">&#34;buffer_free_mau.rds&#34;</span>)
+</code></pre></div><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate months elapsed</span>
+free_mau <span style="color:#000;font-weight:bold">&lt;-</span> free_mau <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(months_passed <span style="color:#000;font-weight:bold">=</span> (<span style="color:#900;font-weight:bold">interval</span>(<span style="color:#900;font-weight:bold">ymd</span>(signup_date), 
+             <span style="color:#900;font-weight:bold">ymd</span>(<span style="color:#900;font-weight:bold">Sys.Date</span>()))) <span style="color:#000;font-weight:bold">%/%</span> <span style="color:#900;font-weight:bold">months</span>(<span style="color:#099">1</span>))
+</code></pre></div><p>Now we can plot the distribution of account age for Buffer&rsquo;s free monthly active users. The plot shows that a large portion of Buffer&rsquo;s free MAUs signed up less than one month ago.</p>
+<img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+<p>The plot below shows the months grouped into buckets. As a reminder, the &ldquo;(&rdquo; parenthesis preceding a number is <em>exclusive</em> &ndash; the number to the right is not included. The &ldquo;]&rdquo; bracket is <em>inclusive</em>, meaning that the number is included.</p>
+<img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+<p>We can see that Buffer&rsquo;s monthly active users are largely made up of new users and people that have been using Buffer for years!</p>
+<p>If we consider people to be &ldquo;new to Buffer&rdquo; if they signed up less than 6 months ago, approximately 36% (37.7k) are new and 64% (67.5k) are not.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># new to buffer proportion</span>
+free_mau <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(new <span style="color:#000;font-weight:bold">=</span> signup_date <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#d14">&#34;2021-12-22&#34;</span>) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(prop <span style="color:#000;font-weight:bold">=</span> users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   new   users  prop
+##   &lt;lgl&gt; &lt;int&gt; &lt;dbl&gt;
+## 1 FALSE 65297 0.619
+## 2 TRUE  40108 0.381
+</code></pre>
+
+
+
+<h2 id="geographic-region">Geographic Region
+  <a href="#geographic-region"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Next we&rsquo;ll look at the geographic regions of our MAUs. Over 50% of free MAUs are from the US, UK, Canada, or France. Around 31% are from the US.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select distinct
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , p.country_code
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  left join fivetran_mixpanel.people as p
+</span><span style="color:#d14">    on p.distinct_id = u.user_id
+</span><span style="color:#d14">  inner join dbt_buffer.buffer_key_actions as a
+</span><span style="color:#d14">    on u.user_id = a.user_id
+</span><span style="color:#d14">    and a.timestamp &gt;= timestamp_sub(current_timestamp(), interval 30 day)
+</span><span style="color:#d14">  where u.is_currently_paying_buffer_user is not true 
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+countries <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(countries, <span style="color:#d14">&#34;mau_countries.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+<p>Next we&rsquo;ll look at the geographic breakdown of free <em>signups</em> that ended up paying for a paid subscription.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , p.country_code
+</span><span style="color:#d14">    , count(distinct t.id) as trials
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  left join fivetran_mixpanel.people as p
+</span><span style="color:#d14">    on p.distinct_id = u.user_id
+</span><span style="color:#d14">  inner join dbt_buffer.stripe_paid_subscriptions as s
+</span><span style="color:#d14">    on s.account_id = u.user_id
+</span><span style="color:#d14">    and s.status = &#39;active&#39;
+</span><span style="color:#d14">  left join dbt_buffer.stripe_trials as t
+</span><span style="color:#d14">    on t.customer_id = s.customer_id
+</span><span style="color:#d14">    and t.trial_started_at between 
+</span><span style="color:#d14">      timestamp_sub(s.first_paid_invoice_created_at, interval 30 day) and 
+</span><span style="color:#d14">      s.first_paid_invoice_created_at
+</span><span style="color:#d14">  where u.did_signup_on_trial is not true
+</span><span style="color:#d14">  group by 1,2
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+paid <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(paid, <span style="color:#d14">&#34;free_paid.rds&#34;</span>)
+</code></pre></div><p>Over 50% of converted free users &ndash; defined as not having signed up with a trial &ndash; are from the US. A further 14% or so are from the UK, and around 6% are from Canada. <strong>Over 75% of conversions from free users come from people based in the US, UK, Canada, or Australia</strong>.</p>
+<img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
+<p>Interestingly, around 19% of conversions from free users, i.e. those that do not sign up with a trial, did have a trial in the 30 days prior to subscribing to the paid plan.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">paid <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(had_trial <span style="color:#000;font-weight:bold">=</span> trials <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#099">1</span>) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(prop <span style="color:#000;font-weight:bold">=</span> scales<span style="color:#000;font-weight:bold">::</span><span style="color:#900;font-weight:bold">percent</span>(users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users)))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   had_trial users prop 
+##   &lt;lgl&gt;     &lt;int&gt; &lt;chr&gt;
+## 1 FALSE     26805 81%  
+## 2 TRUE       6308 19%
+</code></pre>
+
+
+
+<h2 id="free-usage-patterns">Free Usage Patterns
+  <a href="#free-usage-patterns"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Next we&rsquo;ll look at how usage patterns differ for different user Segments. We&rsquo;ll look at new Free MAU, old Free MAU, and Paying MAU.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># read data from Mixpanel: https://mixpanel.com/s/4zBctB</span>
+freq <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">read_csv</span>(<span style="color:#d14">&#34;~/Desktop/mau_frequency.csv&#34;</span>)
+
+<span style="color:#998;font-style:italic"># update column names</span>
+<span style="color:#900;font-weight:bold">names</span>(freq) <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#d14">&#34;date&#34;</span>, <span style="color:#d14">&#34;event&#34;</span>, <span style="color:#d14">&#34;cohort&#34;</span>, <span style="color:#d14">&#34;paid&#34;</span>, <span style="color:#d14">&#34;med_key_actions&#34;</span>)
+
+<span style="color:#998;font-style:italic"># remove column</span>
+freq<span style="color:#000;font-weight:bold">$</span>event <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#000;font-weight:bold">NULL</span>
+
+<span style="color:#998;font-style:italic"># filter</span>
+freq <span style="color:#000;font-weight:bold">&lt;-</span> freq <span style="color:#000;font-weight:bold">%&gt;%</span> <span style="color:#900;font-weight:bold">filter</span>(cohort <span style="color:#000;font-weight:bold">!=</span> <span style="color:#d14">&#34;All User Profiles&#34;</span>)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(freq, <span style="color:#d14">&#34;mau_key_action_frequency.rds&#34;</span>)
+</code></pre></div><p>The plot below shows us that, in general, free MAU take around 5-7 key actions per week and paying MAU take about twice as many. This makes sense given that paying customers are more likely to have more channels connected.</p>
+<p>New MAU also take slightly fewer key actions in a given week than old MAU (those that signed up over 90 days ago).</p>
+<img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-21-1.png" width="672" />
+<p>Next we&rsquo;ll look at how likely free MAU are to post to different social networks. Unsurprisingly, paying customers are more likely to create posts in general. Free MAU are more likely to post to Twitter and less likely to post to Instagram.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># read data from Mixpanel: https://mixpanel.com/s/2OwcWZ</span>
+channels <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">read_csv</span>(<span style="color:#d14">&#34;~/Desktop/mau_channels.csv&#34;</span>)
+
+<span style="color:#998;font-style:italic"># update column names</span>
+<span style="color:#900;font-weight:bold">names</span>(channels) <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#d14">&#34;week&#34;</span>, <span style="color:#d14">&#34;event&#34;</span>, <span style="color:#d14">&#34;paid&#34;</span>, <span style="color:#d14">&#34;channel&#34;</span>, <span style="color:#d14">&#34;users&#34;</span>)
+
+<span style="color:#998;font-style:italic"># remove column</span>
+channels<span style="color:#000;font-weight:bold">$</span>event <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#000;font-weight:bold">NULL</span>
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(channels, <span style="color:#d14">&#34;mau_channels.csv&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-24-1.png" width="672" />
+
+
+
+
+<h2 id="signup-referrers">Signup Referrers
+  <a href="#signup-referrers"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Next we&rsquo;ll compare the signup referrers for both free and paid MAU. We&rsquo;ll only do this for MAU that signed up since April 2022, since that&rsquo;s when we were able to create our new attribution model.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select distinct
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , u.is_currently_paying_buffer_user as paid
+</span><span style="color:#d14">    , s.referrer_domain_grouped as referrer
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  inner join dbt_buffer.buffer_key_actions as a
+</span><span style="color:#d14">    on u.user_id = a.user_id
+</span><span style="color:#d14">    and a.timestamp &gt;= timestamp_sub(current_timestamp(), interval 30 day)
+</span><span style="color:#d14">  inner join dbt_buffer.segment_sessions as s
+</span><span style="color:#d14">    on s.dbt_visitor_id = u.user_id
+</span><span style="color:#d14">    and s.signup_session
+</span><span style="color:#d14">  where u.signup_at &gt;= &#39;2022-04-01&#39;
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+mau_referrers <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(mau_referrers, <span style="color:#d14">&#34;mau_referrers.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-27-1.png" width="672" />
+<p>Free MAU are much more likely to have signed up on a mobile app or been invited to a team. They&rsquo;re also more likely to have signed up through social. Paying MAU are more likely to have signed up to Buffer directly, through organic search, or through a paid advertisement.</p>
+<p>Let&rsquo;s see what this would look like if we removed team members.</p>
+<img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-28-1.png" width="672" />
+<p>Free MAU are much more likely to have signed up or through social, but other than that the distributions look fairly similar.</p>
+
+
+
+
+<h2 id="how-many-free-mau-receive-buffers-emails">How Many Free MAU Receive Buffer&rsquo;s Emails?
+  <a href="#how-many-free-mau-receive-buffers-emails"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Approximately 84% of free monthly active users has received one of Buffer&rsquo;s emails since June 1, and approximately 64% have opened an email.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select distinct
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , count(distinct ed.id) as emails_delivered
+</span><span style="color:#d14">    , count(distinct eo.id) as emails_opened
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  inner join dbt_buffer.buffer_metrics_mau_movements_per_user as a
+</span><span style="color:#d14">    on u.user_id = a.user_id
+</span><span style="color:#d14">    and a.date = &#39;2022-07-14&#39;
+</span><span style="color:#d14">    and a.is_active_last_30_days
+</span><span style="color:#d14">  left join segment_customerio_webhook.email_delivered as ed
+</span><span style="color:#d14">    on ed.user_id = u.user_id
+</span><span style="color:#d14">    and ed.timestamp &gt;= &#39;2022-06-01&#39;
+</span><span style="color:#d14">  left join segment_customerio_webhook.email_opened as eo
+</span><span style="color:#d14">    on eo.user_id = u.user_id
+</span><span style="color:#d14">    and eo.timestamp &gt;= &#39;2022-06-01&#39;
+</span><span style="color:#d14">  where u.is_currently_paying_buffer_user is not true
+</span><span style="color:#d14">  group by 1
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+free_mau_emails <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(free_mau_emails, <span style="color:#d14">&#34;free_mau_emails.rds&#34;</span>)
+</code></pre></div><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate percent</span>
+free_mau_emails <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(has_emails <span style="color:#000;font-weight:bold">=</span> emails_delivered <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#099">1</span>) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(prop <span style="color:#000;font-weight:bold">=</span> users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   has_emails users  prop
+##   &lt;lgl&gt;      &lt;int&gt; &lt;dbl&gt;
+## 1 FALSE      16670 0.159
+## 2 TRUE       88160 0.841
+</code></pre><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate percent</span>
+free_mau_emails <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(opened_email <span style="color:#000;font-weight:bold">=</span> emails_opened <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#099">1</span>) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(prop <span style="color:#000;font-weight:bold">=</span> users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   opened_email users  prop
+##   &lt;lgl&gt;        &lt;int&gt; &lt;dbl&gt;
+## 1 FALSE        38052 0.363
+## 2 TRUE         66778 0.637
+</code></pre>
+
+
+
+<h2 id="how-many-active-free-users-previously-had-a-subscription">How Many Active Free Users Previously Had a Subscription
+  <a href="#how-many-active-free-users-previously-had-a-subscription"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Here we&rsquo;ll only look at Stripe subscriptions, but it&rsquo;s possible that free users previously had a mobile subscription.</p>
+<p>Around 6% of active free users previously had a subscription. However, if we exclude team members, only around 1% of active free users previously had a paid subscription.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select distinct
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , u.is_team_member as team_member
+</span><span style="color:#d14">    , count(distinct s.id) as previous_subscriptions
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  inner join dbt_buffer.buffer_metrics_mau_movements_per_user as a
+</span><span style="color:#d14">    on u.user_id = a.user_id
+</span><span style="color:#d14">    and a.date = &#39;2022-07-14&#39;
+</span><span style="color:#d14">    and a.is_active_last_30_days
+</span><span style="color:#d14">  left join dbt_buffer.stripe_paid_subscriptions as s
+</span><span style="color:#d14">    on s.customer_id = u.stripe_customer_id
+</span><span style="color:#d14">  where u.is_currently_paying_buffer_user is not true
+</span><span style="color:#d14">  group by 1,2
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+free_mau_subs <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(free_mau_subs, <span style="color:#d14">&#34;free_mau_subs.rds&#34;</span>)
+</code></pre></div><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate percent with sub</span>
+free_mau_subs <span style="color:#000;font-weight:bold">%&gt;%</span>  
+  <span style="color:#900;font-weight:bold">group_by</span>(has_sub <span style="color:#000;font-weight:bold">=</span> previous_subscriptions <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#099">1</span>) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(prop <span style="color:#000;font-weight:bold">=</span> users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   has_sub users   prop
+##   &lt;lgl&gt;   &lt;int&gt;  &lt;dbl&gt;
+## 1 FALSE   98393 0.939 
+## 2 TRUE     6437 0.0614
+</code></pre>
+
+
+
+<h2 id="channel-distribution">Channel Distribution
+  <a href="#channel-distribution"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>The plot below shows the distribution of channels connected for active free users that are not on a trial. We can see that most tend to have three channels connected.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , ca.organization_id
+</span><span style="color:#d14">    , u.is_currently_on_one_buffer as new_buffer
+</span><span style="color:#d14">    , u.is_team_member as team_member
+</span><span style="color:#d14">    , u.is_currently_trialing as trialing
+</span><span style="color:#d14">    , count(distinct c.id) as channels_connected
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  inner join dbt_buffer.core_accounts as ca
+</span><span style="color:#d14">    on u.user_id = ca.id
+</span><span style="color:#d14">  inner join dbt_buffer.buffer_metrics_mau_movements_per_user as a
+</span><span style="color:#d14">    on u.user_id = a.user_id
+</span><span style="color:#d14">    and a.date = &#39;2022-07-14&#39;
+</span><span style="color:#d14">    and a.is_active_last_30_days
+</span><span style="color:#d14">  left join dbt_buffer.core_channels as c
+</span><span style="color:#d14">      on ca.organization_id = c.organization_id
+</span><span style="color:#d14">      and c.is_deleted is not true
+</span><span style="color:#d14">      and c.is_locked is not true
+</span><span style="color:#d14">  where u.is_currently_paying_buffer_user is not true
+</span><span style="color:#d14">  and u.stripe_customer_id is not null
+</span><span style="color:#d14">  group by 1,2,3,4,5
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+free_channels <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(free_channels, <span style="color:#d14">&#34;free_channels_dist.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-38-1.png" width="672" />
+
+
+
+
+<h2 id="how-many-hit-queue-and-channel-limits">How Many Hit Queue and Channel Limits?
+  <a href="#how-many-hit-queue-and-channel-limits"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Very few (around 0.3%) of free MAU hit the queue limit. Around 2.2% hit the channel limit.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># read data from Mixpanel:https://mixpanel.com/s/1KOXgS</span>
+paths <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">read_csv</span>(<span style="color:#d14">&#34;~/Desktop/upgrade_paths.csv&#34;</span>)
+
+<span style="color:#998;font-style:italic"># update column names</span>
+<span style="color:#900;font-weight:bold">names</span>(paths) <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#d14">&#34;event&#34;</span>, <span style="color:#d14">&#34;paid&#34;</span>, <span style="color:#d14">&#34;path&#34;</span>, <span style="color:#d14">&#34;users&#34;</span>)
+
+<span style="color:#998;font-style:italic"># remove column</span>
+paths<span style="color:#000;font-weight:bold">$</span>event <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#000;font-weight:bold">NULL</span>
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(paths, <span style="color:#d14">&#34;mau_upgrade_paths.rds&#34;</span>)
+</code></pre></div><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate percentages</span>
+paths <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#000;font-weight:bold">!</span>paid) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(prop <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">percent</span>(users <span style="color:#000;font-weight:bold">/</span> <span style="color:#099">107333</span>)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">arrange</span>(<span style="color:#900;font-weight:bold">desc</span>(prop))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 10 × 4
+##    paid  path                                              users prop  
+##    &lt;lgl&gt; &lt;chr&gt;                                             &lt;dbl&gt; &lt;chr&gt; 
+##  1 FALSE publish-navBar-trialExpiredModal                   9307 8.671%
+##  2 FALSE analyze-paywallModal-paywallModal                  7384 6.880%
+##  3 FALSE engage-paywallModal-paywallModal                   4882 4.548%
+##  4 FALSE profileSidebar-addChannelButton-upgrade-1          2392 2.229%
+##  5 FALSE account-navBar-trialExpiredModal                   1879 1.751%
+##  6 FALSE composer-profileQueueLimit-showPaidPlans-1          314 0.293%
+##  7 FALSE start_page-navBar-trialExpiredModal                 273 0.254%
+##  8 FALSE campaigns-emptyState-upgrade-1                      152 0.142%
+##  9 FALSE composer-hashtagManager-upgrade-1                   115 0.107%
+## 10 FALSE publish-profileSidebar-addChannelButton-upgrade-1     1 0.001%
+</code></pre>
+
+
+
+<h2 id="which-channels-are-connected-and-used-most-often-by-free-users">Which Channels Are Connected and Used Most Often by Free Users?
+  <a href="#which-channels-are-connected-and-used-most-often-by-free-users"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>The most commonly connected channels connected for Buffer&rsquo;s free users are Facebook, Twitter, Instagram, and LinkedIn. StartPage, Pinterest, TikTok, Shopify, and GoogleMyBusiness all lag behind the top four channels.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , ca.organization_id
+</span><span style="color:#d14">    , u.is_currently_on_one_buffer as new_buffer
+</span><span style="color:#d14">    , u.is_team_member as team_member
+</span><span style="color:#d14">    , u.is_currently_trialing as trialing
+</span><span style="color:#d14">    , c.service_type as channel
+</span><span style="color:#d14">    , count(distinct c.id) as channels_connected
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  inner join dbt_buffer.core_accounts as ca
+</span><span style="color:#d14">    on u.user_id = ca.id
+</span><span style="color:#d14">  inner join dbt_buffer.buffer_metrics_mau_movements_per_user as a
+</span><span style="color:#d14">    on u.user_id = a.user_id
+</span><span style="color:#d14">    and a.date = &#39;2022-07-18&#39;
+</span><span style="color:#d14">    and a.is_active_last_30_days
+</span><span style="color:#d14">  left join dbt_buffer.core_channels as c
+</span><span style="color:#d14">      on ca.organization_id = c.organization_id
+</span><span style="color:#d14">      and c.is_deleted is not true
+</span><span style="color:#d14">      and c.is_locked is not true
+</span><span style="color:#d14">  where u.is_currently_paying_buffer_user is not true
+</span><span style="color:#d14">  and u.stripe_customer_id is not null
+</span><span style="color:#d14">  group by 1,2,3,4,5,6
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+channel_counts <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(channel_counts, <span style="color:#d14">&#34;free_channel_counts.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-44-1.png" width="672" />
+<p>Interestingly, more active free users tend to post to Facebook, LinkedIn, and Twitter than to Instagram.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    p.user_id
+</span><span style="color:#d14">    , p.channel
+</span><span style="color:#d14">    , count(distinct p.id) as posts
+</span><span style="color:#d14">  from dbt_buffer.segment_posts_created as p
+</span><span style="color:#d14">  inner join dbt_buffer.buffer_users as u
+</span><span style="color:#d14">    on u.user_id = p.user_id
+</span><span style="color:#d14">    and u.is_currently_paying_buffer_user is not true
+</span><span style="color:#d14">  where p.timestamp &gt;= &#39;2022-06-17&#39;
+</span><span style="color:#d14">  group by 1,2
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+post_channels <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(post_channels, <span style="color:#d14">&#34;free_post_channels.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-47-1.png" width="672" />
+
+
+
+
+<h2 id="free-conversions-rates">Free Conversions Rates
+  <a href="#free-conversions-rates"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Now we&rsquo;ll look at the rate at which free active users convert to paid customers. To do this, we&rsquo;ll calculate the proportion of active free users on a given date that start a paid <em>Stripe</em> subscription within 30 days of that date.</p>
+<p>The data shows us that there are some cyclical patterns with clear peaks and troughs, but the conversion rate is generally between 0.7% and 0.9%.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    m.date
+</span><span style="color:#d14">    , count(distinct m.user_id) as active_users
+</span><span style="color:#d14">    , count(distinct s.customer_id) as conversions
+</span><span style="color:#d14">  from dbt_buffer.buffer_metrics_mau_movements_per_user as m
+</span><span style="color:#d14">  left join dbt_buffer.stripe_paid_subscriptions as s
+</span><span style="color:#d14">    on m.user_id = s.account_id
+</span><span style="color:#d14">    and date(s.first_paid_invoice_created_at) between m.date and date_add(m.date, interval 30 day)
+</span><span style="color:#d14">  where m.date &gt;= &#39;2021-01-01&#39;
+</span><span style="color:#d14">    and m.is_paid is not true
+</span><span style="color:#d14">    and m.is_active_last_30_days
+</span><span style="color:#d14">    group by 1
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+conversions <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(conversions, <span style="color:#d14">&#34;free_conversions.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-50-1.png" width="672" />
+
+
+
+
+<h2 id="when-do-free-users-become-inactive">When Do Free Users Become Inactive
+  <a href="#when-do-free-users-become-inactive"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  with users as (
+</span><span style="color:#d14">    select distinct
+</span><span style="color:#d14">      m.user_id
+</span><span style="color:#d14">      , u.signup_at_date as signup_date
+</span><span style="color:#d14">      , min(m.date) as inactive_date
+</span><span style="color:#d14">    from dbt_buffer.buffer_metrics_mau_movements_per_user as m
+</span><span style="color:#d14">    inner join dbt_buffer.buffer_users as u
+</span><span style="color:#d14">      on m.user_id = u.user_id
+</span><span style="color:#d14">    where m.is_paid is not true
+</span><span style="color:#d14">    and m.is_churn_mau
+</span><span style="color:#d14">    and m.date &gt;= &#39;2021-01-01&#39;
+</span><span style="color:#d14">    group by 1,2
+</span><span style="color:#d14">  )
+</span><span style="color:#d14">  select distinct
+</span><span style="color:#d14">    user_id
+</span><span style="color:#d14">    , signup_date
+</span><span style="color:#d14">    , inactive_date
+</span><span style="color:#d14">    , date_diff(inactive_date, signup_date, day) as days_to_inactive
+</span><span style="color:#d14">  from users
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+inactive <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(inactive, <span style="color:#d14">&#34;inactive_free_users.rds&#34;</span>)
+</code></pre></div><p>First it&rsquo;s important to note that users can become inactive multiple times. This distribution only shows the number of days until the <em>first</em> time that a free user becomes inactive.</p>
+<p>We can see that it&rsquo;s most common for people to become inactive 30 days after they first become active, indicating that they were only active for a single day. The distribution, unsurprisingly, is markedly different for users that had signed up recently and for those that hadn&rsquo;t.</p>
+<p>Users that had signed up earlier than 30 days prior to the inactivity date tended to be active longer. This bimodal distribution makes it clear that there are two distinct populations here.</p>
+<img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-53-1.png" width="672" />
+
+
+
+
+<h2 id="time-to-activation">Time to Activation
+  <a href="#time-to-activation"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Next we&rsquo;ll visualize the distribution of the amount of time it takes for free users to take their first key action.</p>
+<p>The distributions suggest that most people that activate do so very early on. In fact, 
+<a href="https://mixpanel.com/s/2NQw3T" target="_blank" rel="noopener">this Mixpanel report</a> shows us that most people that activate do so within the first 30 minutes after signing up.</p>
+<p>The distribution is similar for those that did and didn&rsquo;t end up converting to a paid plan. It&rsquo;s worth noting that a larger proportion of people that did end up converting took longer to a full day or more to activate.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , u.signup_at
+</span><span style="color:#d14">    , u.first_key_action_at as activated_at
+</span><span style="color:#d14">    , u.did_signup_from_mobile as mobile_signup
+</span><span style="color:#d14">    , u.did_signup_on_trial as trial_signup
+</span><span style="color:#d14">    , timestamp_diff(u.first_key_action_at, u.signup_at, hour) as hours_to_activate
+</span><span style="color:#d14">    , min(s.timestamp) as converted_at
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  left join dbt_buffer.segment_subscription_starts as s
+</span><span style="color:#d14">    on u.user_id = s.user_id
+</span><span style="color:#d14">  where u.signup_at &gt;= &#39;2022-01-01&#39;
+</span><span style="color:#d14">  group by 1,2,3,4,5,6
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+activation_time <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(activation_time, <span style="color:#d14">&#34;free_activation_time.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-56-1.png" width="672" />
+
+
+
+
+<h2 id="email-domains">Email Domains
+  <a href="#email-domains"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>The plots below show the most common email domains for Buffer users and the conversion rates for each. I&rsquo;ve listed the 15 most common domains and grouped the rest into the &ldquo;Other&rdquo; category.</p>
+<p>Gmail is the most common domain by far, however there are several other domains that have higher conversion rates (e.g. me.com, outlook.com, protonmail.com).</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , net.host(u.email) as domain
+</span><span style="color:#d14">    , u.signup_at
+</span><span style="color:#d14">    , u.first_key_action_at as activated_at
+</span><span style="color:#d14">    , u.did_signup_from_mobile as mobile_signup
+</span><span style="color:#d14">    , u.did_signup_on_trial as trial_signup
+</span><span style="color:#d14">    , min(s.timestamp) as converted_at
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  left join dbt_buffer.segment_subscription_starts as s
+</span><span style="color:#d14">    on u.user_id = s.user_id
+</span><span style="color:#d14">  where u.signup_at &gt;= &#39;2022-01-01&#39;
+</span><span style="color:#d14">  group by 1,2,3,4,5,6
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+domains <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(domains, <span style="color:#d14">&#34;free_domains.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-59-1.png" width="672" />
+<img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-60-1.png" width="672" />
+
+
+
+
+<h2 id="how-many-free-users-start-trials">How Many Free Users Start Trials?
+  <a href="#how-many-free-users-start-trials"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>The dataset used to answer this question includes all users that signed up since January 2021. It includes whether or not they signed up on a trial, the number of subscriptions they started (both with and without trials in the preceding 30 days), and the number of trials started.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , u.signup_at_date as signup_date
+</span><span style="color:#d14">    , u.did_signup_on_trial as trial_signup
+</span><span style="color:#d14">    , count(distinct s.id) as subs
+</span><span style="color:#d14">    , count(distinct t.id) as trials
+</span><span style="color:#d14">    , count(distinct case when s.has_trial then s.id end) as subs_with_trial
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  left join dbt_buffer.buffer_subscription_starts as s
+</span><span style="color:#d14">        on u.user_id = s.user_id
+</span><span style="color:#d14">  left join dbt_buffer.segment_trial_starts as t
+</span><span style="color:#d14">    on u.user_id = t.user_id
+</span><span style="color:#d14">  where u.signup_at &gt;= &#39;2021-01-01&#39;
+</span><span style="color:#d14">  and not u.did_signup_on_trial
+</span><span style="color:#d14">  group by 1,2,3
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+user_trials <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(user_trials, <span style="color:#d14">&#34;free_user_trials.rds&#34;</span>)
+</code></pre></div><p>The data tells us that only around 7% of free signups go on to start a trial after they sign up.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate percent that end up starting trial</span>
+user_trials <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#000;font-weight:bold">!</span>trial_signup) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(started_trial <span style="color:#000;font-weight:bold">=</span> trials <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#099">1</span>) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(prop <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">percent</span>(users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users), <span style="color:#099">0.01</span>))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   started_trial  users prop  
+##   &lt;lgl&gt;          &lt;int&gt; &lt;chr&gt; 
+## 1 FALSE         735837 93.31%
+## 2 TRUE           52776 6.69%
+</code></pre><p>Only around 1.38% of free signups go on to purchase a paid subscription.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate percent that end up starting subscription</span>
+user_trials <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#000;font-weight:bold">!</span>trial_signup) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(started_sub <span style="color:#000;font-weight:bold">=</span> subs <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#099">1</span>) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(prop <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">percent</span>(users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users), <span style="color:#099">0.01</span>))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   started_sub  users prop  
+##   &lt;lgl&gt;        &lt;int&gt; &lt;chr&gt; 
+## 1 FALSE       777744 98.62%
+## 2 TRUE         10869 1.38%
+</code></pre><p>However, of those 1.38% of free signups that went on to start a subscription, approximately 53% of them had started a trial in the 30 days prior to starting the subscription!</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate percent of subscribers that have trial</span>
+user_trials <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#000;font-weight:bold">!</span>trial_signup) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(converted <span style="color:#000;font-weight:bold">=</span> subs <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#099">1</span>,
+         converted_with_trial <span style="color:#000;font-weight:bold">=</span> subs_with_trial <span style="color:#000;font-weight:bold">&gt;=</span> <span style="color:#099">1</span>) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">filter</span>(converted) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(converted_with_trial) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">mutate</span>(prop <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">percent</span>(users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users), <span style="color:#099">0.01</span>))
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 3
+##   converted_with_trial users prop  
+##   &lt;lgl&gt;                &lt;int&gt; &lt;chr&gt; 
+## 1 FALSE                 5171 47.58%
+## 2 TRUE                  5698 52.42%
+</code></pre>
+
+
+
+<h2 id="which-upgrade-paths-drive-conversions">Which Upgrade Paths Drive Conversions
+  <a href="#which-upgrade-paths-drive-conversions"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>We&rsquo;ll only look at free signups that created an account on or after January 2021. The &ldquo;Add Channel&rdquo; button drives the most upgrades, followed by the top nav bar button and queue limit upgrade prompt</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    u.user_id
+</span><span style="color:#d14">    , u.signup_at_date as signup_date
+</span><span style="color:#d14">    , u.did_signup_on_trial as trial_signup
+</span><span style="color:#d14">    , s.last_upgrade_path_viewed as upgrade_path
+</span><span style="color:#d14">    , count(distinct s.id) as subs
+</span><span style="color:#d14">  from dbt_buffer.buffer_users as u
+</span><span style="color:#d14">  left join dbt_buffer.buffer_subscription_starts as s
+</span><span style="color:#d14">        on u.user_id = s.user_id
+</span><span style="color:#d14">  where u.signup_at &gt;= &#39;2021-01-01&#39;
+</span><span style="color:#d14">  and not u.did_signup_on_trial
+</span><span style="color:#d14">  group by 1,2,3,4
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+upgrade_paths <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(upgrade_paths, <span style="color:#d14">&#34;free_upgrade_paths.rds&#34;</span>)
+</code></pre></div><img src="/blog/2022-06-20-buffer-s-free-users/index_files/figure-html/unnamed-chunk-68-1.png" width="672" />
+
+        
+        <details closed class="f6 fw7 input-reset">
+  <dl class="f6 lh-copy">
+    <dt class="fw7">Posted on:</dt>
+    <dd class="fw5 ml0">June 20, 2022</dd>
+  </dl>
+  <dl class="f6 lh-copy">
+    <dt class="fw7">Length:</dt>
+    <dd class="fw5 ml0">15 minute read, 3153 words</dd>
+  </dl>
+  
+  
+  
+  <dl class="f6 lh-copy">
+    <dt class="fw7">See Also:</dt>
+    
+  </dl>
+</details>
+
+      </section>
+      <footer class="post-footer">
+        <div class="post-pagination dt w-100 mt4 mb2">
+  
+  
+  
+  
+    <a class="next dtc pl2 tr v-top fw6"
+    href="/blog/2022-05-10-geographic-market-insights/">Geographic Market Insights &rarr;</a>
+  
+</div>
+
+      </footer>
+    </article>
+    
+      
+<div class="post-comments pa0 pa4-l mt4">
+  
+  <script src="https://utteranc.es/client.js"
+          repo="apreshill/apero"
+          issue-term="pathname"
+          theme="boxy-light"
+          label="comments :crystal_ball:"
+          crossorigin="anonymous"
+          async
+          type="text/javascript">
+  </script>
+  
+</div>
+
+    
+  </section>
+</main>
+<footer class="site-footer pv4 bt b--transparent ph5" role="contentinfo">
+  <nav class="db dt-l w-100">
+    <p class="site-copyright f7 db dtc-l v-mid w-100 w-33-l tc tl-l pv2 pv0-l mv0 lh-copy">
+      &copy; 2022 Buffer, Anywhere
+      <span class="middot-divider"></span>
+      Made with <span xmlns:dct="http://purl.org/dc/terms/" property="dct:title"><a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/hugo-apero/" rel="dct:source">Hugo Apéro</a></span>.
+      <br />
+      
+Based on <span xmlns:dct="http://purl.org/dc/terms/" property="dct:title"><a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/formspree/blogophonic-hugo" rel="dct:source">Blogophonic</a></span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://formspree.io" property="cc:attributionName" rel="cc:attributionURL">Formspree</a>.
+    </p>
+    
+    <div class="site-social-links db dtc-l v-mid w-100 w-33-l tc pv2 pv0-l mv0">
+      <div class="social-icon-links" aria-hidden="true">
+  
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <a class="link dib h1 w1 ml0 mr2 f6 o-90 glow" href="https://github.com/julianwinternheimer/data-blog" title="github" target="_blank" rel="noopener">
+      <i class="fab fa-github fa-lg fa-fw"></i>
+    </a>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <a class="link dib h1 w1 ml0 mr2 f6 o-90 glow" href="https://twitter.com/buffer" title="twitter" target="_blank" rel="noopener">
+      <i class="fab fa-twitter fa-lg fa-fw"></i>
+    </a>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <a class="link dib h1 w1 ml0 mr2 f6 o-90 glow" href="/blog/index.xml" title="rss" >
+      <i class="fas fa-rss fa-lg fa-fw"></i>
+    </a>
+  
+</div>
+
+    </div>
+    
+    <div class="site-links f6 db dtc-l v-mid w-100 w-67-l tc tr-l pv2 pv0-l mv0">
+      
+      <a class="dib pv1 ph2 link" href="/license/" title="License">License</a>
+      
+    </div>
+  </nav>
+  
+    <script>
+
+    var i, text, code, codes = document.getElementsByTagName('code');
+    for (let i = 0; i < codes.length;) {
+      code = codes[i];
+      if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+        text = code.textContent;
+        if (/^\$[^$]/.test(text) && /[^$]\$$/.test(text)) {
+          text = text.replace(/^\$/, '\\(').replace(/\$$/, '\\)');
+          code.textContent = text;
+        }
+        if (/^\\\((.|\s)+\\\)$/.test(text) ||
+            /^\\\[(.|\s)+\\\]$/.test(text) ||
+            /^\$(.|\s)+\$$/.test(text) ||
+            /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+          code.outerHTML = code.innerHTML;  
+          continue;
+        }
+      }
+      i++;
+    }
+</script>
+
+  
+    
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+
+
+    
+  
+  
+</footer>
+
+      </div>
+    </body>
+</html>

@@ -6,17 +6,35 @@
     <description>Recent content in Le Blog on Buffer Data Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 06 Apr 2022 00:00:00 +0000</lastBuildDate><atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 20 Jun 2022 00:00:00 +0000</lastBuildDate><atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Buffer&#39;s Free Users</title>
+      <link>/blog/2022-06-20-buffer-s-free-users/</link>
+      <pubDate>Mon, 20 Jun 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2022-06-20-buffer-s-free-users/</guid>
+      <description>There are four main goals for this data analysis:
+ Better understand Buffer&amp;rsquo;s active free user base Identify opportunities for converting free users to paid Map our free user onboarding actions Define cohorts within our free user base to inform user qualification  There are a lot of sections below, so settle in with a cup of tea and enjoy. Thank you in advance for reading this and taking the time to learn about Buffer&amp;rsquo;s free users!</description>
+    </item>
+    
+    <item>
+      <title>Geographic Market Insights</title>
+      <link>/blog/2022-05-10-geographic-market-insights/</link>
+      <pubDate>Tue, 10 May 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2022-05-10-geographic-market-insights/</guid>
+      <description>Hello. The purpose of this analysis is to gain a better understanding of Buffer’s customer penetration in various countries and regions around the world. We would like to learn what markets we are doing well in and which have room for improvement.
+This analysis should help guide budget allocation decisions related to paid marketing by country and capture insights to guide our &amp;ldquo;market prioritization&amp;rdquo; framework for market development/expansion and penetration efforts.</description>
+    </item>
+    
     <item>
       <title>Understanding the New User Experience in Buffer</title>
       <link>/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/</link>
       <pubDate>Wed, 06 Apr 2022 00:00:00 +0000</pubDate>
       
       <guid>/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/</guid>
-      <description>We&amp;rsquo;d like to gain a better understand our new user journey within Buffer and document its current performance.In doing so, we&amp;rsquo;d like to be able to answer the following questions:
-  What is the elasticity of our signup-to-customer conversion rate for cohorts starting in Trial when we increase volume?
-  Does defaulting new signups to Trial increase their exposure and usage of our pay-walled features like Analyze?
-  What improvements can be made to the 14-Day Trial period for less qualified users?</description>
+      <description>In this analysis we&amp;rsquo;ll attempt to gain a better understanding of how new users interact with Buffer, identify behavior patterns that are indicative of success and share a few recommendations for how to improve the experience.
+Over the course of this analysis we&amp;rsquo;ll look at paid conversion rates, activation rates, the relationships between feature usage and conversion rates, session duration, upgrade paths, the distribution of the time it takes to convert, and much more.</description>
     </item>
     
     <item>

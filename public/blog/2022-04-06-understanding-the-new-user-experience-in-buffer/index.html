@@ -44,12 +44,10 @@
     
     
   <meta itemprop="name" content="Understanding the New User Experience in Buffer">
-<meta itemprop="description" content="We&rsquo;d like to gain a better understand our new user journey within Buffer and document its current performance.In doing so, we&rsquo;d like to be able to answer the following questions:
-  What is the elasticity of our signup-to-customer conversion rate for cohorts starting in Trial when we increase volume?
-  Does defaulting new signups to Trial increase their exposure and usage of our pay-walled features like Analyze?
-  What improvements can be made to the 14-Day Trial period for less qualified users?"><meta itemprop="datePublished" content="2022-04-06T00:00:00+00:00" />
+<meta itemprop="description" content="In this analysis we&rsquo;ll attempt to gain a better understanding of how new users interact with Buffer, identify behavior patterns that are indicative of success and share a few recommendations for how to improve the experience.
+Over the course of this analysis we&rsquo;ll look at paid conversion rates, activation rates, the relationships between feature usage and conversion rates, session duration, upgrade paths, the distribution of the time it takes to convert, and much more."><meta itemprop="datePublished" content="2022-04-06T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-04-06T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1907"><meta itemprop="image" content="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/featured.jpg">
+<meta itemprop="wordCount" content="5398"><meta itemprop="image" content="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/featured.jpg">
 <meta itemprop="keywords" content="" />
   
   
@@ -98,18 +96,32 @@
 
       </header>
       <section class="post-body pt5 pb4">
-        <p>We&rsquo;d like to gain a better understand our new user journey within Buffer and document its current performance.In doing so, we&rsquo;d like to be able to answer the following questions:</p>
-<ol>
-<li>
-<p>What is the elasticity of our signup-to-customer conversion rate for cohorts starting in Trial when we increase volume?</p>
-</li>
-<li>
-<p>Does defaulting new signups to Trial increase their exposure and usage of our pay-walled features like Analyze?</p>
-</li>
-<li>
-<p>What improvements can be made to the 14-Day Trial period for less qualified users?</p>
-</li>
-</ol>
+        <p>In this analysis we&rsquo;ll attempt to gain a better understanding of how new users interact with Buffer, identify behavior patterns that are indicative of success and share a few recommendations for how to improve the experience.</p>
+<p>Over the course of this analysis we&rsquo;ll look at paid conversion rates, activation rates, the relationships between feature usage and conversion rates, session duration, upgrade paths, the distribution of the time it takes to convert, and much more.</p>
+<p>I&rsquo;ll share a brief summary of the findings in the section below if you don&rsquo;t want to read the entire analysis document (it&rsquo;s long!), but I&rsquo;d recommend looking through it all when you have the time.</p>
+<hr>
+
+
+
+
+<h2 id="summary">Summary
+  <a href="#summary"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Overall, this exploratory analysis confirms what we would suspect &ndash; usage of Buffer&rsquo;s features is correlated with a higher likelihood of activating and purchasing a paid subscription.</p>
+<p>Usage of each feature is indicative of success, even when we try to control for users being active in general.</p>
+<p>There are a couple upgrade paths that have historically driven a large quantity of upgrades that are no longer performing well. Specifically, I would recommend looking more closely at these two paths and designing experiments to learn more about why they aren&rsquo;t performing as well:</p>
+<ul>
+<li><code>publish-composer-profileQueueLimit-showPaidPlans-1</code></li>
+<li><code>publish-profileSidebar-addChannelButton-upgrade-1</code></li>
+</ul>
+<p>In addition to these two upgrade paths, I would recommend that we create a new upgrade path that is targeted specifically to users that want to add a team member. This is a key action that one can take and something that is highly correlated with success.</p>
+<p>The duration of new users' first sessions is highly correlated with success. In general, the longer they spend in the product during their first session, the more likely they are to activate and pay for a subscription.</p>
+<p>First session duration could be a useful early indicator of success that we can optimize for in growth experiments.</p>
+<p>In general, if users do not purchase a paid plan in their first 60 days, they are significantly less likely to do so in the future. The experience that new users have when signing up is highly influential and has a significant effect on their (and our) success with the product.</p>
+<hr>
 
 
 
@@ -120,7 +132,7 @@
       <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
     </svg></a>
 </h2>
-<p>We&rsquo;ll collect the approximately 1M signups that occurred since January 1, 2021.</p>
+<p>To answer these questions, we&rsquo;ll collect data from over one million signups that occurred since January 1, 2021 with the SQL query below.</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
 sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
 </span><span style="color:#d14">  with users as (
@@ -164,34 +176,62 @@ sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d
 <span style="color:#998;font-style:italic"># collect data from bigquery</span>
 users <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
 
-<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#998;font-style:italic"># save data as rds object</span>
 <span style="color:#900;font-weight:bold">saveRDS</span>(users, <span style="color:#d14">&#34;trial_analysis_users.rds&#34;</span>)
-</code></pre></div>
+</code></pre></div><p>The resulting dataset includes approximately 1 million users, their signup dates, whether or not they signed up on a mobile device, whether or not they signed up from a team member invite, their activation date (the date on which they took their first key action), and several other fields related to their activity in the first 14 days after signing up for Buffer.</p>
+<p>We can get a glimpse of the dataset using the <code>glimpse()</code> command below.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># preview dataset</span>
+<span style="color:#900;font-weight:bold">glimpse</span>(users)
+</code></pre></div><pre tabindex="0"><code>## Rows: 1,005,973
+## Columns: 19
+## $ user_id               &lt;chr&gt; &quot;5ff01cd5a3db4b2b618a9a44&quot;, &quot;5ff09a60757a915cfaa…
+## $ stripe_customer_id    &lt;chr&gt; &quot;cus_IgRA0CEEXYIthc&quot;, NA, &quot;cus_IgOzw8pjSaWjOx&quot;, …
+## $ signup_at_date        &lt;date&gt; 2021-01-02, 2021-01-02, 2021-01-02, 2021-01-02,…
+## $ signup_week           &lt;date&gt; 2020-12-27, 2020-12-27, 2020-12-27, 2020-12-27,…
+## $ mobile_signup         &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ is_team_member        &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ is_currently_trialing &lt;lgl&gt; TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, TRUE, TRU…
+## $ trial_signup          &lt;lgl&gt; TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, TRUE, TRU…
+## $ activated_at          &lt;date&gt; NA, NA, 2021-01-02, NA, NA, NA, NA, NA, 2021-01…
+## $ converted_date        &lt;date&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ sessions_14_days      &lt;int&gt; 0, 1, 17, 0, 0, 4, 2, 0, 3, 0, 1, 5, 0, 3, 1, 0,…
+## $ actions               &lt;int&gt; 0, 0, 339, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 32, 0, …
+## $ days_active           &lt;int&gt; 0, 0, 3, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, …
+## $ publish_actions       &lt;int&gt; 0, 0, 339, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 32, 0, …
+## $ analyze_actions       &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ engage_actions        &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ sp_actions            &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ converted_30day       &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,…
+## $ converted             &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,…
+</code></pre>
 
 
 
-<h2 id="baseline-conversion-rates">Baseline Conversion Rates
-  <a href="#baseline-conversion-rates"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+<h2 id="30-day-conversion-rates">30-Day Conversion Rates
+  <a href="#30-day-conversion-rates"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 0h24v24H0z" fill="currentColor"></path>
       <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
     </svg></a>
 </h2>
-<p>Let&rsquo;s start by calculating the proportion of free and trial signups that subscribed to a paid plan within 30 days of signing up.</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate conversion rates</span>
+<p>We&rsquo;ll begin with a bit of exploratory analysis. We&rsquo;d like to have a better understanding of the effect that starting new users on a trial has, so we&rsquo;ll calculate the proportion of free and trial signups that subscribed to a paid plan within 30 days of signup.</p>
+<p>The proportions below only include people that signed up on the web app, since people that sign up on the mobile apps do not have the option of starting a trial when they sign up.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate 30-day conversion rates</span>
 users <span style="color:#000;font-weight:bold">%&gt;%</span> 
   <span style="color:#900;font-weight:bold">filter</span>(signup_week <span style="color:#000;font-weight:bold">&lt;</span> <span style="color:#d14">&#34;2022-03-01&#34;</span> <span style="color:#000;font-weight:bold">&amp;</span> (<span style="color:#900;font-weight:bold">is.na</span>(mobile_signup) <span style="color:#000;font-weight:bold">|</span> <span style="color:#000;font-weight:bold">!</span>mobile_signup)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
-  <span style="color:#900;font-weight:bold">group_by</span>(trial_signup, converted) <span style="color:#000;font-weight:bold">%&gt;%</span> 
+  <span style="color:#900;font-weight:bold">group_by</span>(trial_signup, converted_30day) <span style="color:#000;font-weight:bold">%&gt;%</span> 
   <span style="color:#900;font-weight:bold">summarise</span>(users <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">n_distinct</span>(user_id)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
   <span style="color:#900;font-weight:bold">mutate</span>(percent <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">percent</span>(users <span style="color:#000;font-weight:bold">/</span> <span style="color:#900;font-weight:bold">sum</span>(users), accuracy <span style="color:#000;font-weight:bold">=</span> <span style="color:#099">0.01</span>)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
-  <span style="color:#900;font-weight:bold">filter</span>(converted)
+  <span style="color:#900;font-weight:bold">filter</span>(converted_30day)
 </code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 4
 ## # Groups:   trial_signup [2]
-##   trial_signup converted users percent
-##   &lt;lgl&gt;        &lt;lgl&gt;     &lt;int&gt; &lt;chr&gt;  
-## 1 FALSE        TRUE       3828 0.81%  
-## 2 TRUE         TRUE      14588 5.22%
-</code></pre><p>Approximately 0.8% of free web signups convert within 30 days, compared to 5.2% of trial signups. This includes users that signed up that were automatically put onto trials. This trend is relatively stable over time.</p>
-<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+##   trial_signup converted_30day users percent
+##   &lt;lgl&gt;        &lt;lgl&gt;           &lt;int&gt; &lt;chr&gt;  
+## 1 FALSE        TRUE             3828 0.81%  
+## 2 TRUE         TRUE            14588 5.22%
+</code></pre><p>Unsurprisingly people that have decided to sign up on a trial have converted to paid plans at a much higher rate than those that have signed up on a free plan. There is likely some selection bias at play here. If we put all signups on to a trial, it&rsquo;s likely that the 30-day conversion rate will fall somewhere in between these two rates.</p>
+<p>Next we&rsquo;ll plot these conversion rates over time, grouping by the week in which people signed up. The plot below shows us that the conversion rates have remained relatively stable over time, with a slight positive trend.</p>
+<p>The 30-day conversion rate for people that sign up on a trial has been consistently higher than that of people that sign up on a Free plan.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-6-1.png" width="672" />
 
 
 
@@ -202,8 +242,8 @@ users <span style="color:#000;font-weight:bold">%&gt;%</span>
       <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
     </svg></a>
 </h2>
-<p>Next we&rsquo;ll analyze the distributions of the number of days it takes new signups to convert to a paid plan. We can start by calculating quantiles for trial and free users.</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic">#define quantiles of interest</span>
+<p>The next thing we&rsquo;ll cover is the distribution of the number of days it takes new signups to convert to a paid plan. We&rsquo;ll start by calculating the quantiles of the number of days to convert for both free and trial signups.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define quantiles of interest</span>
 q <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#099">.25</span>, <span style="color:#099">.5</span>, <span style="color:#099">.75</span>)
 
 <span style="color:#998;font-style:italic">#calculate quantiles by grouping variable</span>
@@ -217,44 +257,77 @@ users <span style="color:#000;font-weight:bold">%&gt;%</span>
 </code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 4
 ##   trial_signup quant25 quant50 quant75
 ##   &lt;lgl&gt;          &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-## 1 FALSE              0       6      16
-## 2 TRUE               0      13      15
-</code></pre><p>These quantiles show us that the median number of days to convert is 13 days for trial signups and 6 days for free signups. It&rsquo;s interesting to note that more than a quarter of the people that convert do so on the day they sign up. We should remember that this only takes into account users that converted.</p>
-<p>We can plot the distribution of the number of days to convert below.</p>
-<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
-<p>A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for trial signups.</p>
+## 1 FALSE              2      18      57
+## 2 TRUE               2      14      21
+</code></pre><p>These quantiles show us that the median number of days to convert is 14 days for trial signups and 18 days for free signups, which is logical. As of April 2022, Buffer trials are 14 days in length, and many people that subscribe to paid plan do so on the day that their trials expire.</p>
+<p>It&rsquo;s interesting to note that over a quarter of users that convert do so by their second day.</p>
+<p>The plot below visualizes distribution of the number of days to convert below.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+<p>A higher proportion of free signups convert on the day that they sign up, and more conversions are clustered around the 14-day mark (the length of the trial) for those that sign up on a trial.</p>
+<p>Another way to visualize the distributions of the number of days it takes people to convert is to plot the cumulative distribution functions (CDFs) for these two populations.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+<p>Each point on the line represents the proportion of conversions that occurred in X days <em>or fewer</em>. For example, at X = 14 we can see that approximately 64% of trial signups have converted (implying that approximately 36% of conversions take longer than 14 days) and 58% of free signups have converted. This principle can be applied to any point on the curve. We can see that by day 60 most people that will convert have converted.</p>
+<p>This doesn&rsquo;t quite give us a complete picture though. The plots above only include users that have subscribed to a paid plan and the data is 
+<a href="https://reliability.readthedocs.io/en/latest/What%20is%20censored%20data.html#:~:text=Censored%20data%20is%20any%20data,referred%20to%20as%20complete%20data." target="_blank" rel="noopener">right censored</a>, meaning there are some users that will convert that haven&rsquo;t yet done so.</p>
+<p>One useful technique for dealing with censored data is 
+<a href="https://en.wikipedia.org/wiki/Survival_analysis" target="_blank" rel="noopener">survival analysis</a>.</p>
 
 
 
 
-<h2 id="distribution-of-number-of-sessions">Distribution of Number of Sessions
-  <a href="#distribution-of-number-of-sessions"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+<h2 id="survival-analysis">Survival Analysis
+  <a href="#survival-analysis"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 0h24v24H0z" fill="currentColor"></path>
       <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
     </svg></a>
 </h2>
-<p>We can use a similar approach to calculate quantiles of the number of sessions in the first 14 days for free and trial users.</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic">#calculate quantiles by grouping variable</span>
+<p>Because a greater proportion of trialists end up converting, it could be worth using survival analysis techniques to visualize the amount of time it takes to convert.</p>
+<p>The survival probability at a certain time, S(t), is a conditional probability of surviving (i.e. not converting) beyond that time, given that an individual hasn&rsquo;t converted just prior to that time.</p>
+<p>The Kaplan-Meier method is the most common way to estimate survival times and probabilities. It is a non-parametric approach that results in a step function, where there is a step down each time an event occurs.</p>
+<p>A Kaplan-Meier plot is included below for both free and trial signups.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+<p>Each point on the graph represents the proportion of the population that <em>hasn&rsquo;t</em> converted after X days. The inverse would be the proportion that had converted by day X.</p>
+<p>The plot tells us a couple things. The first, which we already knew, is that people that sign up with trials convert at much higher rates that don&rsquo;t. The second, and perhaps more important, thing is that the first 60 days after signing up are crucial for those that convert.</p>
+<p>There is a long tail of people that convert after the 60 day mark, but it is significantly less likely for any given user to convert if they haven&rsquo;t done so by their 60th day.</p>
+
+
+
+
+<h2 id="session-counts-and-conversion">Session Counts and Conversion
+  <a href="#session-counts-and-conversion"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>The next thing we&rsquo;ll look at is the relationship between session counts and paid conversion. We&rsquo;ll use a similar approach to calculate quantiles of the number of sessions in the first 14 days for free and trial users.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># quantiles of interest</span>
+q <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#099">.25</span>, <span style="color:#099">.5</span>, <span style="color:#099">.75</span>)
+
+<span style="color:#998;font-style:italic"># calculate quantiles by grouping variable</span>
 users <span style="color:#000;font-weight:bold">%&gt;%</span>
   <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#900;font-weight:bold">is.na</span>(mobile_signup) <span style="color:#000;font-weight:bold">|</span> <span style="color:#000;font-weight:bold">!</span>mobile_signup) <span style="color:#000;font-weight:bold">%&gt;%</span> 
   <span style="color:#900;font-weight:bold">mutate</span>(days_to_convert <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">as.numeric</span>(converted_date <span style="color:#000;font-weight:bold">-</span> signup_at_date)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
-  <span style="color:#900;font-weight:bold">group_by</span>(converted, trial_signup) <span style="color:#000;font-weight:bold">%&gt;%</span>
+  <span style="color:#900;font-weight:bold">group_by</span>(converted) <span style="color:#000;font-weight:bold">%&gt;%</span>
   <span style="color:#900;font-weight:bold">summarize</span>(quant25 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(sessions_14_days, probs <span style="color:#000;font-weight:bold">=</span> q[1]), 
             quant50 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(sessions_14_days, probs <span style="color:#000;font-weight:bold">=</span> q[2]),
             quant75 <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">quantile</span>(sessions_14_days, probs <span style="color:#000;font-weight:bold">=</span> q[3]))
-</code></pre></div><pre tabindex="0"><code>## `summarise()` has grouped output by 'converted'. You can override using the
-## `.groups` argument.
-</code></pre><pre tabindex="0"><code>## # A tibble: 4 × 5
-## # Groups:   converted [2]
-##   converted trial_signup quant25 quant50 quant75
-##   &lt;lgl&gt;     &lt;lgl&gt;          &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-## 1 FALSE     FALSE              0       1       3
-## 2 FALSE     TRUE               1       1       3
-## 3 TRUE      FALSE              5      11      22
-## 4 TRUE      TRUE               5      11      21
-</code></pre><p>The distributions of the number of sessions in the first 14 days looks similar for free and trial signups.</p>
+</code></pre></div><pre tabindex="0"><code>## # A tibble: 2 × 4
+##   converted quant25 quant50 quant75
+##   &lt;lgl&gt;       &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1 FALSE           0       1       3
+## 2 TRUE            4      10      19
+</code></pre><p>These quantiles tell that there is a significant difference in the number of sessions that users who convert and don&rsquo;t convert have in their first 14 days. This is to be expected, as more engaged users are more likely to have more sessions and convert.</p>
+<p>The plot below shows the distribution of the number of sessions users had in their first 14 days for four distinct populations:</p>
+<ul>
+<li>Users that signed up on a free plan and converted</li>
+<li>Users that signed up with a trial and converted</li>
+<li>Users that signed up on a free plan and didn&rsquo;t convert</li>
+<li>Users that signed up with a trial and didn&rsquo;t convert</li>
+</ul>
+<p>We can see that for all signups, the distribution of the number of sessions is shifted to the right for those that ended up converting.</p>
+<p>Users that convert to paid plans generally have more sessions in their first 14 days. The largest bucket of converted users had 10-25 sessions in their first 2 weeks.</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define breakpoints </span>
-breakpoints <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#000;font-weight:bold">-</span><span style="color:#000;font-weight:bold">Inf</span>, <span style="color:#099">0</span>, <span style="color:#099">1</span>, <span style="color:#099">10</span>, <span style="color:#099">25</span>, <span style="color:#099">50</span>, <span style="color:#000;font-weight:bold">Inf</span>)
+breakpoints <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#000;font-weight:bold">-</span><span style="color:#000;font-weight:bold">Inf</span>, <span style="color:#099">0</span>, <span style="color:#099">1</span>, <span style="color:#099">5</span>, <span style="color:#099">10</span>, <span style="color:#099">25</span>, <span style="color:#099">50</span>, <span style="color:#000;font-weight:bold">Inf</span>)
 
 <span style="color:#998;font-style:italic"># plot distributions</span>
 users <span style="color:#000;font-weight:bold">%&gt;%</span>
@@ -276,23 +349,28 @@ users <span style="color:#000;font-weight:bold">%&gt;%</span>
   <span style="color:#900;font-weight:bold">scale_y_continuous</span>(labels <span style="color:#000;font-weight:bold">=</span> percent) <span style="color:#000;font-weight:bold">+</span>
   <span style="color:#900;font-weight:bold">theme</span>(axis.text.x <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">element_text</span>(angle <span style="color:#000;font-weight:bold">=</span> <span style="color:#099">45</span>, vjust <span style="color:#000;font-weight:bold">=</span> <span style="color:#099">0.5</span>, hjust<span style="color:#000;font-weight:bold">=</span><span style="color:#099">0.5</span>)) <span style="color:#000;font-weight:bold">+</span>
   <span style="color:#900;font-weight:bold">labs</span>(x <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;Sessions First 14 Days&#34;</span>, y <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;Percent of Users&#34;</span>)
-</code></pre></div><img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
-<p>We can see that users that convert to paid plans generally have more sessions in their first 14 days. The largest bucket of converted users had 10-25 sessions in their first 14 days.</p>
+</code></pre></div><img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-13-1.png" width="672" />
+<p>The plot below shows the conversion rates for users that had certain numbers of sessions in their first 14 days.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+<p>We can see that there is a clear correlation between the number of sessions in users' first 14 days and the likelihood of converting to a paid subscription.</p>
+<p>Next we&rsquo;ll look at some of the differences between people that sign up on web and those that sign up on one of the mobile apps.</p>
 
 
 
 
-<h2 id="web-vs-mobile">Web vs Mobile
-  <a href="#web-vs-mobile"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+<h2 id="web-and-mobile-signups">Web and Mobile Signups
+  <a href="#web-and-mobile-signups"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 0h24v24H0z" fill="currentColor"></path>
       <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
     </svg></a>
 </h2>
-<p>It&rsquo;s important to note that mobile signups do not start on trials &ndash; they all start on a free plan.</p>
-<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+<p>It&rsquo;s important to note that by &ldquo;mobile&rdquo; we only refer to those that signed up on one of the mobile apps. People that sign up on a mobile web browser are still considered &ldquo;web&rdquo; signups.</p>
+<p>The first thing we&rsquo;ll look at is the 30-day conversion rate for web and mobile signups.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
 <p>30-day conversion rates are generally much lower for people that sign up on mobile. Let&rsquo;s now compare conversion rates for web users that signed up without a trial.</p>
-<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
-<p>We can see that the conversion rates are much closer, but they&rsquo;re still higher for web signups.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
+<p>We can see that the conversion rates are much closer, but, overall, people that sign up on the mobile apps convert at lower rates than those that sign up on web.</p>
+<p>Next we&rsquo;ll explore Buffer&rsquo;s key actions and their relationships to paid conversions.</p>
 
 
 
@@ -303,7 +381,7 @@ users <span style="color:#000;font-weight:bold">%&gt;%</span>
       <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
     </svg></a>
 </h2>
-<p>Let&rsquo;s see which key actions are most correlated with conversion.</p>
+<p>First we&rsquo;ll calculate the correlation coefficients for each of the key actions and whether or not a user converted.</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># filter data</span>
 filtered <span style="color:#000;font-weight:bold">&lt;-</span> users <span style="color:#000;font-weight:bold">%&gt;%</span> <span style="color:#900;font-weight:bold">select</span>(converted, publish_actions<span style="color:#000;font-weight:bold">:</span>sp_actions)
 
@@ -324,19 +402,18 @@ m <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900
 ## analyze_actions       0.01
 ## engage_actions        0.00
 ## sp_actions            1.00
-</code></pre><p>We can see that the correlations are quite low, but this could be because the variance of the number of actions is quite high. For example, let&rsquo;s plot the distribution of the number of publish actions taken in the first 14 days.</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># plot dist of publish actions</span>
-users <span style="color:#000;font-weight:bold">%&gt;%</span> 
-  <span style="color:#900;font-weight:bold">buffplot</span>(<span style="color:#900;font-weight:bold">aes</span>(x <span style="color:#000;font-weight:bold">=</span> publish_actions, color <span style="color:#000;font-weight:bold">=</span> converted)) <span style="color:#000;font-weight:bold">+</span>
-  <span style="color:#900;font-weight:bold">stat_ecdf</span>() <span style="color:#000;font-weight:bold">+</span>
-  <span style="color:#900;font-weight:bold">coord_cartesian</span>(xlim <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">c</span>(<span style="color:#099">0</span>, <span style="color:#099">500</span>))
-</code></pre></div><img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
-<p>We can see that users that converted tended to take more publish actions than those that didn&rsquo;t convert.</p>
-<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
-<p>The plot above shows us the conversion rates for those that did and did not use certain features in their first 14 days. We can see that users that use Analyze or Engage tend to convert at high rates, but not using those features doesn&rsquo;t necessarily mean that there&rsquo;s a low chance of conversion.</p>
-<p>We can also bucket the number of actions taken in each product to visualize the correlations.</p>
-<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
-<p>The plots above show that there are indeed correlations between the number of key actions taken and conversion rates, which is unsurprising.</p>
+</code></pre><p>We can see that the correlations are quite low, but this could be because the variance of the number of actions is quite high.</p>
+<p>For example, the plot below shows the cumulative distribution function (CDF) for the number of publishing actions taken in the first 14 days for people that converted and people that didn&rsquo;t. There&rsquo;s a large range for the <code>publish_actions</code> variable &ndash; scaling the action counts might lead to more instructive correlation coefficients.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-19-1.png" width="672" />
+<p>The plot below shows the relative conversion rates for those that did and didn&rsquo;t use certain products in their first two weeks. We can see that users that use Analyze or Engage tend to convert at higher rates, but not using those features doesn&rsquo;t necessarily mean that there&rsquo;s a low chance of conversion.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-20-1.png" width="672" />
+<p>We can also group the number of actions taken in each product to visualize the correlations.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-21-1.png" width="672" />
+<p>The plots above show that there are indeed correlations between the number of key actions taken and conversion rates. This is all intuitive &ndash; users that are engaged and more active in the product are more likely to convert. Additionally, users that convert within the first 14 days are more likely to take more actions.</p>
+<p>In the next section we&rsquo;ll try to get a better understanding of the individual importance of each feature. One way to do that is to fit a model containing all p predictors and use a technique that constrains or regularizes the coefficient estimates, or equivalently, that shrinks the coefficient estimates towards zero.</p>
+<p>The two best-known techniques for shrinking the regression coefficients towards zero are ridge regression and the lasso. Each method utilizes a shrinkage penalty which has the effect of shrinking the estimates of βj towards zero when the coefficients themselves are close to 0.</p>
+<p>The tuning parameter λ serves to control the relative impact of these two terms on the regression coefficient estimates. When λ = 0, the penalty term has no effect, and ridge regression will produce the least squares estimates. However, as λ → ∞, the impact of the shrinkage penalty grows, and the ridge regression coefficient estimates will approach zero.</p>
+<p>While ridge regression shrinks the coefficient estimates towards 0, Lasso regressions actually shrinks the coefficients to exactly 0, which is a form of variable selection. It&rsquo;s generally useful when multicollinearity is present and one wants to get a better understanding of which predictors are most important.</p>
 
 
 
@@ -347,47 +424,48 @@ users <span style="color:#000;font-weight:bold">%&gt;%</span>
       <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
     </svg></a>
 </h2>
-<p>Lasso regression is a method we can use to fit a regression model when multicollinearity is present in the data.</p>
-<p>In a nutshell, lasso regression shrinks the coefficients of predictors to 0 if they don&rsquo;t contribute enough to the model.</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># set new column</span>
-users <span style="color:#000;font-weight:bold">&lt;-</span> users <span style="color:#000;font-weight:bold">%&gt;%</span> <span style="color:#900;font-weight:bold">mutate</span>(response <span style="color:#000;font-weight:bold">=</span> <span style="color:#900;font-weight:bold">ifelse</span>(converted, <span style="color:#099">1</span>, <span style="color:#099">0</span>))
-
-<span style="color:#998;font-style:italic"># define response variable</span>
-y <span style="color:#000;font-weight:bold">&lt;-</span> users<span style="color:#000;font-weight:bold">$</span>response
-
-<span style="color:#998;font-style:italic"># define matrix of predictor variables</span>
-features <span style="color:#000;font-weight:bold">&lt;-</span> users <span style="color:#000;font-weight:bold">%&gt;%</span> 
-  dplyr<span style="color:#000;font-weight:bold">::</span><span style="color:#900;font-weight:bold">select</span>(mobile_signup, is_team_member, trial_signup,
-                sessions_14_days, actions, days_active,used_publish, 
-                used_engage, used_analyze, used_sp)
-
-<span style="color:#998;font-style:italic"># turn strings into factors</span>
-features <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">as.data.frame</span>(<span style="color:#900;font-weight:bold">unclass</span>(features), stringsAsFactors <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">TRUE</span>)
-
-<span style="color:#998;font-style:italic"># create matrix</span>
-x <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">as.matrix</span>(features)
-</code></pre></div><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># fit lasso regression model</span>
+<p>Simply put, lasso regression shrinks the coefficients of predictors to 0 if they don&rsquo;t explain a sufficient amount of the variance in the response.</p>
+<p>A lasso regression model is fit with the simple command below.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># fit lasso regression model</span>
 mod <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">cv.glmnet</span>(x, y, alpha <span style="color:#000;font-weight:bold">=</span> <span style="color:#099">1</span>)
 
-<span style="color:#998;font-style:italic"># summarise model</span>
-<span style="color:#900;font-weight:bold">coef</span>(mod)
+<span style="color:#998;font-style:italic"># plot model</span>
+<span style="color:#900;font-weight:bold">plot</span>(mod)
+</code></pre></div><img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-23-1.png" width="672" />
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># get best lambda value</span>
+bestlam <span style="color:#000;font-weight:bold">&lt;-</span> mod<span style="color:#000;font-weight:bold">$</span>lambda.min
+
+<span style="color:#998;font-style:italic"># show coefficients</span>
+<span style="color:#900;font-weight:bold">predict</span>(mod, type <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;coefficients&#34;</span>, s <span style="color:#000;font-weight:bold">=</span> bestlam)
 </code></pre></div><pre tabindex="0"><code>## 11 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
-##                            s1
-## (Intercept)      -0.002163823
-## mobile_signup     .          
-## is_team_member    .          
-## trial_signup      0.024786009
-## sessions_14_days  0.001439186
-## actions           .          
-## days_active       0.005757164
-## used_publish      0.006156045
-## used_engage       0.108551558
-## used_analyze      0.052469141
-## used_sp           .
-</code></pre><p>The lasso regression model suggests that using engage and analyze are predictive of conversions. After that, signing up with a trial, the number of days active, and the number of sessions in the first 14 days are the most predictive features.</p>
-<p>We can also plot the relationship between the number of days active in the first 14 days and conversion rate.</p>
-<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-19-1.png" width="672" />
-<p>Users that are active at least 5 days have a much higher likelihood of converting to a paid plan, especially if they signed up with a trial.</p>
+##                             s1
+## (Intercept)      -9.009296e-03
+## mobile_signup     .           
+## is_team_member    .           
+## trial_signup      3.346454e-02
+## sessions_14_days  1.806440e-03
+## actions          -3.400643e-06
+## days_active       5.332346e-03
+## used_publish      1.422048e-02
+## used_engage       1.557889e-01
+## used_analyze      6.702460e-02
+## used_sp           7.979015e-04
+</code></pre><p>We can see that the coefficients for <code>mobile_signup</code> and <code>is_team_member</code> have been shrunk to 0. The rest of the features may have some predictive value, however more time should be spent on feature engineering and model tuning than we have to complete this analysis.</p>
+
+
+
+
+<h2 id="number-of-days-active-and-conversion">Number of Days Active and Conversion
+  <a href="#number-of-days-active-and-conversion"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>One of the coefficients remaining in the lasso regression model was <code>days_active</code>, which refers to the number of days in which a key action was taken during the 14 days after signup.</p>
+<p>The plot below shows the number of days active on the x-axis and the conversion rate on the y-axis. We can see that there is a relationship, though it isn&rsquo;t completely linear. Users that are active around 7 days are more likely to convert, and users that are active every day are very likely to convert.</p>
+<p>We have to remember that the actions could have been taken <em>after</em> users convert, so there might be some reverse causality here.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-24-1.png" width="672" />
+<p>Next we&rsquo;ll shift gears and look at activation, which is defined as having taken one&rsquo;s first key action.</p>
 
 
 
@@ -398,9 +476,9 @@ mod <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#9
       <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
     </svg></a>
 </h2>
-<p>To answer this question we&rsquo;ll need to collect more data. The data could be muddled because some users activate quickly, and activated users are more likely to log in. Additionally 
+<p>The first thing we&rsquo;ll look at is how frequency of login relates to the likelihood of activated. The data could be muddled because some users activate quickly, and activated users are more likely to log in. Additionally 
 <a href="https://mixpanel.com/s/2HgEX" target="_blank" rel="noopener">80% of users that activate in their first 7 days do so within 12 hours of signing up</a>.</p>
-<p>Let&rsquo;s look at the number of events in the first session and average session duration.</p>
+<p>We&rsquo;ll use the query below to collect activation-related data for over one million Buffer users.</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
 sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
 </span><span style="color:#d14">  with users as (
@@ -442,7 +520,7 @@ activations <span style="color:#000;font-weight:bold">&lt;-</span> <span style="
 
 <span style="color:#998;font-style:italic"># save data</span>
 <span style="color:#900;font-weight:bold">saveRDS</span>(activations, <span style="color:#d14">&#34;trial_analysis_activations.rds&#34;</span>)
-</code></pre></div><p>Let&rsquo;s show some summary stats for session length.</p>
+</code></pre></div><p>The output below shows the quantiles for average session duration for users that did and didn&rsquo;t activate <em>in their first day</em>. The average session duration refers only to the session in which the users signed up.</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate quantiles by grouping variable</span>
 activations <span style="color:#000;font-weight:bold">%&gt;%</span>
   <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#000;font-weight:bold">!</span><span style="color:#900;font-weight:bold">is.na</span>(avg_sesh_duration)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
@@ -455,7 +533,8 @@ activations <span style="color:#000;font-weight:bold">%&gt;%</span>
 ##   &lt;lgl&gt;            &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
 ## 1 FALSE                1       5      17
 ## 2 TRUE                10      26      52
-</code></pre><p>Those that activated on their first day tended to have much longer first sessions. The median session duration was 26 minutes, compared to 5 mintes for those that didn&rsquo;t activate. Let&rsquo;s now look at the number of events.</p>
+</code></pre><p>Those that activated on their first day tended to have much longer first sessions. The median session duration was 26 minutes, compared to 5 minutes for those that didn&rsquo;t activate.</p>
+<p>Let&rsquo;s now look at the number of events that occur in the first session.</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># calculate quantiles by grouping variable</span>
 activations <span style="color:#000;font-weight:bold">%&gt;%</span>
   <span style="color:#900;font-weight:bold">filter</span>(<span style="color:#000;font-weight:bold">!</span><span style="color:#900;font-weight:bold">is.na</span>(avg_sesh_events)) <span style="color:#000;font-weight:bold">%&gt;%</span> 
@@ -468,10 +547,274 @@ activations <span style="color:#000;font-weight:bold">%&gt;%</span>
 ##   &lt;lgl&gt;            &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
 ## 1 FALSE                8      17      31
 ## 2 TRUE                25      50      87
-</code></pre><p>Again, users that activated in their first day tended to have more events in their first session, which makes sense if the session was longer.</p>
-<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-24-1.png" width="672" />
-<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-25-1.png" width="672" />
-<p>We can see that there is a strong correlation between first session duration and the likelihood of activating on the first day.</p>
+</code></pre><p>Again, users that activated in their first day tended to have more events in their first session, which is logical.</p>
+<p>The plot below shows the activation rates for certain session duration buckets. We can see that there&rsquo;s a large increase in the activation rate for those whose first session was at least 10 minutes.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-29-1.png" width="672" />
+<p>The plot below shows the total activation rate by first session length for each user. It&rsquo;s clear that first session length is highly correlated with activation.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-30-1.png" width="672" />
+<p>Next we&rsquo;ll extend this to look at the relationship between first session length and the likelihood of converting to a paid subscription. Again we see that there&rsquo;s a strong correlation present.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-31-1.png" width="672" />
+<p>In the next session we&rsquo;ll shift gears again and look at specific upgrade paths within Buffer&rsquo;s products.</p>
+
+
+
+
+<h2 id="upgrade-paths">Upgrade Paths
+  <a href="#upgrade-paths"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>The data used in the analysis below comes from 
+<a href="https://mixpanel.com/s/4DPzTa" target="_blank" rel="noopener">this Mixpanel report</a> and only includes upgrade paths that have been defined in the <code>Upgrade Path Viewed</code> tracking event.</p>
+<p>We&rsquo;ll start by looking at the number of conversions each path drives each week. All of the conversions must occur within 7 days of viewing the upgrade path.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-34-1.png" width="672" />
+<p>The upgrade path that stands out most clearly is <code>publish-profile-nav-tabNavigation-upgrade-1</code>. At one point it was driving over 200 upgrades per week, but it has since been changed to a prompt to start a trial. Now it drives only 5-15 upgrades per week.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-35-1.png" width="672" />
+<p>Another one that stands out is <code>publish-profileSidebar-addChannelButton-upgrade-1</code>. Upgrades from this path have also decreased by over 50%.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-36-1.png" width="672" />
+<p><strong><em>I would strongly recommend testing those upgrade paths. Specifically, I would run an A/B test to measure the effect of changing it from a trial prompt to a direct upgrade path</em></strong>.</p>
+<p>Next let&rsquo;s look at the conversion rates of each upgrade path. The conversion rate is just the proportion of users that viewed an upgrade path and converted within 7 days of that event.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-37-1.png" width="672" />
+<p>Here are the top upgrade paths by conversion rate:</p>
+<ul>
+<li>Queue limit</li>
+<li>Campaigns empty state</li>
+<li>Awaiting approval paywall</li>
+<li>Top nav upgrade button</li>
+<li>Add channel button</li>
+<li>Hashtag manager path</li>
+<li>Drafts paywall</li>
+</ul>
+<p>We&rsquo;ll isolate a couple of these in the section below.</p>
+
+
+
+
+<h2 id="queue-limit-and-channel-limit-upgrade-paths">Queue Limit and Channel Limit Upgrade Paths
+  <a href="#queue-limit-and-channel-limit-upgrade-paths"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>These upgrade paths have the highest conversion rates. Both are based on activity &ndash; the queue limit upgrade path is displayed when free users schedule too many posts, and the channel limit upgrade path is diplayed when people connect more channels than what&rsquo;s allowed.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-38-1.png" width="672" />
+<p>Many more users view the channel limit upgrade path, which is why it drives more conversions. The plot below shows the number of weekly conversions that each upgrade path drives.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-39-1.png" width="672" />
+<p>In the section below we&rsquo;ll attempt to answer a specific question about the role that the user limit plays in converting people to paid subscribers.</p>
+
+
+
+
+<h2 id="user-limit-upgrade-path">User Limit Upgrade Path
+  <a href="#user-limit-upgrade-path"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>As of April 2022 we&rsquo;re not tracking a distinct upgrade path for the 1-user limit. I&rsquo;d recommend tracking this upgrade path if it exists, and if it doesn&rsquo;t I&rsquo;d recommend creating one.</p>
+<p>Right now the closest upgrade path we have would probably be <code>publish-awaitingApproval-paywall-upgrade-1</code>.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-40-1.png" width="672" />
+
+
+
+
+<h2 id="role-of-analyze-and-engage-during-trial">Role of Analyze and Engage During Trial
+  <a href="#role-of-analyze-and-engage-during-trial"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Next we&rsquo;ll look at the role analyze and engage play during trials. The data used in this section of the analysis is gathered with the following SQL query. The data includes 180K trials started since September 2021 (after the New Buffer launch).</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    t.id as trial_id
+</span><span style="color:#d14">    , t.trial_started_at
+</span><span style="color:#d14">    , t.subscription_id
+</span><span style="color:#d14">    , t.customer_id
+</span><span style="color:#d14">    , t.plan_id
+</span><span style="color:#d14">    , t.metadata_user_id as trial_user_id
+</span><span style="color:#d14">    , t.has_converted as converted
+</span><span style="color:#d14">    , count(distinct a.id) as actions
+</span><span style="color:#d14">    , count(distinct case when a.product = &#39;publish&#39; then a.id end) as pub_actions
+</span><span style="color:#d14">    , count(distinct case when a.product = &#39;engage&#39; then a.id end) as engage_actions
+</span><span style="color:#d14">    , count(distinct case when a.product = &#39;analyze&#39; then a.id end) as analyze_actions
+</span><span style="color:#d14">  from dbt_buffer.stripe_trials as t
+</span><span style="color:#d14">  left join dbt_buffer.buffer_key_actions as a
+</span><span style="color:#d14">    on t.metadata_user_id = a.user_id
+</span><span style="color:#d14">    and a.timestamp &gt; t.trial_started_at
+</span><span style="color:#d14">    and a.timestamp &lt; timestamp_add(t.trial_started_at, interval 14 day)
+</span><span style="color:#d14">  where t.trial_started_at &gt;= &#39;2021-09-01&#39;
+</span><span style="color:#d14">  group by 1,2,3,4,5,6,7
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+trials <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(trials, <span style="color:#d14">&#34;trial_analysis_trials.rds&#34;</span>)
+</code></pre></div><p>One quick approach we could take is to fit a logistic regression model to see if using each of the features is correlated with trial conversion <em>given that the user was active during trial</em>. It&rsquo;s important to note that there&rsquo;s likely collinearity, which is why some regularization or feature selection cpuld be important.</p>
+<p>For this exploratory analysis we&rsquo;ll only look at the model coefficients without regularization or further feature engineering.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># fit logistic regression model</span>
+mod <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">glm</span>(converted <span style="color:#000;font-weight:bold">~</span> active <span style="color:#000;font-weight:bold">+</span> publish_active <span style="color:#000;font-weight:bold">+</span> engage_active <span style="color:#000;font-weight:bold">+</span> analyze_active,
+           data <span style="color:#000;font-weight:bold">=</span> trials, family <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;binomial&#34;</span>)
+
+<span style="color:#998;font-style:italic"># summarize model</span>
+<span style="color:#900;font-weight:bold">summary</span>(mod)
+</code></pre></div><pre tabindex="0"><code>## 
+## Call:
+## glm(formula = converted ~ active + publish_active + engage_active + 
+##     analyze_active, family = &quot;binomial&quot;, data = trials)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.0557  -0.5001  -0.2233  -0.2233   2.7216  
+## 
+## Coefficients:
+##                    Estimate Std. Error  z value Pr(&gt;|z|)    
+## (Intercept)        -3.67866    0.02018 -182.308  &lt; 2e-16 ***
+## activeTRUE          0.16817    0.04420    3.805 0.000142 ***
+## publish_activeTRUE  1.49454    0.03748   39.873  &lt; 2e-16 ***
+## engage_activeTRUE   0.82993    0.04156   19.969  &lt; 2e-16 ***
+## analyze_activeTRUE  0.89281    0.02375   37.590  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 93982  on 180332  degrees of freedom
+## Residual deviance: 82598  on 180328  degrees of freedom
+## AIC: 82608
+## 
+## Number of Fisher Scoring iterations: 6
+</code></pre><p>The model output suggests that use of each feature is correlated with trial conversion. We can try using lasso regression again to see if any of the features can be dropped from the model.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># fit lasso regression model</span>
+mod <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">cv.glmnet</span>(x, y, alpha <span style="color:#000;font-weight:bold">=</span> <span style="color:#099">1</span>)
+
+<span style="color:#998;font-style:italic"># summarize model</span>
+<span style="color:#900;font-weight:bold">coef</span>(mod)
+</code></pre></div><pre tabindex="0"><code>## 5 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                        s1
+## (Intercept)    0.03144349
+## active         .         
+## publish_active 0.08766096
+## analyze_active 0.06294737
+## engage_active  0.07372473
+</code></pre><p>All features are correlated with conversion, which isn&rsquo;t surprising. However, using the publishing feature seems to be indicative of a much greater likelihood of converting.</p>
+<p>The plot below shows the relative conversion rates for trialists that did and didn&rsquo;t use each feature.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-46-1.png" width="672" />
+
+
+
+
+<h2 id="role-of-analyze-and-engage-for-free-signups">Role of Analyze and Engage For Free Signups
+  <a href="#role-of-analyze-and-engage-for-free-signups"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Finally we&rsquo;ll look at the correlations between using Analyze and Engage and paid conversions for users that sign up on a free plan.</p>
+<p>We&rsquo;ll use the query below to gather the number of times free users used Analyze and Engage in their first 14 days after signing up (or before converting if they did convert). There are about 61 thousand users in total.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># define sql query</span>
+sql <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#d14">&#34;
+</span><span style="color:#d14">  with first_sub as (
+</span><span style="color:#d14">    select
+</span><span style="color:#d14">      c.user_id
+</span><span style="color:#d14">      , c.timestamp as signup_at
+</span><span style="color:#d14">      , date(c.timestamp) as signup_date
+</span><span style="color:#d14">      , count(distinct s.id) &gt; 0 as converted
+</span><span style="color:#d14">      , min(s.first_paid_invoice_created_at) as converted_at
+</span><span style="color:#d14">    from dbt_buffer.segment_accounts_created as c
+</span><span style="color:#d14">    left join dbt_buffer.stripe_paid_subscriptions as s
+</span><span style="color:#d14">      on s.account_id = c.user_id
+</span><span style="color:#d14">      and s.first_paid_invoice_created_at &gt;= c.timestamp
+</span><span style="color:#d14">    where not c.created_with_trial
+</span><span style="color:#d14">    group by 1,2,3
+</span><span style="color:#d14">  )
+</span><span style="color:#d14">  select
+</span><span style="color:#d14">    f.user_id
+</span><span style="color:#d14">    , f.signup_at
+</span><span style="color:#d14">    , f.signup_date
+</span><span style="color:#d14">    , f.converted
+</span><span style="color:#d14">    , f.converted_at
+</span><span style="color:#d14">    , count(distinct a.id) as actions
+</span><span style="color:#d14">    , count(distinct case when a.product = &#39;publish&#39; then a.id end) as pub_actions
+</span><span style="color:#d14">    , count(distinct case when a.product = &#39;engage&#39; then a.id end) as engage_actions
+</span><span style="color:#d14">    , count(distinct case when a.product = &#39;analyze&#39; then a.id end) as analyze_actions
+</span><span style="color:#d14">  from first_sub as f
+</span><span style="color:#d14">  left join dbt_buffer.buffer_key_actions as a
+</span><span style="color:#d14">    on f.user_id = a.user_id
+</span><span style="color:#d14">    and a.timestamp &gt; f.signup_at
+</span><span style="color:#d14">    and a.timestamp &lt; timestamp_add(f.signup_at, interval 14 day)
+</span><span style="color:#d14">    and (a.timestamp &lt; f.converted_at or f.converted_at is null)
+</span><span style="color:#d14">  group by 1,2,3,4,5
+</span><span style="color:#d14">&#34;</span>
+
+<span style="color:#998;font-style:italic"># collect data from bigquery</span>
+free <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">bq_query</span>(sql <span style="color:#000;font-weight:bold">=</span> sql)
+
+<span style="color:#998;font-style:italic"># save data</span>
+<span style="color:#900;font-weight:bold">saveRDS</span>(free, <span style="color:#d14">&#34;trial_analysis_free.rds&#34;</span>)
+</code></pre></div><p>We&rsquo;ll fit another logistic regression model to see if using each of the features is correlated with paid conversion <em>given that the user was active</em>. It&rsquo;s important to note that there&rsquo;s likely collinearity, which is why some regularization or feature selection is important.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#998;font-style:italic"># fit logistic regression model</span>
+mod <span style="color:#000;font-weight:bold">&lt;-</span> <span style="color:#900;font-weight:bold">glm</span>(converted <span style="color:#000;font-weight:bold">~</span> active <span style="color:#000;font-weight:bold">+</span> publish_active <span style="color:#000;font-weight:bold">+</span> engage_active <span style="color:#000;font-weight:bold">+</span> analyze_active,
+           data <span style="color:#000;font-weight:bold">=</span> free, family <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;binomial&#34;</span>)
+
+<span style="color:#998;font-style:italic"># summarize model</span>
+<span style="color:#900;font-weight:bold">summary</span>(mod)
+</code></pre></div><pre tabindex="0"><code>## 
+## Call:
+## glm(formula = converted ~ active + publish_active + engage_active + 
+##     analyze_active, family = &quot;binomial&quot;, data = free)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.6318  -0.1675  -0.0923  -0.0923   3.3151  
+## 
+## Coefficients:
+##                    Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)        -5.45592    0.07368 -74.051  &lt; 2e-16 ***
+## activeTRUE         -0.03495    0.24049  -0.145    0.884    
+## publish_activeTRUE  1.23111    0.22236   5.537 3.08e-08 ***
+## engage_activeTRUE   1.32803    0.24875   5.339 9.36e-08 ***
+## analyze_activeTRUE  1.42168    0.14312   9.933  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 5685.8  on 61081  degrees of freedom
+## Residual deviance: 5311.6  on 61077  degrees of freedom
+## AIC: 5321.6
+## 
+## Number of Fisher Scoring iterations: 8
+</code></pre><p>The model coefficients and p-values suggest that the use of each feature is correlated with success.</p>
+<p>Below we&rsquo;ll plot conversion rates by whether or not users used each feature in their first 14 days.</p>
+<img src="/blog/2022-04-06-understanding-the-new-user-experience-in-buffer/index_files/figure-html/unnamed-chunk-50-1.png" width="672" />
+<p>Again we can see that usage of Engage and Analyze are correlated with conversion.</p>
+<hr>
+
+
+
+
+<h2 id="summary-1">Summary
+  <a href="#summary-1"><svg class="anchor-symbol" aria-hidden="true" height="26" width="26" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="currentColor"></path>
+      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76.0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71.0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71.0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76.0 5-2.24 5-5s-2.24-5-5-5z"></path>
+    </svg></a>
+</h2>
+<p>Overall, this exploratory analysis confirms what we would suspect &ndash; usage of Buffer&rsquo;s features is correlated with a higher likelihood of activating and purchasing a paid subscription.</p>
+<p>Usage of each feature is indicative of success, even when we try to control for users being active in general.</p>
+<p>There are a couple upgrade paths that have historically driven a large quantity of upgrades that are no longer performing well. Specifically, I would recommend looking more closely at these two paths and designing experiments to learn more about why they aren&rsquo;t performing as well:</p>
+<ul>
+<li><code>publish-composer-profileQueueLimit-showPaidPlans-1</code></li>
+<li><code>publish-profileSidebar-addChannelButton-upgrade-1</code></li>
+</ul>
+<p>In addition to these two upgrade paths, I would recommend that we create a new upgrade path that is targeted specifically to users that want to add a team member. This is a key action that one can take and something that is highly correlated with success.</p>
+<p>The duration of new users' first sessions is highly correlated with success. In general, the longer they spend in the product during their first session, the more likely they are to activate and pay for a subscription.</p>
+<p>First session duration could be a useful early indicator of success that we can optimize for in growth experiments.</p>
+<p>In general, if users do not purchase a paid plan in their first 60 days, they are significantly less likely to do so in the future. The experience that new users have when signing up is highly influential and has a significant effect on their (and our) success with the product.</p>
 
         
         <details closed class="f6 fw7 input-reset">
@@ -481,7 +824,7 @@ activations <span style="color:#000;font-weight:bold">%&gt;%</span>
   </dl>
   <dl class="f6 lh-copy">
     <dt class="fw7">Length:</dt>
-    <dd class="fw5 ml0">9 minute read, 1907 words</dd>
+    <dd class="fw5 ml0">26 minute read, 5398 words</dd>
   </dl>
   
   
@@ -496,6 +839,9 @@ activations <span style="color:#000;font-weight:bold">%&gt;%</span>
       <footer class="post-footer">
         <div class="post-pagination dt w-100 mt4 mb2">
   
+  
+    <a class="prev dtc pr2 tl v-top fw6"
+    href="/blog/2022-05-10-geographic-market-insights/">&larr; Geographic Market Insights</a>
   
   
   
