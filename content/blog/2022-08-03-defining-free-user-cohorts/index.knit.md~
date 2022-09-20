@@ -1,0 +1,418 @@
+---
+title: Defining Free User Cohorts
+author: Julian Winternheimer
+date: '2022-08-03'
+slug: []
+categories: []
+tags: []
+---
+
+In a [previous analysis](https://bufferanalysis.com/blog/2022-06-20-buffer-s-free-users/), we analyzed the behavior and characteristics of Buffer's active free users.
+
+One of the goals of that analysis was to define cohorts within the free user base to inform qualification. We'll address that more directly here.
+
+From conversations with the team, we want to identify behaviors that correlate with paid conversion early on in the user journey. Because [over 75% of conversions happen within the first 30 days after signing up](https://mixpanel.com/s/1l8vvQ), we'll use conversion within 30 days as the desired outcome.
+
+One important thing to note is that free users exclude those that are on trials, so we'll only look at people that did not sign up with a trial.
+
+
+
+ 
+
+## Data Collection
+To answer these questions, we'll collect data from over one million signups that occurred since January 1, 2021 with the SQL query below.
+
+
+```r
+# define sql query
+sql <- "
+  select
+    u.user_id
+    , u.stripe_customer_id
+    , u.signup_at_date as signup_date
+    , date_trunc(u.signup_at_date, week) as signup_week
+    , u.did_signup_from_mobile as mobile_signup
+    , u.is_team_member
+    , u.is_currently_trialing
+    , u.did_signup_on_trial as trial_signup
+    , avg(ss.session_duration_minutes) as avg_session_duration
+    , count(distinct ss.session_id) as sessions
+    , date(min(a.timestamp)) as activated_at
+    , date(min(s.first_paid_invoice_created_at)) as converted_date
+    , count(distinct a.id) as actions
+    , count(distinct a.date) as days_active
+    , count(distinct date(ss.started_at)) as session_days
+    , count(distinct case when a.product = 'publish' then a.id end) as posts_created
+    , count(distinct case when a.product = 'publish' then a.date end) as posts_created_days
+    , count(distinct case when a.product = 'analyze' then a.id end) as analyze_actions
+    , count(distinct case when a.product = 'engage' then a.id end) as engage_actions
+    , count(distinct case when a.product = 'start_pages' then a.id end) as sp_actions
+    , count(distinct ch.id) as channels_connected
+    , count(distinct t.id) as trials_started
+  from dbt_buffer.buffer_users as u
+  left join dbt_buffer.stripe_paid_subscriptions as s
+    on u.stripe_customer_id = s.customer_id
+    and s.first_paid_invoice_created_at >= u.signup_at
+  left join dbt_buffer.buffer_key_actions as a
+    on u.user_id = a.user_id
+    and a.timestamp >= u.signup_at
+    and a.timestamp < timestamp_add(u.signup_at, interval 7 day)
+  left join dbt_buffer.segment_channels_connected as ch
+    on u.user_id = ch.user_id
+    and ch.timestamp >= u.signup_at
+    and ch.timestamp < timestamp_add(u.signup_at, interval 7 day)
+  left join dbt_buffer.segment_trial_starts as t
+    on u.user_id = t.user_id
+    and t.timestamp >= u.signup_at
+    and t.timestamp < timestamp_add(u.signup_at, interval 7 day)
+  left join dbt_buffer.segment_sessions as ss
+    on ss.dbt_visitor_id = u.user_id
+    and ss.started_at >= u.signup_at
+    and date(ss.started_at) < date_add(u.signup_at_date, interval 7 day)
+  where u.signup_at >= '2022-01-01'
+  group by 1,2,3,4,5,6,7,8
+"
+
+#  connect to bigquery
+con <- dbConnect(
+  bigrquery::bigquery(),
+  project = "buffer-data"
+)
+
+# collect data from bigquery
+users <- dbGetQuery(con, sql, page_size = 500000)
+
+# save data as rds object
+saveRDS(users, "free_cohorts.rds")
+```
+
+
+
+
+## Exploratory Analysis
+
+Approximately 27% of these users signed up on a mobile device.
+
+
+```r
+# calculate percentage that signed up on mobile
+users %>% 
+  group_by(mobile_signup) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = percent(users / sum(users)))
+```
+
+```
+## # A tibble: 2 × 3
+##   mobile_signup  users prop 
+##   <lgl>          <int> <chr>
+## 1 FALSE         251400 73%  
+## 2 TRUE           91995 27%
+```
+
+Around 30% took at least one key action within 7 days of signing up. 
+
+
+```r
+# calculate proportion that activated
+users %>% 
+  group_by(activated) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(prop = percent(users / sum(users)))
+```
+
+```
+## # A tibble: 2 × 3
+##   activated  users prop 
+##   <lgl>      <int> <chr>
+## 1 FALSE     238109 69%  
+## 2 TRUE      105286 31%
+```
+
+There's a large group of active free users that only took a key action in one day of their first week. Over 60% of mobile signups that activated only took a key action on a single day That's one group of users.
+
+<img src="index_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+
+The plots below show that free users that take key actions in at least 3 days during their first week are around three times likely to convert than users that are only active one day (12% vs 4%). 
+Only 20% of users that activate are active 3 or more days in their first week.
+
+<img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+
+<img src="index_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+
+## Posts Created in First 7 Days
+We'll plot the distribution for both those that converted and those that didn't.
+
+<img src="index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+
+
+```r
+# plot distribution of days active
+p <- users %>% 
+  filter(activated) %>% 
+  buffplot(aes(x = posts_created, color = converted)) +
+  stat_ecdf() +
+  coord_cartesian(xlim = c(0, 100)) +
+  scale_x_continuous(breaks = seq(0, 100, 10)) +
+  labs(x = "Posts Created First Week", y = NULL,
+       fill = "Converted", 
+       color = "Converted")
+
+# get data 
+p_data <-layer_data(p) %>% 
+  select(x, y, group) %>% 
+  rename(posts = x, prop = y) %>% 
+  mutate(converted = ifelse(group == 1, "not_converted", "converted")) %>% 
+  select(-group)
+
+# widen data and calculate difference
+p_wide <- p_data %>% 
+  pivot_wider(names_from = converted, values_from = prop) %>% 
+  mutate(gap = not_converted - converted) %>% 
+  arrange(desc(abs(gap)))
+```
+
+The largest gap comes at 5 posts, but the gap from 5-10 posts is very similar. The conversion rate of _activated_ users that did not create 5 posts is 3.2%, whereas the conversion rate activated users that created 5 or more posts is 9.4%. 
+
+
+
+Only 24% of users that activate create 10 or more posts in their first week. Of those that do, around 12.2$ end up converting, compared to 3.9% of activated and created 9 or fewer posts.
+
+<img src="index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+
+## Channels Connected First Week
+A higher proportion of signups that end up converting connect at least 3 channels in their first week after signing up.
+
+<img src="index_files/figure-html/unnamed-chunk-12-1.png" width="672" />
+
+Those that activate and connect at least three channels have significantly higher conversion rates than those that do not.
+
+<img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" />
+
+## Posts Created and Channels Connected in First Week
+Approximately 14% of people that sign up connect at least 3 channels and 10 posts in their first week. Of those, around 13.4% convert. 
+
+Of activated users that don't connect 3 channels and 10 posts, around 4.7% convert.
+
+<img src="index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+
+
+## Publishing a Start Page
+Publishing a Start Page is not correlated with conversion.
+
+<img src="index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
+
+## Using Engagement Feature
+Replying to a comment in Engage is highly correlated with conversion. However, only 1.9% of activated users use Engage.
+
+<img src="index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
+
+## Viewing Analytics
+Visiting analytics is also correlated with conversion, and around 15% of activated users do it. 
+
+<img src="index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
+
+## Session Days
+There is a very clear relationship between session days and the probability of conversion in the first week after signing up.
+
+<img src="index_files/figure-html/unnamed-chunk-18-1.png" width="672" />
+
+<img src="index_files/figure-html/unnamed-chunk-19-1.png" width="672" />
+
+Around 42% of activated signups have sessions for at least 3 days. Of those, approximately 11.1% convert to a paid plan. If an activated user only has sessions 2 or fewer days, around 3.6% convert.
+
+
+```r
+# calculate conversion rate
+users %>% 
+  filter(activated & sessions >= 1) %>% 
+  group_by(sessions_3_days = session_days >= 3, converted) %>% 
+  summarise(users = n_distinct(user_id)) %>% 
+  mutate(percent = users / sum(users))
+```
+
+```
+## `summarise()` has grouped output by 'sessions_3_days'. You can override using
+## the `.groups` argument.
+```
+
+```
+## # A tibble: 4 × 4
+## # Groups:   sessions_3_days [2]
+##   sessions_3_days converted users percent
+##   <lgl>           <lgl>     <int>   <dbl>
+## 1 FALSE           FALSE     48612  0.963 
+## 2 FALSE           TRUE       1853  0.0367
+## 3 TRUE            FALSE     31352  0.884 
+## 4 TRUE            TRUE       4120  0.116
+```
+
+Around 50% of people that convert have an average session duration of 11.5 minutes or more, whereas users that don't convert have an average session duration of 2.5 minutes.
+
+If we look only at users that activate, around 50% of converted users have average session lengths of 13 minutes, whereas users that don't convert have an average session duration of 9.5 minutes or less.
+
+
+<img src="index_files/figure-html/unnamed-chunk-21-1.png" width="672" />
+
+
+```r
+# quantile breaks
+q = c(.25, .5, .75)
+
+#calculate quantiles by grouping variable
+users %>%
+  filter(!is.na(avg_session_duration)) %>% 
+  group_by(converted) %>%
+  summarize(quant25 = quantile(avg_session_duration, probs = q[1]), 
+            quant50 = quantile(avg_session_duration, probs = q[2]),
+            quant75 = quantile(avg_session_duration, probs = q[3]))
+```
+
+```
+## # A tibble: 2 × 4
+##   converted quant25 quant50 quant75
+##   <lgl>       <dbl>   <dbl>   <dbl>
+## 1 FALSE           0     3      10.5
+## 2 TRUE            5    11.4    20
+```
+
+
+## Channels Connected in First 3 Days
+
+<img src="index_files/figure-html/unnamed-chunk-23-1.png" width="672" />
+
+Connecting at least 3 channels is indicative of success. If an activated user connects at least 3 channels, the conversion rate is 8%. If they don't it's 4.5%.
+
+
+```
+## # A tibble: 2 × 4
+## # Groups:   connected_3_channels [2]
+##   connected_3_channels converted users percent
+##   <lgl>                <lgl>     <int>   <dbl>
+## 1 FALSE                TRUE       2762  0.0426
+## 2 TRUE                 TRUE       3430  0.0849
+```
+
+## Logistic Regression
+A logistic regression model indicates that all of these inputs have predictive value. The coefficients are largest for `mobile_signup`, `activated`, `trial_signup`, and `days_active`.
+
+
+```r
+# set new column
+filtered <- users %>% 
+  filter(sessions >= 1) %>% 
+  mutate(response = ifelse(converted, 1, 0),
+         connected_3_channels = channels_connected >= 3,
+         active_3_days = days_active >= 3,
+         sessions_3_days = session_days >= 3)
+
+# create model
+mod <- glm(response ~ mobile_signup + activated + trial_signup + session_days +
+            channels_connected + avg_session_duration + sessions, 
+            data = filtered, family = "binomial")
+
+# summarize model
+summary(mod)
+```
+
+```
+## 
+## Call:
+## glm(formula = response ~ mobile_signup + activated + trial_signup + 
+##     session_days + channels_connected + avg_session_duration + 
+##     sessions, family = "binomial", data = filtered)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -8.4904  -0.2719  -0.1443  -0.0735   3.5633  
+## 
+## Coefficients:
+##                        Estimate Std. Error  z value Pr(>|z|)    
+## (Intercept)          -5.7590643  0.0443528 -129.847  < 2e-16 ***
+## mobile_signupTRUE    -0.9748550  0.0669759  -14.555  < 2e-16 ***
+## activatedTRUE         0.5674494  0.0339075   16.735  < 2e-16 ***
+## trial_signupTRUE      1.6931286  0.0371482   45.578  < 2e-16 ***
+## session_days          0.3817462  0.0101227   37.712  < 2e-16 ***
+## channels_connected    0.0184627  0.0024633    7.495 6.62e-14 ***
+## avg_session_duration  0.0189553  0.0008181   23.170  < 2e-16 ***
+## sessions              0.0053791  0.0023805    2.260   0.0238 *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 64838  on 206978  degrees of freedom
+## Residual deviance: 51407  on 206971  degrees of freedom
+## AIC: 51423
+## 
+## Number of Fisher Scoring iterations: 8
+```
+
+We'll create a second model.
+
+
+```r
+# create model
+mod2 <- glm(response ~ activated + sessions_3_days, 
+            data = filtered, family = "binomial")
+
+# summarize model
+summary(mod2)
+```
+
+```
+## 
+## Call:
+## glm(formula = response ~ activated + sessions_3_days, family = "binomial", 
+##     data = filtered)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.5049  -0.2639  -0.1524  -0.1524   2.9872  
+## 
+## Coefficients:
+##                     Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)         -4.45018    0.02571 -173.08   <2e-16 ***
+## activatedTRUE        1.11033    0.03227   34.41   <2e-16 ***
+## sessions_3_daysTRUE  1.34447    0.02716   49.51   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 64838  on 206978  degrees of freedom
+## Residual deviance: 57617  on 206976  degrees of freedom
+## AIC: 57623
+## 
+## Number of Fisher Scoring iterations: 7
+```
+
+## Lasso Regression
+Simply put, lasso regression shrinks the coefficients of predictors to 0 if they don't explain a sufficient amount of the variance in the response.
+
+A lasso regression model is fit with the simple command below. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

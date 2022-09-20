@@ -12,7 +12,7 @@ The four main goals of this analysis are:
 1. Gaining a better understanding of Buffer's active free users
 2. Identifying opportunities for converting free users to paid
 3. Mapping our free user onboarding actions
-4. Definning cohorts within our free user base to inform user qualification
+4. Defining cohorts within our free user base to inform user qualification
 
 There are a lot of sections below, so settle in with a cup of tea and enjoy. Thank you in advance for reading this and taking the time to learn about Buffer's free users!
 
@@ -34,7 +34,7 @@ Relatively few free users hit the channel and queue limits. In the past 30 days,
 
 The main channels that Buffer's free users connect are Facebook, Twitter, Instagram, and LinkedIn. StartPage, Pinterest, TikTok, Shopify, and GoogleMyBusiness all lag behind the top four channels.
 
-Free users do convert to paid plans -- between 0.7% and 0.9% of active upgrade to paid plans _within 30 days of being active_. That number only takes Stripe subscriptions into account, so the actual percentage may be slightly higher.
+Free users do convert to paid plans -- between 0.7% and 1% of active upgrade to paid plans _within 30 days of being active_. That number only takes Stripe subscriptions into account, so the actual percentage may be slightly higher.
 
 It's most common for people to become inactive 30 days after they first become active, which suggests that they were only active for a single day. The distribution, unsurprisingly, is markedly different for users that had signed up recently and for those that hadn't. There is a very long tail of free users that were active for a while before becoming inactive.
 
@@ -311,6 +311,47 @@ paid %>%
   group_by(had_trial = trials >= 1) %>% 
   summarise(users = n_distinct(user_id)) %>% 
   mutate(prop = scales::percent(users / sum(users)))
+```
+
+
+## Time to Conversion
+Of the people that signed up on a free plan and converted within a year, over 76% did so within 30 days of signing up.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# read data from Mixpanel: https://mixpanel.com/s/revGJ
+convert_time <- read_csv("~/Desktop/time_to_convert.csv")
+
+# update column names
+names(convert_time) <- c("start", "end", "conversion", "percent")
+
+# save data
+saveRDS(convert_time, "free_time_to_convert.rds")
+```
+
+```{r include = FALSE}
+# read data
+convert_time <- readRDS("free_time_to_convert.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot dist of time to convert
+convert_time %>% 
+  mutate(days_start = start / 60 / 60 / 24,
+         days_end = end / 60 / 60 / 24,
+         days = paste(days_start, days_end, sep = "-"),
+         prop = conversion / sum(conversion),
+         days = reorder(days, prop)) %>% 
+  buffplot(aes(x = days, y = prop)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.grid.minor.x = element_line(color = "grey80")
+      ) +
+  scale_y_continuous(labels = percent) +
+  labs(y = "Percent of Conversions", x = "Days to Convert")
 ```
 
 
