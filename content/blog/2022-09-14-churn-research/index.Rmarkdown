@@ -14,29 +14,31 @@ It's probably worth doing some analysis on mobile subscriptions as well, but giv
 
 ## Summary
 
- - The median number of days it takes for Stripe subscriptions to churn 295.
-  - The average number of days is 399. 
-  
- - New Buffer subscriptions tend to churn more quickly in the first few months, perhaps because of confusion around billing. 
-  - However, after the first couple of months, New Buffer subscriptions tend to churn more slowly than legacy subscriptions.
-  - The median number of days it takes New Buffer subscriptions to churn is 337 days, compared to 289 for legacy subscriptions. 
-  
+ - The median number of days it takes for subscriptions to churn 322
+ - The average number of days it takes for subscriptions to churn is 412 
+ - More people that sign up for New Buffer subscription tend to churn in the first 30 days, particularly in the first couple of days after subscribing. 
+ - After the first couple of months, New Buffer subscriptions tend to churn more slowly than legacy subscriptions.
+ - The annual Team plan has a lot of churn in the first couple of days, suggesting that there is some confusion around billing.
+ - This is the default plan for trialists, so it could be worth looking into what exactly happens when trials expire.
+ - The median number of days it takes New Buffer subscriptions to churn is 386 days, compared to 296 for legacy subscriptions. 
  - There is a clear correlation between the number of channels, or slots, available and the churn rate for New Buffer subscriptions.
-  - Subscriptions with only one slot have a median survival time of only 171 days, whereas those with 4 slots have a median survival time of 447 days.
-  
-  - There isn't a clear correlation between the age of the account at the time the subscription was started and churn. People that subscribe to paid plans in their first month with Buffer are retained fairly well.
-  
- - The team plan has a particularly high rate of churn right around the 30 day mark, which could suggest that people were unclear about when or how much they would be billed. 
-  - This is the default plan for trialists, so it could be worth looking into what exactly happens when trials expire.
-  
- - The most common time to churn is within the first few days of starting a subscription. After that, the most common time to churn is around the 60-day mark.
- 
+ - Subscriptions with only one slot have a median survival time of only 264 days, whereas those with 4 slots have a median survival time of 747 days.
+ - There isn't a clear correlation between the age of the account at the time the subscription was started and churn. People that subscribe to paid plans in their first month with Buffer are retained fairly well.
+ - The most common time to churn is within the first few days of starting a subscription. After that, the most common time to churn is around day 30. 
  - On average, customers that churned in their first 60 days on the subscription were more likely to experience a channel connection failure, more likely to have failed posts, _much_ more likely to have a payment failure, and more likely to create a support request.
- 
  - Around 30% of subscriptions that have ended in the past few months have an unpaid last invoice and multiple failed payment attempts. These could be considered involuntary.
 
+
+## Recommendations 
+
+ - Do further research on why people churn on the first day. Determine if people were mistakenly subscribed or weren't aware of how much they'd be charged. 
+ - Use Stripe checkout and require a postal code field for US customers to mitigate involuntary churn.
+ - Intervene proactively with customers with only a single channel slot or those with a failed payment. 
+ - Consider defaulting trials to monthly plans, so that customers might be less confused by the amounts they're billed. 
+ 
+ 
 ## Data Collection
-The data we'll use in this analysis includes 93 thousand Stripe subscriptions that were started since January 2020. Analyze subscriptions are excluded from this analysis.
+The data we'll use in this analysis includes 90 thousand Stripe subscriptions that were started since January 2020. Analyze subscriptions are excluded from this analysis.
 
 The SQL query below is used to gather the data from our data warehouse.
 
@@ -71,6 +73,7 @@ sql <- "
     , date(s.first_paid_invoice_created_at) as start_date
     , date(s.canceled_at) as end_date
     , s.status
+    , s.refunded_invoice_count as refunded_charges
   from dbt_buffer.stripe_paid_subscriptions s
   left join dbt_buffer.core_accounts a
     on s.account_id = a.id
@@ -93,7 +96,9 @@ subs <- readRDS("paid_subs.rds")
 
 # remove trialing subscriptions 
 subs <- subs %>% 
-  filter(status != "trialing" & !grepl("analyze", plan_id))
+  dplyr::filter(status != "trialing" & !grepl("analyze", plan_id) &
+                  !is.na(account_id)) %>% 
+  mutate(refunded = refunded_charges >= 1)
 ```
 
 
@@ -151,7 +156,7 @@ The risk table shows 1) number of subscriptions that haven't churned and are con
 ## Estimating Average and Median Survival Time
 Another quantity that is useful to calculate is the average, or median, survival time. Survival times are not normally distributed, so the median is usually a more representative summary statistic.
 
-The table below shows us that the median survival time for Stripe subscriptions is 295 days and the average is 399 days.
+The table below shows us that the median survival time for Stripe subscriptions is 322 days and the average is 412 days.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # don't use scientific notation
@@ -162,7 +167,7 @@ options(digits = 2)
 summary(s1)$table
 ```
 
-**_Note: I understand that this may be slightly different from what's reported in [ChartmMgul's customer churn report](https://app.chartmogul.com/#/reports/cohorts/customer-churn?filters=data_source~ANY~ds_c14855a4-62ea-11e9-aa54-bbe88fa6cc8c;13324B;primary). After investigating, it looks like ChartMogul excludes subscriptions created by customers that reactivate, i.e. those that have previously had subscriptions. I've reached out to the ChartMogul team and confirmed that this is the case ._**
+**_Note: I understand that this may be slightly different from what's reported in [ChartMogul's customer churn report](https://app.chartmogul.com/#/reports/cohorts/customer-churn?filters=data_source~ANY~ds_c14855a4-62ea-11e9-aa54-bbe88fa6cc8c;13324B;primary). After investigating, it looks like ChartMogul excludes subscriptions created by customers that reactivate, i.e. those that have previously had subscriptions. I've reached out to the ChartMogul team and confirmed that this is the case ._**
 
 
 ## New Buffer vs Legacy
@@ -170,7 +175,7 @@ Next we'll compare survival times for New Buffer and Legacy customers. To do tha
 
 It's worth mentioning that this means that customers that were on legacy plans that switched to New Buffer plans at some point will be considered New Buffer customers, and the subscription duration will include the time that they were on a legacy plan.
 
-The plot below shows the survival curves for New Buffer (blue) and Legacy (red) subscriptions. It suggests that churn rates are higher in the first few months for New Buffer subscriptions. However, after around 6 months, churn rates appear to be lower for New Buffer subscriptions.
+The plot below shows the survival curves for New Buffer (blue) and Legacy (red) subscriptions. It suggests that churn rates are slightly higher in the first month for New Buffer subscriptions. However, after around 3 months, churn rates appear to be lower for New Buffer subscriptions.
 
 In the next section we'll look at the effect that annual subscriptions have on these overall survival curves.
 
@@ -186,7 +191,7 @@ survfit2(Surv(time, surv_status) ~ new_buffer, data = subs) %>%
   labs(x = "Days", y = "Survival Probability")
 ```
 
-The median survival time for New Buffer subscriptions is 337 days, compared to 289 for legacy subscriptions. 
+The median survival time for New Buffer subscriptions is 386 days, compared to 296 for legacy subscriptions. 
 
 ```{r}
 # create survival curves
@@ -195,6 +200,7 @@ s2 <- survfit(Surv(time, surv_status) ~ new_buffer, data = subs)
 # show median survival times
 summary(s2)$table
 ```
+
 
 ## Effect of Annual Plans
 Annual plans have significantly lower churn rates (see green and purple survival curves). The reason for the different slopes in the survival curves for New Buffer and Legacy customers appears to be due to the difference in churn rates for annual plans.
@@ -237,7 +243,7 @@ survfit2(Surv(time, surv_status) ~ quantity_bucket, data = subs %>% filter(new_b
   scale_color_brewer(palette = "Dark2")
 ```
 
-The table below shows the median survival times for New Buffer subscriptions of different quantities. Subscriptions with only one slot have a median survival time of only 171 days, whereas those with 4 slots have a median survival time of 447 days.
+The table below shows the median survival times for New Buffer subscriptions of different quantities. Subscriptions with only one slot have a median survival time of only 264 days, whereas those with 4 slots have a median survival time of 747 days.
 
 ```{r}
 # create survival curves
@@ -246,6 +252,7 @@ s3 <- survfit(Surv(time, surv_status) ~ quantity_bucket, data = filter(subs, new
 # show median survival times
 summary(s3)$table
 ```
+
 
 ## Age of Account
 Next we'll group survival curves by the age of the account at the time the subscription was created.
@@ -282,11 +289,9 @@ summary(s4)$table
 ```
 
 ## Team vs Essentials
-The plot below shows us something curious -- it appears that the probability of churning is higher for customers on a team plan. However, when one looks at the day 30 mark, we can see that the churn rates are almost identical up until that point.
+The plot below shows us something curious -- churn rates for monthly Essentials and Team plans are very similar, but churn rates for the annual Team plan are significantly higher than those of the annual Essentials plan.
 
-The curves diverge as a relatively large number of team plans churn. After that point, the curves look very similar. After the 30-day mark, the survival curve of Team plan customers decreases more slowly than that of Essentials customers.
-
-My hypothesis is that this is another artifact of billing confusion. Buffer defaults web signups onto trials, and all trials are Team trials. It's possible that some sort of confusion led to the churn happening around day 30.
+The biggest divergence appears to occur in the first few days of the plan. One hypothesis is that this is another effect of billing confusion. Buffer defaults web signups onto trials, and all trials are Team trials (mostly annual trials). It's possible that some confusion around the amount charged led to the churn happening in the first couple of days.
 
 ```{r warning = FALSE, message = FALSE, echo = FALSE}
 # determine if on a team plan
@@ -302,7 +307,7 @@ survfit2(Surv(time, surv_status) ~ team + interval, data = filter(subs, new_buff
   scale_color_brewer(palette = "Dark2")
 ```
 
-The plot below confirms that a large portion of churn of Team subscriptions occurs on or before day 30. 
+The plot below confirms that a large portion of churn of Team subscriptions occurs in the first few days.
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot distribution of time to churn
@@ -313,6 +318,32 @@ subs %>%
   scale_x_continuous(limits = c(0, 180), breaks = seq(0, 180, 30)) +
   labs(x = "Days to Churn", y = "Density",
          subtitle = "Team Customers Only")
+```
+
+If we group this data by whether or not the subscription was refunded, we can see that many of those that cancelled on day 0 or 1 were refunded.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot distribution of time to churn
+subs %>% 
+  filter(status == "canceled" & new_buffer & team) %>% 
+  buffplot(aes(x = time, color = refunded, fill = refunded)) +
+  geom_density(alpha = 0.6) +
+  scale_x_continuous(limits = c(0, 180), breaks = seq(0, 180, 30)) +
+  labs(x = "Days to Churn", y = "Density", 
+       color = "Refunded", fill = "Refunded")
+```
+
+Even if we excluded refunded subscriptions, we still see a large amount of churn for the annual team plan occurs in the first few days.
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+# plot curve
+survfit2(Surv(time, surv_status) ~ team + interval, 
+         data = filter(subs, new_buffer & !refunded)) %>% 
+  ggsurvfit() +
+  scale_x_continuous(limits = c(0, 365), breaks = seq(0, 365, 30)) +
+  scale_y_continuous(limits = c(0.2, 1)) +
+  labs(x = "Days", y = "Survival Probability") +
+  scale_color_brewer(palette = "Dark2")
 ```
 
 ## When Cancellations Occur
@@ -332,10 +363,23 @@ subs %>%
   labs(x = "Days to Churn", y = "Density")
 ```
 
+If we group the data by whether or not the customer was refunded, we can see that a significant number of customers that cancelled in the first couple of days on a paid plan were refunded. 
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot distribution of time to churn
+subs %>% 
+  filter(status == "canceled" & new_buffer) %>% 
+  buffplot(aes(x = time, color = refunded, fill = refunded)) +
+  geom_density(alpha = 0.6) +
+  scale_x_continuous(limits = c(0, 180), breaks = seq(0, 180, 30)) +
+  labs(x = "Days to Churn", y = "Density", 
+       color = "Refunded", fill = "Refunded")
+```
+
 The cumulative distribution function below shows us that around 8% of churn cases occur on the day that the subscription was created. 
 
- - **Around 20% of churn occurs by day 15**.
- - **Around 55% of churn occurs by day 60**.
+ - **Around 9% of churn occurs on the first day**.
+ - **Over 50% of churn occurs by day 60**.
  
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 # plot distribution of time to churn
@@ -435,6 +479,129 @@ sub_events %>%
   labs(x = NULL, y = "Averages")
 ```
 
+Now we can look at failed posts by channel. On average, customers that churned in their first 60 days tended to have more failed Instagram, Facebook, and Twitter posts. However, retained users tended to have more failed LinkedIn posts.
+
+```{r include = FALSE, eval = FALSE}
+# define sql query
+sql <- "
+  select distinct
+    s.id
+    , s.account_id
+    , count(distinct fp.id) as failed_posts
+    , count(distinct case when fp.channel in (
+        'Facebook', 'Facebook Group', 'Facebook Page') 
+        then fp.id end) as facebook
+    , count(distinct case when fp.channel in (
+        'Instagram', 'Instagram Business') 
+        then fp.id end) as instagram
+    , count(distinct case when fp.channel in (
+        'LinkedIn', 'LinkedIn Page') 
+        then fp.id end) as linkedin
+    , count(distinct case when channel = 'Google Business Profile'
+        then fp.id end) as google
+    , count(distinct case when channel = 'Twitter' then fp.id end) as twitter
+  from dbt_buffer.stripe_paid_subscriptions s
+  left join dbt_buffer.segment_failed_posts as fp
+    on fp.user_id = s.account_id
+    and fp.timestamp between s.first_paid_invoice_created_at and 
+      timestamp_add(s.first_paid_invoice_created_at, interval 30 day)
+  where s.first_paid_invoice_created_at >= '2020-06-01'
+  group by 1,2
+"
+
+# query bigquery
+failed_posts <- bq_query(sql = sql)
+
+# save data
+saveRDS(failed_posts, "paid_sub_failed_posts.rds")
+```
+
+```{r include = FALSE}
+# read data
+failed_posts <- readRDS("paid_sub_failed_posts.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# remove trialing subscriptions 
+subs_failed_posts <- sub_events %>% 
+  select(-failed_posts) %>% 
+  left_join(failed_posts, by = c("id", "account_id")) %>% 
+  filter(status != "trialing")
+
+
+# calculate averages
+subs_failed_posts %>%
+  filter(start_date >= "2021-07-01" & posts_created >= 1) %>% 
+  group_by(churned = !is.na(end_date) & as.numeric(end_date - start_date) <= 60) %>% 
+  summarise(failed_facebook = mean(facebook, na.rm = T),
+            failed_instagram = mean(instagram, na.rm = T),
+            failed_linkedin = mean(linkedin, na.rm = T),
+            failed_twitter = mean(twitter, na.rm = T)) %>% 
+  mutate(did_churn = ifelse(churned, "Churned", "Retained")) %>% 
+  select(-churned) %>% 
+  pivot_longer(!did_churn, names_to = "metric", values_to = "average") %>% 
+  buffplot(aes(x = did_churn, y = average, fill = metric)) +
+  geom_col(show.legend = F) +
+  facet_wrap(~metric, scales = "free") +
+  labs(x = NULL, y = "Averages")
+```
+
+Customers that churned had slightly more failed connections for Instagram and Facebook. Interestingly, customers that didn't churn in their first 60 days had more Twitter and LinkedIn connection failures, on average
+
+```{r include = FALSE, eval = FALSE}
+# define sql query
+sql <- "
+  select
+    s.id
+    , s.account_id
+    , count(distinct case when fp.channel = 'facebook' then fp.id end) as facebook
+    , count(distinct case when fp.channel = 'instargram' then fp.id end) as instagram
+    , count(distinct case when fp.channel = 'linkedin' then fp.id end) as linkedin
+    , count(distinct case when fp.channel = 'twitter' then fp.id end) as twitter
+  from dbt_buffer.stripe_paid_subscriptions s
+  left join segment_authentication_service.channel_connection_failed as fp
+    on fp.user_id = s.account_id
+    and fp.timestamp between s.first_paid_invoice_created_at and 
+      timestamp_add(s.first_paid_invoice_created_at, interval 30 day)
+  where s.first_paid_invoice_created_at >= '2020-06-01'
+  group by 1,2
+"
+
+# query bigquery
+failed_conns <- bq_query(sql = sql)
+
+# save data
+saveRDS(failed_conns, "paid_sub_failed_connections.rds")
+```
+
+```{r include = FALSE}
+# read data
+failed_conns <- readRDS("paid_sub_failed_connections.rds")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# remove trialing subscriptions 
+subs_failed_conns <- sub_events %>% 
+  left_join(failed_posts, by = c("id", "account_id")) %>% 
+  filter(status != "trialing")
+
+
+# calculate averages
+subs_failed_conns %>%
+  filter(start_date >= "2021-07-01") %>% 
+  group_by(churned = !is.na(end_date) & as.numeric(end_date - start_date) <= 60) %>% 
+  summarise(failed_facebook = mean(facebook, na.rm = T),
+            failed_instagram = mean(instagram, na.rm = T),
+            failed_linkedin = mean(linkedin, na.rm = T),
+            failed_twitter = mean(twitter, na.rm = T)) %>% 
+  mutate(did_churn = ifelse(churned, "Churned", "Retained")) %>% 
+  select(-churned) %>% 
+  pivot_longer(!did_churn, names_to = "metric", values_to = "average") %>% 
+  buffplot(aes(x = did_churn, y = average, fill = metric)) +
+  geom_col(show.legend = F) +
+  facet_wrap(~metric, scales = "free") +
+  labs(x = NULL, y = "Averages")
+```
 
 ## Involuntary Churn
 In this case we'll consider churn to be involuntary if the last invoice was not paid and there were multiple payment attempts.

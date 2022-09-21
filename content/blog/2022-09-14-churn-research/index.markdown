@@ -14,29 +14,31 @@ It's probably worth doing some analysis on mobile subscriptions as well, but giv
 
 ## Summary
 
- - The median number of days it takes for Stripe subscriptions to churn 295.
-  - The average number of days is 399. 
-  
- - New Buffer subscriptions tend to churn more quickly in the first few months, perhaps because of confusion around billing. 
-  - However, after the first couple of months, New Buffer subscriptions tend to churn more slowly than legacy subscriptions.
-  - The median number of days it takes New Buffer subscriptions to churn is 337 days, compared to 289 for legacy subscriptions. 
-  
+ - The median number of days it takes for subscriptions to churn 322
+ - The average number of days it takes for subscriptions to churn is 412 
+ - More people that sign up for New Buffer subscription tend to churn in the first 30 days, particularly in the first couple of days after subscribing. 
+ - After the first couple of months, New Buffer subscriptions tend to churn more slowly than legacy subscriptions.
+ - The annual Team plan has a lot of churn in the first couple of days, suggesting that there is some confusion around billing.
+ - This is the default plan for trialists, so it could be worth looking into what exactly happens when trials expire.
+ - The median number of days it takes New Buffer subscriptions to churn is 386 days, compared to 296 for legacy subscriptions. 
  - There is a clear correlation between the number of channels, or slots, available and the churn rate for New Buffer subscriptions.
-  - Subscriptions with only one slot have a median survival time of only 171 days, whereas those with 4 slots have a median survival time of 447 days.
-  
-  - There isn't a clear correlation between the age of the account at the time the subscription was started and churn. People that subscribe to paid plans in their first month with Buffer are retained fairly well.
-  
- - The team plan has a particularly high rate of churn right around the 30 day mark, which could suggest that people were unclear about when or how much they would be billed. 
-  - This is the default plan for trialists, so it could be worth looking into what exactly happens when trials expire.
-  
- - The most common time to churn is within the first few days of starting a subscription. After that, the most common time to churn is around the 60-day mark.
- 
+ - Subscriptions with only one slot have a median survival time of only 264 days, whereas those with 4 slots have a median survival time of 747 days.
+ - There isn't a clear correlation between the age of the account at the time the subscription was started and churn. People that subscribe to paid plans in their first month with Buffer are retained fairly well.
+ - The most common time to churn is within the first few days of starting a subscription. After that, the most common time to churn is around day 30. 
  - On average, customers that churned in their first 60 days on the subscription were more likely to experience a channel connection failure, more likely to have failed posts, _much_ more likely to have a payment failure, and more likely to create a support request.
- 
  - Around 30% of subscriptions that have ended in the past few months have an unpaid last invoice and multiple failed payment attempts. These could be considered involuntary.
 
+
+## Recommendations 
+
+ - Do further research on why people churn on the first day. Determine if people were mistakenly subscribed or weren't aware of how much they'd be charged. 
+ - Use Stripe checkout and require a postal code field for US customers to mitigate involuntary churn.
+ - Intervene proactively with customers with only a single channel slot or those with a failed payment. 
+ - Consider defaulting trials to monthly plans, so that customers might be less confused by the amounts they're billed. 
+ 
+ 
 ## Data Collection
-The data we'll use in this analysis includes 93 thousand Stripe subscriptions that were started since January 2020. Analyze subscriptions are excluded from this analysis.
+The data we'll use in this analysis includes 90 thousand Stripe subscriptions that were started since January 2020. Analyze subscriptions are excluded from this analysis.
 
 The SQL query below is used to gather the data from our data warehouse.
 
@@ -79,7 +81,7 @@ Surv(subs$time, subs$surv_status)[1:10]
 ```
 
 ```
-##  [1]  46   16  732  496+  61  463+ 152+ 276  113  671+
+##  [1] 103+  21  212  897+ 156+  63+ 519+  65  489+ 396+
 ```
 
 The `survfit()` function creates survival curves using the Kaplan-Meier method. We'll first generate the overall survival curve for the entire cohort of subscriptions. Later on we'll stratify it to see curves for different segments within this sample.
@@ -110,17 +112,17 @@ The risk table shows 1) number of subscriptions that haven't churned and are con
 ## Estimating Average and Median Survival Time
 Another quantity that is useful to calculate is the average, or median, survival time. Survival times are not normally distributed, so the median is usually a more representative summary statistic.
 
-The table below shows us that the median survival time for Stripe subscriptions is 295 days and the average is 399 days.
+The table below shows us that the median survival time for Stripe subscriptions is 322 days and the average is 412 days.
 
 
 ```
 ##   records     n.max   n.start    events     rmean se(rmean)    median   0.95LCL 
-##   93515.0   93515.0   93515.0   56573.0     398.4       1.4     294.0     290.0 
+##   90142.0   90142.0   90142.0   53184.0     412.5       1.4     322.0     315.0 
 ##   0.95UCL 
-##     296.0
+##     325.0
 ```
 
-**_Note: I understand that this may be slightly different from what's reported in [ChartmMgul's customer churn report](https://app.chartmogul.com/#/reports/cohorts/customer-churn?filters=data_source~ANY~ds_c14855a4-62ea-11e9-aa54-bbe88fa6cc8c;13324B;primary). After investigating, it looks like ChartMogul excludes subscriptions created by customers that reactivate, i.e. those that have previously had subscriptions. I've reached out to the ChartMogul team and confirmed that this is the case ._**
+**_Note: I understand that this may be slightly different from what's reported in [ChartMogul's customer churn report](https://app.chartmogul.com/#/reports/cohorts/customer-churn?filters=data_source~ANY~ds_c14855a4-62ea-11e9-aa54-bbe88fa6cc8c;13324B;primary). After investigating, it looks like ChartMogul excludes subscriptions created by customers that reactivate, i.e. those that have previously had subscriptions. I've reached out to the ChartMogul team and confirmed that this is the case ._**
 
 
 ## New Buffer vs Legacy
@@ -128,13 +130,13 @@ Next we'll compare survival times for New Buffer and Legacy customers. To do tha
 
 It's worth mentioning that this means that customers that were on legacy plans that switched to New Buffer plans at some point will be considered New Buffer customers, and the subscription duration will include the time that they were on a legacy plan.
 
-The plot below shows the survival curves for New Buffer (blue) and Legacy (red) subscriptions. It suggests that churn rates are higher in the first few months for New Buffer subscriptions. However, after around 6 months, churn rates appear to be lower for New Buffer subscriptions.
+The plot below shows the survival curves for New Buffer (blue) and Legacy (red) subscriptions. It suggests that churn rates are slightly higher in the first month for New Buffer subscriptions. However, after around 3 months, churn rates appear to be lower for New Buffer subscriptions.
 
 In the next section we'll look at the effect that annual subscriptions have on these overall survival curves.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-8-1.png" width="672" />
 
-The median survival time for New Buffer subscriptions is 337 days, compared to 289 for legacy subscriptions. 
+The median survival time for New Buffer subscriptions is 386 days, compared to 296 for legacy subscriptions. 
 
 
 ```r
@@ -147,12 +149,13 @@ summary(s2)$table
 
 ```
 ##                  records n.max n.start events rmean se(rmean) median 0.95LCL
-## new_buffer=FALSE   58099 58099   58099  42562   395       1.5    285     279
-## new_buffer=TRUE    35416 35416   35416  14011   447       5.9    337     326
+## new_buffer=FALSE   57077 57077   57077  41556   401       1.6    296     294
+## new_buffer=TRUE    33065 33065   33065  11628   483       6.5    386     386
 ##                  0.95UCL
-## new_buffer=FALSE     292
-## new_buffer=TRUE      350
+## new_buffer=FALSE     301
+## new_buffer=TRUE      386
 ```
+
 
 ## Effect of Annual Plans
 Annual plans have significantly lower churn rates (see green and purple survival curves). The reason for the different slopes in the survival curves for New Buffer and Legacy customers appears to be due to the difference in churn rates for annual plans.
@@ -175,7 +178,7 @@ The group that has the highest survival probability has 4 channel slots.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
 
-The table below shows the median survival times for New Buffer subscriptions of different quantities. Subscriptions with only one slot have a median survival time of only 171 days, whereas those with 4 slots have a median survival time of 447 days.
+The table below shows the median survival times for New Buffer subscriptions of different quantities. Subscriptions with only one slot have a median survival time of only 264 days, whereas those with 4 slots have a median survival time of 747 days.
 
 
 ```r
@@ -188,22 +191,23 @@ summary(s3)$table
 
 ```
 ##                          records n.max n.start events rmean se(rmean) median
-## quantity_bucket=(0,1]       9355  9355    9355   4669   331        14    171
-## quantity_bucket=(1,2]       7600  7600    7600   3043   449        13    335
-## quantity_bucket=(2,3]       8495  8495    8495   3076   462        14    384
-## quantity_bucket=(3,4]       5076  5076    5076   1573   565        13    447
-## quantity_bucket=(4,5]       1875  1875    1875    602   494        24    425
-## quantity_bucket=(5,10]      2420  2420    2420    821   498        19    387
-## quantity_bucket=(10,Inf]     595   595     595    227   525        31    387
+## quantity_bucket=(0,1]       8166  8166    8166   3480   382        16    264
+## quantity_bucket=(1,2]       7212  7212    7212   2641   479        13    386
+## quantity_bucket=(2,3]       8128  8128    8128   2697   489        15    386
+## quantity_bucket=(3,4]       4876  4876    4876   1370   595        14    747
+## quantity_bucket=(4,5]       1807  1807    1807    532   520        25    570
+## quantity_bucket=(5,10]      2303  2303    2303    701   530        20    464
+## quantity_bucket=(10,Inf]     573   573     573    207   534        33    406
 ##                          0.95LCL 0.95UCL
-## quantity_bucket=(0,1]        153     180
-## quantity_bucket=(1,2]        312     362
-## quantity_bucket=(2,3]        366     386
-## quantity_bucket=(3,4]        386      NA
-## quantity_bucket=(4,5]        373     721
-## quantity_bucket=(5,10]       380     518
-## quantity_bucket=(10,Inf]     325      NA
+## quantity_bucket=(0,1]        246     294
+## quantity_bucket=(1,2]        366     386
+## quantity_bucket=(2,3]        386     401
+## quantity_bucket=(3,4]        447      NA
+## quantity_bucket=(4,5]        409     726
+## quantity_bucket=(5,10]       387     733
+## quantity_bucket=(10,Inf]     386      NA
 ```
+
 
 ## Age of Account
 Next we'll group survival curves by the age of the account at the time the subscription was created.
@@ -223,33 +227,39 @@ summary(s4)$table
 
 ```
 ##                      records n.max n.start events rmean se(rmean) median
-## age_bucket=(-Inf,0]    18619 18619   18619   6370   489       9.7    386
-## age_bucket=(0,1]        2328  2328    2328    792   521      25.0    393
-## age_bucket=(1,6]        3147  3147    3147   1099   496      21.3    377
-## age_bucket=(6,12]       1868  1868    1868    663   496      25.0    365
-## age_bucket=(12,24]      2033  2033    2033    771   451      21.2    347
-## age_bucket=(24, Inf]    4953  4953    4953   1879   467      14.6    370
+## age_bucket=(-Inf,0]    18678 18678   18678   6402   488       9.6    386
+## age_bucket=(0,1]        2336  2336    2336    798   518      25.0    393
+## age_bucket=(1,6]        3158  3158    3158   1103   493      21.3    369
+## age_bucket=(6,12]       1873  1873    1873    663   498      25.1    386
+## age_bucket=(12,24]      2048  2048    2048    774   447      21.3    352
+## age_bucket=(24, Inf]    4972  4972    4972   1888   466      14.4    370
 ##                      0.95LCL 0.95UCL
 ## age_bucket=(-Inf,0]      386     386
 ## age_bucket=(0,1]         355      NA
-## age_bucket=(1,6]         358     386
-## age_bucket=(6,12]        333     637
+## age_bucket=(1,6]         355     386
+## age_bucket=(6,12]        347     637
 ## age_bucket=(12,24]       312     396
 ## age_bucket=(24, Inf]     358     387
 ```
 
 ## Team vs Essentials
-The plot below shows us something curious -- it appears that the probability of churning is higher for customers on a team plan. However, when one looks at the day 30 mark, we can see that the churn rates are almost identical up until that point.
+The plot below shows us something curious -- churn rates for monthly Essentials and Team plans are very similar, but churn rates for the annual Team plan are significantly higher than those of the annual Essentials plan.
 
-The curves diverge as a relatively large number of team plans churn. After that point, the curves look very similar. After the 30-day mark, the survival curve of Team plan customers decreases more slowly than that of Essentials customers.
-
-My hypothesis is that this is another artifact of billing confusion. Buffer defaults web signups onto trials, and all trials are Team trials. It's possible that some sort of confusion led to the churn happening around day 30.
+The biggest divergence appears to occur in the first few days of the plan. One hypothesis is that this is another effect of billing confusion. Buffer defaults web signups onto trials, and all trials are Team trials (mostly annual trials). It's possible that some confusion around the amount charged led to the churn happening in the first couple of days.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
 
-The plot below confirms that a large portion of churn of Team subscriptions occurs on or before day 30. 
+The plot below confirms that a large portion of churn of Team subscriptions occurs in the first few days.
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-16-1.png" width="672" />
+
+If we group this data by whether or not the subscription was refunded, we can see that many of those that cancelled on day 0 or 1 were refunded.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
+
+Even if we excluded refunded subscriptions, we still see a large amount of churn for the annual team plan occurs in the first few days.
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-18-1.png" width="672" />
 
 ## When Cancellations Occur
 For this part of the analysis, we'll focus on New Buffer subscriptions. The plot below shows the distribution of the number of days to churn for New Buffer subscribers that churned. 
@@ -258,14 +268,18 @@ We can see that the most common time to churn is within the first few days of st
 
 For those that churned in the first couple of days, my suspicion is that people might not have been aware that they would be charged the amount that they were charged for. Experiments could be run to make sure that pricing and billing are as clear as possible at the point of purchase to mitigate churn that occurs this early.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-1.png" width="672" />
+
+If we group the data by whether or not the customer was refunded, we can see that a significant number of customers that cancelled in the first couple of days on a paid plan were refunded. 
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-20-1.png" width="672" />
 
 The cumulative distribution function below shows us that around 8% of churn cases occur on the day that the subscription was created. 
 
- - **Around 20% of churn occurs by day 15**.
- - **Around 55% of churn occurs by day 60**.
+ - **Around 9% of churn occurs on the first day**.
+ - **Over 50% of churn occurs by day 60**.
  
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-18-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-21-1.png" width="672" />
 
 ## Actions Associated with Churn
 We'll check the following events that occurred in the first 30 days on the subscription:
@@ -280,8 +294,23 @@ We'll check the following events that occurred in the first 30 days on the subsc
 
 The graph below shows us that, on average, customers that churned in their first 60 days on the subscription were more likely to experience a channel connection failure, more likely to have failed posts, _much_ more likely to have a payment failure, and more likely to create a support request.
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-20-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-23-1.png" width="672" />
 
+Now we can look at failed posts by channel. On average, customers that churned in their first 60 days tended to have more failed Instagram, Facebook, and Twitter posts. However, retained users tended to have more failed LinkedIn posts.
+
+
+
+
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-26-1.png" width="672" />
+
+Customers that churned had slightly more failed connections for Instagram and Facebook. Interestingly, customers that didn't churn in their first 60 days had more Twitter and LinkedIn connection failures, on average
+
+
+
+
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-29-1.png" width="672" />
 
 ## Involuntary Churn
 In this case we'll consider churn to be involuntary if the last invoice was not paid and there were multiple payment attempts.
@@ -292,5 +321,5 @@ The plot below shows that over 30% of subscriptions that have ended in the past 
 
 
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-23-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-32-1.png" width="672" />
 
