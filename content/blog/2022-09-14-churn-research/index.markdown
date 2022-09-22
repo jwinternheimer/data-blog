@@ -7,18 +7,24 @@ categories: []
 tags: []
 ---
 
-In this analysis we'll take a deep dive into churn at Buffer. Because approximately 97% of paying customers subscribed through Stripe, we'll only look at Stripe subscriptions in this analysis. 
 
-It's probably worth doing some analysis on mobile subscriptions as well, but given the relatively low volume I think that focusing only on Stripe is reasonable.
+This analysis is a deep dive on churn. Because around 97% of Buffer's paying customers subscribed through Stripe, I decided to focus only on Stripe subscriptions, but it is probably worth doing some further analysis on mobile subscription churn. 
+
+I lean heavily on survival analysis techniques in this analysis. If you'd like to read more about survival analysis, you can check out these links:
+
+ - [Wikipedia](https://en.wikipedia.org/wiki/Survival_analysis)
+ - [Survival Analysis for Churn Modeling](https://vitalflux.com/survival-analysis-modeling-for-customer-churn/#:~:text=customer%20churn%20problems%3F-,What%20is%20customer%20churn%20problem%3F,from%20any%20provider%20at%20all.)
+ - [National Library of Medicine](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2394262/#:~:text=Survival%20analysis%20is%20a%20collection,interest%20will%20often%20be%20unknown.)
+ 
 
 
 ## Summary
 
- - The median number of days it takes for subscriptions to churn 322
- - The average number of days it takes for subscriptions to churn is 412 
+ - The median number of days it takes for subscriptions to churn 322.
+ - The average number of days it takes for subscriptions to churn is 412.
  - More people that sign up for New Buffer subscription tend to churn in the first 30 days, particularly in the first couple of days after subscribing. 
  - After the first couple of months, New Buffer subscriptions tend to churn more slowly than legacy subscriptions.
- - The annual Team plan has a lot of churn in the first couple of days, suggesting that there is some confusion around billing.
+ - The annual Team plan in particular has a lot of churn in the first couple of days, suggesting that there nay be some confusion around billing.
  - This is the default plan for trialists, so it could be worth looking into what exactly happens when trials expire.
  - The median number of days it takes New Buffer subscriptions to churn is 386 days, compared to 296 for legacy subscriptions. 
  - There is a clear correlation between the number of channels, or slots, available and the churn rate for New Buffer subscriptions.
@@ -81,7 +87,7 @@ Surv(subs$time, subs$surv_status)[1:10]
 ```
 
 ```
-##  [1] 103+  21  212  897+ 156+  63+ 519+  65  489+ 396+
+##  [1] 104+  21  212  898+ 157+  64+ 520+  65  490+ 397+
 ```
 
 The `survfit()` function creates survival curves using the Kaplan-Meier method. We'll first generate the overall survival curve for the entire cohort of subscriptions. Later on we'll stratify it to see curves for different segments within this sample.
@@ -117,7 +123,7 @@ The table below shows us that the median survival time for Stripe subscriptions 
 
 ```
 ##   records     n.max   n.start    events     rmean se(rmean)    median   0.95LCL 
-##   90142.0   90142.0   90142.0   53184.0     412.5       1.4     322.0     315.0 
+##   90142.0   90142.0   90142.0   53184.0     413.1       1.4     323.0     316.0 
 ##   0.95UCL 
 ##     325.0
 ```
@@ -149,10 +155,10 @@ summary(s2)$table
 
 ```
 ##                  records n.max n.start events rmean se(rmean) median 0.95LCL
-## new_buffer=FALSE   57077 57077   57077  41556   401       1.6    296     294
-## new_buffer=TRUE    33065 33065   33065  11628   483       6.5    386     386
+## new_buffer=FALSE   57077 57077   57077  41556   402       1.6    296     294
+## new_buffer=TRUE    33065 33065   33065  11628   486       6.5    386     386
 ##                  0.95UCL
-## new_buffer=FALSE     301
+## new_buffer=FALSE     302
 ## new_buffer=TRUE      386
 ```
 
@@ -191,20 +197,20 @@ summary(s3)$table
 
 ```
 ##                          records n.max n.start events rmean se(rmean) median
-## quantity_bucket=(0,1]       8166  8166    8166   3480   382        16    264
-## quantity_bucket=(1,2]       7212  7212    7212   2641   479        13    386
-## quantity_bucket=(2,3]       8128  8128    8128   2697   489        15    386
-## quantity_bucket=(3,4]       4876  4876    4876   1370   595        14    747
-## quantity_bucket=(4,5]       1807  1807    1807    532   520        25    570
-## quantity_bucket=(5,10]      2303  2303    2303    701   530        20    464
-## quantity_bucket=(10,Inf]     573   573     573    207   534        33    406
+## quantity_bucket=(0,1]       8166  8166    8166   3480   386        16    264
+## quantity_bucket=(1,2]       7212  7212    7212   2641   481        14    386
+## quantity_bucket=(2,3]       8128  8128    8128   2697   491        15    386
+## quantity_bucket=(3,4]       4876  4876    4876   1370   597        14    747
+## quantity_bucket=(4,5]       1807  1807    1807    532   522        25    570
+## quantity_bucket=(5,10]      2303  2303    2303    701   532        20    464
+## quantity_bucket=(10,Inf]     573   573     573    207   537        33    555
 ##                          0.95LCL 0.95UCL
-## quantity_bucket=(0,1]        246     294
+## quantity_bucket=(0,1]        250     294
 ## quantity_bucket=(1,2]        366     386
-## quantity_bucket=(2,3]        386     401
+## quantity_bucket=(2,3]        386     407
 ## quantity_bucket=(3,4]        447      NA
 ## quantity_bucket=(4,5]        409     726
-## quantity_bucket=(5,10]       387     733
+## quantity_bucket=(5,10]       417     733
 ## quantity_bucket=(10,Inf]     386      NA
 ```
 
@@ -227,19 +233,19 @@ summary(s4)$table
 
 ```
 ##                      records n.max n.start events rmean se(rmean) median
-## age_bucket=(-Inf,0]    18678 18678   18678   6402   488       9.6    386
-## age_bucket=(0,1]        2336  2336    2336    798   518      25.0    393
-## age_bucket=(1,6]        3158  3158    3158   1103   493      21.3    369
-## age_bucket=(6,12]       1873  1873    1873    663   498      25.1    386
-## age_bucket=(12,24]      2048  2048    2048    774   447      21.3    352
-## age_bucket=(24, Inf]    4972  4972    4972   1888   466      14.4    370
+## age_bucket=(-Inf,0]    18678 18678   18678   6402   491       9.6    386
+## age_bucket=(0,1]        2336  2336    2336    798   519      25.0    393
+## age_bucket=(1,6]        3158  3158    3158   1103   496      21.3    377
+## age_bucket=(6,12]       1873  1873    1873    663   501      25.0    386
+## age_bucket=(12,24]      2048  2048    2048    774   448      21.4    352
+## age_bucket=(24, Inf]    4972  4972    4972   1888   467      14.4    375
 ##                      0.95LCL 0.95UCL
 ## age_bucket=(-Inf,0]      386     386
-## age_bucket=(0,1]         355      NA
-## age_bucket=(1,6]         355     386
+## age_bucket=(0,1]         360      NA
+## age_bucket=(1,6]         358     386
 ## age_bucket=(6,12]        347     637
-## age_bucket=(12,24]       312     396
-## age_bucket=(24, Inf]     358     387
+## age_bucket=(12,24]       315     406
+## age_bucket=(24, Inf]     359     412
 ```
 
 ## Team vs Essentials

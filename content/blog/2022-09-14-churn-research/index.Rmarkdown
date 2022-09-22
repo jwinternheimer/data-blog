@@ -7,18 +7,24 @@ categories: []
 tags: []
 ---
 
-In this analysis we'll take a deep dive into churn at Buffer. Because approximately 97% of paying customers subscribed through Stripe, we'll only look at Stripe subscriptions in this analysis. 
 
-It's probably worth doing some analysis on mobile subscriptions as well, but given the relatively low volume I think that focusing only on Stripe is reasonable.
+This analysis is a deep dive on churn. Because around 97% of Buffer's paying customers subscribed through Stripe, I decided to focus only on Stripe subscriptions, but it is probably worth doing some further analysis on mobile subscription churn. 
+
+I lean heavily on survival analysis techniques in this analysis. If you'd like to read more about survival analysis, you can check out these links:
+
+ - [Wikipedia](https://en.wikipedia.org/wiki/Survival_analysis)
+ - [Survival Analysis for Churn Modeling](https://vitalflux.com/survival-analysis-modeling-for-customer-churn/#:~:text=customer%20churn%20problems%3F-,What%20is%20customer%20churn%20problem%3F,from%20any%20provider%20at%20all.)
+ - [National Library of Medicine](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2394262/#:~:text=Survival%20analysis%20is%20a%20collection,interest%20will%20often%20be%20unknown.)
+ 
 
 
 ## Summary
 
- - The median number of days it takes for subscriptions to churn 322
- - The average number of days it takes for subscriptions to churn is 412 
+ - The median number of days it takes for subscriptions to churn 322.
+ - The average number of days it takes for subscriptions to churn is 412.
  - More people that sign up for New Buffer subscription tend to churn in the first 30 days, particularly in the first couple of days after subscribing. 
  - After the first couple of months, New Buffer subscriptions tend to churn more slowly than legacy subscriptions.
- - The annual Team plan has a lot of churn in the first couple of days, suggesting that there is some confusion around billing.
+ - The annual Team plan in particular has a lot of churn in the first couple of days, suggesting that there nay be some confusion around billing.
  - This is the default plan for trialists, so it could be worth looking into what exactly happens when trials expire.
  - The median number of days it takes New Buffer subscriptions to churn is 386 days, compared to 296 for legacy subscriptions. 
  - There is a clear correlation between the number of channels, or slots, available and the churn rate for New Buffer subscriptions.
