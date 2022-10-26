@@ -46,6 +46,19 @@ The learning objectives of this analysis are as follows:
    - Of users that converted, around 18% added at least one team member during their trial.
    - Less than 1% of trialists approved a draft during their trial.
 
+## Recommendations
+ - We should remove the in-app popup asking people to start a trial on the onboarding product solution screen. They just chose whether or not to start a trial on the previous page.
+ 
+ - We should update the "Manage Channels" button at the bottom left hand corner of the screen with a more prominent CTA to "Add Channel" or "Connect Channel" or "Connect a Social Account".
+    - Otherwise, we can have specific CTAs to "Connect Instagram Page", "Connect Facebook Page" under the channels they already have connected in the Queue view.
+    
+ - We should prompt trialists to add team members, perhaps by including a prominent CTA on the dashboard. Team member and collaboration features are underutilized.
+ 
+ - If an Instagram channel is connected, we should prompt users to create a Start Page in the publishing feature. 
+ 
+ - We should notify users when new data is available to view in Analyze.
+ 
+ - We should notify users when there are new unreplied comments in Engage.
  
 ## Baseline Volume and Conversion Rates
 These will vary during the times in which people could choose to create an account on a free plan. We will define a conversion as someone starting a subscription within 14 days of the trial ending.

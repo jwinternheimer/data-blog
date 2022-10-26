@@ -21,7 +21,36 @@ The learning objectives of this analysis are as follows:
  - To discover and describe areas in which we can improve the experience.
 
 ## Summary
+ - A significant number of new signups were put onto trials automatically, so the data presented in this analysis is somewhat biased.
+ - Because many people were automatically put on trials, the trial conversion rate, defined as the proportion of trialists that start a subscription within 28 days of starting a trial, has decreased from around 10% to around 4%.
+ - People that sign up for Buffer on a non-mobile web browser convert at the highest rates. People that sign up on one of the mobile apps convert at the lowest rates.
+ - In general people that convert do so on the day the trial starts or on the day the trial ends. Almost as many trialists convert on the first day as on the last day.
+ - Trialists that end up converting signal their intent early on in the trial. Of those that add a payment method, the vast majority do so on day one.
+ - The median number of days active during the trial is 2 for those that don't convert and 5 for those that did.
+ - The number of unique sessions during the trial is a good indicator of whether or not a trialist will end up converting.
+ - In general, Buffer's trial does not seem to be very effective in getting people to try premium features.
+   - The median number of channels connected by trialists during their trial is very low. It is 0 for those that didn’t convert and 1 for those that did.
+   - Around 18% of trialists that didn’t convert connected an Instagram channel during the trial, compared to around 42% of trialists that did convert.
+   - Around 22% of trialists that didn’t convert connected a Facebook channel during the trial, compared to around 40% of trialists that did convert.
+   - Around 28% of trialists viewed at least one analytics page, though this doesn’t necessarily mean they got value from the feature. Only 4% of trialists published a Start Page and 1% replied to a comment in the Engagement feature.
+   - Of trialists that converted, around 52% viewed an Analyze page, 6% replied to a comment, and only 5% published a Start Page.
+   - Only around 2% of trialists added team members during their trial.
+   - Of users that converted, around 18% added at least one team member during their trial.
+   - Less than 1% of trialists approved a draft during their trial.
 
+## Recommendations
+ - We should remove the in-app popup asking people to start a trial on the onboarding product solution screen. They just chose whether or not to start a trial on the previous page.
+ 
+ - We should update the "Manage Channels" button at the bottom left hand corner of the screen with a more prominent CTA to "Add Channel" or "Connect Channel" or "Connect a Social Account".
+    - Otherwise, we can have specific CTAs to "Connect Instagram Page", "Connect Facebook Page" under the channels they already have connected in the Queue view.
+    
+ - We should prompt trialists to add team members, perhaps by including a prominent CTA on the dashboard. Team member and collaboration features are underutilized.
+ 
+ - If an Instagram channel is connected, we should prompt users to create a Start Page in the publishing feature. 
+ 
+ - We should notify users when new data is available to view in Analyze.
+ 
+ - We should notify users when there are new unreplied comments in Engage.
  
 ## Baseline Volume and Conversion Rates
 These will vary during the times in which people could choose to create an account on a free plan. We will define a conversion as someone starting a subscription within 14 days of the trial ending.
