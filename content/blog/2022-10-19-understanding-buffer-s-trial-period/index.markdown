@@ -21,6 +21,7 @@ The learning objectives of this analysis are as follows:
  - To discover and describe areas in which we can improve the experience.
 
 ## Summary
+ - Billing communication can be greatly improved. See the recommendations below.
  - A significant number of new signups were put onto trials automatically, so the data presented in this analysis is somewhat biased.
  - Because many people were automatically put on trials, the trial conversion rate, defined as the proportion of trialists that start a subscription within 28 days of starting a trial, has decreased from around 10% to around 4%.
  - People that sign up for Buffer on a non-mobile web browser convert at the highest rates. People that sign up on one of the mobile apps convert at the lowest rates.
