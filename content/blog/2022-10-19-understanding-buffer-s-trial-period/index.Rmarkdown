@@ -47,7 +47,32 @@ The learning objectives of this analysis are as follows:
    - Less than 1% of trialists approved a draft during their trial.
 
 ## Recommendations
- - We should remove the in-app popup asking people to start a trial on the onboarding product solution screen. They just chose whether or not to start a trial on the previous page.
+ - We should remove the in-app popup asking people to start a trial on the onboarding product solution screen. They just chose whether or not to start a trial on the previous page. Also the offer is incorrect. The trial plan is the Essentials Team.
+
+![](images/trial_prompt.png)
+
+ - When someone is on a trial and hasn't added a payment method, the banner below is displayed. We ask the user to add a payment method in the copy, but the CTA says "Start Subscription" and opens the plan selector.
+   - Instead, we should have a CTA that says "Add Credit Card" that opens the payment method entry form.
+   - Additionally, there seems to be too much text. We could possibly get away with something simpler, like "You have 12 days left on your free trial. Add a credit card for the best experience."
+ 
+![](images/countdown.jpg)
+
+
+ - **When someone has a credit card on file, nothing is displayed in the product to indicate that the trial is still active. Additionally, we seem to charge people automatically when the trial ends. This could be a cause of major billing confusion.**
+ 
+   - When someone is on a trial, we should always have something that indicates that. We should also display the number of days left in the trial.
+  
+   - If we're going to automatically charge trialists, we should let them know. It feels a little shady to charge automatically for our highest value plan without displaying this information to the user.
+  
+   - Additionally, we should allow a trialist to choose which plan they want if they already have a card on file and we're about to automatically charge them. They should be able to choose the plan and billing interval.
+
+ - When a trialists clicks "Start Subscription" and opens the plan selector, there is a section that says that they're currently paying a certain amount based on the number of channels connected. In reality they are on a trial and not paying anything yet. We should correct that.
+
+![](images/currently_paying.jpg)
+ 
+ - When someone has "Annual" selected in the plan selector, the price to be paid does not show up. This should also be corrected.
+
+![](images/annual_price.jpg)
  
  - We should update the "Manage Channels" button at the bottom left hand corner of the screen with a more prominent CTA to "Add Channel" or "Connect Channel" or "Connect a Social Account".
     - Otherwise, we can have specific CTAs to "Connect Instagram Page", "Connect Facebook Page" under the channels they already have connected in the Queue view.
