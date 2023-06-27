@@ -322,10 +322,6 @@ summary(mod)
 ##     session_days + channels_connected + avg_session_duration + 
 ##     sessions, family = "binomial", data = filtered)
 ## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -8.4904  -0.2719  -0.1443  -0.0735   3.5633  
-## 
 ## Coefficients:
 ##                        Estimate Std. Error  z value Pr(>|z|)    
 ## (Intercept)          -5.7590643  0.0443528 -129.847  < 2e-16 ***
@@ -365,10 +361,6 @@ summary(mod2)
 ## Call:
 ## glm(formula = response ~ activated + sessions_3_days, family = "binomial", 
 ##     data = filtered)
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -0.5049  -0.2639  -0.1524  -0.1524   2.9872  
 ## 
 ## Coefficients:
 ##                     Estimate Std. Error z value Pr(>|z|)    

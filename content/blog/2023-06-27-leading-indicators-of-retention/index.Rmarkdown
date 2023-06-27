@@ -1,0 +1,165 @@
+---
+title: Leading Indicators of Retention
+author: Julian
+date: '2023-06-27'
+slug: []
+categories: []
+tags: []
+---
+
+In this analysis we'll look at how two measures of activity relate to user retention:
+
+ 1. The number of key actions taken during the first week.
+ 2. The number of days active during the first week.
+
+```{r include = FALSE, message = FALSE, warning = FALSE}
+# load libraries
+library(buffer)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(scales)
+```
+ 
+
+## Data Collection
+To answer these questions, we'll collect data from over one million signups that occurred since January 1, 2021 with the SQL query below.
+
+```{r eval = FALSE, warning = FALSE, message = FALSE}
+# define sql query
+sql <- "
+  with users as (
+    select
+      u.user_id
+      , u.signup_at_date
+      , date_trunc(u.signup_at_date, week) as signup_week
+      , date(min(a.timestamp)) as activated_at
+      , count(distinct case when a.date < date_add(u.signup_at_date, interval 7 day) then a.id end) as actions
+      , count(distinct case when a.date < date_add(u.signup_at_date, interval 7 day) then a.date end) as days_active
+      , max(a.date) as last_active_date
+    from dbt_buffer.buffer_users as u
+    left join dbt_buffer.buffer_key_actions as a
+      on u.user_id = a.user_id
+      and a.timestamp >= u.signup_at
+    where u.signup_at_date between date('2022-01-01') and date_sub(current_date(), interval 60 day)
+    group by 1,2,3
+  )
+  
+  select * from users
+"
+
+# collect data from bigquery
+users <- bq_query(sql = sql)
+
+# save data as rds object
+saveRDS(users, "user_retention.rds")
+```
+
+```{r include = FALSE}
+# read data
+users <- readRDS("user_retention.rds") 
+```
+
+We'll defined "retained" has having been active at least 60 days after signing up. Surprisingly, only around 12% of signups fit this description of retained.
+
+```{r}
+# determine if they activated and were retained
+users <- users %>% 
+  mutate(activated = !is.na(activated_at),
+         retained = activated & as.numeric(last_active_date - signup_at_date) >= 60)
+
+# calculate percentage active after 60 days
+users %>% 
+  group_by(retained) %>% 
+  summarise(n = n_distinct(user_id)) %>% 
+  mutate(prop = percent(n / sum(n)))
+```
+
+## Key Actions and Retention
+In this section we'll try to visualize the relationship between the number of key actions taken during the first week and retention.
+
+We will only look at activated users here. The boxplots below show that users that are retained do tend to take more key actions in their first week.
+
+```{r}
+# filter for activated users
+active <- users %>% 
+  filter(activated & actions > 0 & days_active > 0)
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+# plot distributions of actions for retained users
+active %>% 
+  ggplot(aes(x = retained, y = log(actions), color = retained)) +
+  geom_boxplot() +
+  theme_light() +
+  labs(x = "Retained", y = "Key Actions (Log Scale)") +
+  theme(legend.position = "none")
+```
+
+The median number of key actions taken in the first week for retained users is 8, compared to 3 for users that were not retained. Around 25% of retained users took 18 or more key actions in their first week, and around 25% of churned users took 8 or more key actions in their first week. 
+
+```{r}
+# define quantiles of interest
+q = c(.25, .5, .75)
+
+#calculate quantiles by grouping variable
+active %>%
+  group_by(retained) %>%
+  summarize(quant25 = quantile(actions, probs = q[1]), 
+            quant50 = quantile(actions, probs = q[2]),
+            quant75 = quantile(actions, probs = q[3]))
+```
+
+## Days Active
+Next we'll look at the relationship between days active and retention. The plot below shows us that there is a clear relationship between the number of days active and the likelihood of being retained.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot percentage retained for number of days active
+users %>% 
+  group_by(days_active, retained) %>% 
+  summarise(n = n_distinct(user_id)) %>% 
+  mutate(prop = n / sum(n)) %>% 
+  filter(retained) %>% 
+  ggplot(aes(x = days_active, y = prop)) +
+  geom_col() +
+  theme_light() +
+  labs(x = "Days Active First Week", y = "Percent of Users Retained 60 Days")
+```
+
+Even for activated users, being active in multiple days greatly increases the likelihood of still being active in 60 days. 
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+# plot for users active multiple days
+active %>% 
+  group_by(multiple_days = days_active > 1, retained) %>% 
+  summarise(n = n_distinct(user_id)) %>% 
+  mutate(prop = n / sum(n)) %>% 
+  filter(retained) %>% 
+  ggplot(aes(x = multiple_days, y = prop)) +
+  geom_col() +
+  theme_light() +
+  labs(x = "Active Multiple Days", y = "Percent of Users Retained 60 Days")
+```
+
+# Simple Logistic Regression
+Next we'll fit a simple logistic regression to see how well the number of days active and the number of key actions can predict the likelihood of being retained.
+
+We'll ignore potential collinearity for now and will only look at activated users. Both `days_active` and `actions` have significant effects in the model, but `days_active` has a positive relationship, and, suprisingly, `actions` has a negative one. 
+
+```{r}
+# fit logistic regression model
+mod <- glm(retained ~ days_active + actions, data = active, family = "binomial")
+
+# summarise model
+summary(mod)
+```
+
+After taking the log of actions, both variables have positive effects of a similar size.
+
+```{r}
+# fit logistic regression model
+mod <- glm(retained ~ days_active + log(actions), data = active, family = "binomial")
+
+# summarise model
+summary(mod)
+```
